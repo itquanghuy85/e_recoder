@@ -10,7 +10,7 @@ Bạn là Agent đăng ứng dụng lên Google Play. Tôi ĐÃ đăng nhập s�
 Hãy tự làm toàn bộ, không hỏi lại những gì đã có trong tài liệu.
 
 ĐẦU VÀO CỦA CHỦ ỨNG DỤNG
-- Email hỗ trợ công khai: <EMAIL>
+- Email hỗ trợ công khai: <itquanghuy85@gmail.com>
 - URL gốc trang chính sách (đã online): <https://...>  (dùng <URL>/vi/privacy.html cho chính sách quyền riêng tư)
 
 TÀI NGUYÊN (repo d:\JOB\e_recorder, đã đẩy lên https://github.com/itquanghuy85/e_recoder.git)
