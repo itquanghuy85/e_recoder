@@ -1,0 +1,24 @@
+appId: com.huluca.escreenrecorder
+name: E4 voice-over asks for the microphone the first time, then records
+tags:
+  - p0
+  - module-editor
+---
+# Revoke first: adb shell pm revoke com.huluca.escreenrecorder android.permission.RECORD_AUDIO
+- runFlow: helpers/open_edit.yaml
+- tapOn:
+    id: "tool_audio"
+- runFlow: helpers/scroll_panel.yaml
+- tapOn:
+    id: "audio_voice"
+- waitForAnimationToEnd:
+    timeout: 2500
+- takeScreenshot: artifacts/e4_mic_dialog
+- runFlow:
+    when:
+      visible: "Trong khi dùng ứng dụng"
+    commands:
+      - tapOn: "Trong khi dùng ứng dụng"
+- waitForAnimationToEnd:
+    timeout: 2500
+- takeScreenshot: artifacts/e4_after_dialog
