@@ -35,7 +35,7 @@ Kết quả nằm trong `fastlane/metadata/android/<locale>/images/` và `store/
 |---|---|---|
 | Biểu tượng | PNG 512×512, ≤1 MB | `store/icon_512.png` → `images/icon.png` |
 | Feature graphic | PNG/JPG 1024×500 | `images/featureGraphic.png` |
-| Ảnh điện thoại | 2–8 ảnh, cạnh 320–3840 px, tỉ lệ ≤2:1 | `images/phoneScreenshots/*.png` (1080×1920) |
+| Ảnh điện thoại | 2–8 ảnh, cạnh 320–3840 px, tỉ lệ ≤2:1 | `images/phoneScreenshots/*.png` (1080×1920; vi 8 ảnh gồm trình dựng nâng cao, en 5 ảnh) |
 | Ảnh tablet 7"/10" | tuỳ chọn, nên có | `images/sevenInchScreenshots`, `tenInchScreenshots` |
 | Video giới thiệu | link YouTube (không tải file lên Play) | `store/video/promo.mp4` → tự đăng YouTube, dán link vào `video.txt` |
 | Video chứng minh quyền | cho khai báo FGS/mediaProjection | `store/video/permission_demo.mp4` (đăng YouTube chế độ *Không công khai*, dán link vào form) |
@@ -60,7 +60,7 @@ Giá trị lấy từ `store/play/answers.json`. Trình tự và đáp án:
 | **Data safety** | "Does your app collect or share any of the required user data types?" → **No**. Xem lại tóm tắt: *No data collected, No data shared*. Policy URL như trên |
 | **Government apps** | No · **Financial features** | None · **Health** | None (nếu có mục) |
 | **News apps / COVID-19** | Not a news app / No |
-| **Foreground service permissions** | Khai báo 2 loại: `mediaProjection` và `microphone`. Dùng văn bản trong `answers.json → permissionsDeclarations`. Đính kèm link YouTube của `permission_demo.mp4`. Quan trọng: nói rõ có thông báo hiển thị suốt lúc quay và người dùng bấm bắt đầu |
+| **Foreground service permissions** | Khai báo 3 loại: `mediaProjection`, `microphone` và `dataSync` (xuất video, có thông báo + nút Huỷ; video chứng minh đã có đoạn thông báo xuất). Dùng văn bản trong `answers.json → permissionsDeclarations`. Đính kèm link YouTube của `permission_demo.mp4`. Quan trọng: nói rõ có thông báo hiển thị suốt lúc quay và người dùng bấm bắt đầu |
 | **Advertising ID** | App does not use it |
 
 Mục **Store settings** (menu Grow users → Store presence → Store settings):

@@ -1,0 +1,166 @@
+appId: com.huluca.escreenrecorder
+name: Store screenshots - pro editor on a clean Samsung Calculator recording (S25)
+tags:
+  - store
+---
+# Run: scripts/run_flow.ps1 store_pro -Serial R5CY6323KMX -OtherApp com.sec.android.app.popupcalculator
+# Records the calculator with the small dot (point first, then press), then shows the editor tools.
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_dot
+      CORNER: corner_2
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: ${OTHER_APP || 'com.sec.android.app.popupcalculator'}
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Bật chế độ chỉ điểm"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: store/pro_live
+- tapOn: "Bật chế độ chỉ điểm"
+- tapOn:
+    point: 16%, 59%
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    point: 16%, 59%
+- waitForAnimationToEnd:
+    timeout: 1200
+- tapOn: "Bật chế độ chỉ điểm"
+- tapOn:
+    point: 84%, 79%
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    point: 84%, 79%
+- waitForAnimationToEnd:
+    timeout: 1200
+- tapOn: "Bật chế độ chỉ điểm"
+- tapOn:
+    point: 38%, 59%
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    point: 38%, 59%
+- waitForAnimationToEnd:
+    timeout: 1200
+- tapOn: "Bật chế độ chỉ điểm"
+- tapOn:
+    point: 84%, 89%
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    point: 84%, 89%
+- waitForAnimationToEnd:
+    timeout: 2500
+- longPressOn: "Bật chế độ chỉ điểm"
+- tapOn: "Dừng quay"
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 25000
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_2.*"
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: store/pro_timeline
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "cut_split"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "cut_split"
+- tapOn:
+    id: "tool_speed"
+- tapOn:
+    id: "speed_ramp"
+- waitForAnimationToEnd:
+    timeout: 900
+- tapOn:
+    id: "seek_back"
+- tapOn:
+    id: "seek_fwd"
+- waitForAnimationToEnd:
+    timeout: 2500
+- takeScreenshot: store/pro_speed
+- tapOn:
+    id: "tool_transition"
+- tapOn:
+    id: "trans_slideLeft"
+- waitForAnimationToEnd:
+    timeout: 900
+- tapOn:
+    id: "seek_back"
+- tapOn:
+    id: "seek_fwd"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- waitForAnimationToEnd:
+    timeout: 2500
+- takeScreenshot: store/pro_transition
+- tapOn:
+    id: "tool_overlay"
+- tapOn:
+    id: "add_shape_bubble"
+- tapOn:
+    id: "bubble_text"
+- eraseText: 30
+- inputText: "Bam vao day"
+- hideKeyboard
+- tapOn:
+    id: "seek_back"
+- tapOn:
+    id: "seek_fwd"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- waitForAnimationToEnd:
+    timeout: 2500
+- takeScreenshot: store/pro_overlay
+- tapOn:
+    id: "tool_audio"
+- runFlow: helpers/scroll_panel.yaml
+- waitForAnimationToEnd:
+    timeout: 900
+- tapOn:
+    id: "seek_back"
+- tapOn:
+    id: "seek_fwd"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- waitForAnimationToEnd:
+    timeout: 2500
+- takeScreenshot: store/pro_audio

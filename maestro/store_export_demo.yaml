@@ -1,0 +1,16 @@
+appId: com.huluca.escreenrecorder
+name: Store demo - start an export of a longer edit (the caller films the notification)
+tags:
+  - store
+---
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_2.*"
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p1080"
+- takeScreenshot: store/export_sheet
+- tapOn:
+    id: "export_start"

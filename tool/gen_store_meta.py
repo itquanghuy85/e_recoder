@@ -23,7 +23,11 @@ HAI CÁCH ĐÁNH DẤU KHI QUAY
 • Quay sạch, dựng sau: không có gì chen vào video. Chạm vùng ẩn ở góc (máy rung nhẹ), chạm chỗ sắp bấm, bấm thật. Dấu được vẽ đẹp trong trình chỉnh sửa.
 
 CHỈNH SỬA NGAY TRÊN MÁY
-• Cắt, tách, ghép nhiều video, đổi tốc độ từ 0,5× đến 3×.
+• Cắt, tách, xoá, nhân đôi, kéo đổi thứ tự đoạn; đóng băng khung, chèn đoạn trống.
+• Tốc độ từ 0,25× đến 8×, tua nhanh dần (ramp), chạy ngược đoạn ngắn.
+• Chuyển cảnh: mờ qua đen/trắng, trượt, phóng.
+• Nhạc nền từ file của bạn, thu giọng nói, tự hạ nhạc khi có giọng.
+• Xoay, cắt khung, đổi tỉ lệ, chỉnh màu; chèn chữ, hình vẽ, ảnh, hình-trong-hình.
 • Thêm chữ, khối che thông tin nhạy cảm, phóng to vào vùng quan trọng.
 • Dựng tự động: tự phóng to vào chỗ đánh dấu, đánh số lại các bước, tua nhanh đoạn màn hình đứng yên.
 • Hoàn tác không giới hạn, dự án tự lưu.
@@ -60,7 +64,11 @@ TWO WAYS TO MARK WHILE RECORDING
 • Record clean, edit later: nothing on screen. Touch the hidden corner (the phone buzzes), touch where you are about to press, press for real. Markers are drawn beautifully in the editor.
 
 EDIT ON YOUR PHONE
-• Cut, split, join videos, change speed from 0.5× to 3×.
+• Cut, split, delete, duplicate and reorder clips; freeze frames and blank gaps.
+• Speed from 0.25× to 8×, gradual speed ramps, reverse short clips.
+• Transitions: dip to black/white, slide, zoom.
+• Background music from your own files, voice-over, music ducks automatically under your voice.
+• Rotate, crop, change aspect ratio, colour looks; add text, shapes, images and picture-in-picture.
 • Add text, cover sensitive info, zoom into what matters.
 • Auto direct: zooms into your markers, renumbers the steps, speeds up stretches where the screen does not change.
 • Unlimited undo, projects save automatically.

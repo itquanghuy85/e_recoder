@@ -13,7 +13,11 @@ HAI CÁCH ĐÁNH DẤU KHI QUAY
 • Quay sạch, dựng sau: không có gì chen vào video. Chạm vùng ẩn ở góc (máy rung nhẹ), chạm chỗ sắp bấm, bấm thật. Dấu được vẽ đẹp trong trình chỉnh sửa.
 
 CHỈNH SỬA NGAY TRÊN MÁY
-• Cắt, tách, ghép nhiều video, đổi tốc độ từ 0,5× đến 3×.
+• Cắt, tách, xoá, nhân đôi, kéo đổi thứ tự đoạn; đóng băng khung, chèn đoạn trống.
+• Tốc độ từ 0,25× đến 8×, tua nhanh dần (ramp), chạy ngược đoạn ngắn.
+• Chuyển cảnh: mờ qua đen/trắng, trượt, phóng.
+• Nhạc nền từ file của bạn, thu giọng nói, tự hạ nhạc khi có giọng.
+• Xoay, cắt khung, đổi tỉ lệ, chỉnh màu; chèn chữ, hình vẽ, ảnh, hình-trong-hình.
 • Thêm chữ, khối che thông tin nhạy cảm, phóng to vào vùng quan trọng.
 • Dựng tự động: tự phóng to vào chỗ đánh dấu, đánh số lại các bước, tua nhanh đoạn màn hình đứng yên.
 • Hoàn tác không giới hạn, dự án tự lưu.

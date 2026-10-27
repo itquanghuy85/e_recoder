@@ -13,11 +13,11 @@ import 'package:flutter_test/flutter_test.dart';
 const _shots = [
   ('07_live', 1, 'Chấm nhỏ ở góc.\nBấm trước, rồi mới bấm thật', 'One small dot.\nPoint first, then press'),
   ('05_editor', 2, 'Dấu báo trước nằm sẵn\ntrên dòng thời gian', 'Markers waiting\non the timeline'),
-  ('06_auto', 3, 'Dựng tự động: phóng to,\nđánh số, tua nhanh', 'Auto direct: zoom,\nnumber, speed up'),
-  ('03_modes', 4, 'Hai cách đánh dấu.\nBạn chọn', 'Two ways to mark.\nYour choice'),
-  ('02_markers', 5, 'Dấu sống động\nnhư giọt nước', 'Markers that move\nlike water'),
-  ('01_record', 6, 'Quay màn hình\nchỉ với một chạm', 'Record your screen\nin one tap'),
-  ('04_library', 7, 'Mọi video ở lại\ntrên máy của bạn', 'All your videos\nstay on your phone'),
+  ('09_pro_speed', 3, 'Tua nhanh, làm chậm,\nchạy ngược từng đoạn', 'Speed ramps, slow motion\nand reverse'),
+  ('10_pro_transition', 4, 'Chuyển cảnh mượt\ngiữa các đoạn', 'Smooth transitions\nbetween clips'),
+  ('11_pro_overlay', 5, 'Chữ, chú thích, nhạc\nvà giọng nói', 'Text, callouts, music\nand voice-over'),
+  ('06_auto', 6, 'Dựng tự động: phóng to,\nđánh số, tua nhanh', 'Auto direct: zoom,\nnumber, speed up'),
+  ('03_modes', 7, 'Hai cách đánh dấu.\nBạn chọn', 'Two ways to mark.\nYour choice'),
   ('08_dark', 8, 'Giao diện sáng\nvà tối', 'Light and\ndark themes'),
 ];
 
@@ -151,9 +151,11 @@ void main() {
       final out = 'fastlane/metadata/android/$loc/images';
       var n = 0;
       for (final s in _shots) {
-        final raw = File('store/raw/$lang/${s.$1}.png').existsSync()
-            ? 'store/raw/$lang/${s.$1}.png'
-            : 'store/raw/vi/${s.$1}.png';
+        // The pro-editor shots (09+) exist only in Vietnamese: no English listing shows a Vietnamese UI.
+        final own = 'store/raw/$lang/${s.$1}.png';
+        final raw = File(own).existsSync()
+            ? own
+            : (s.$1.compareTo('09') >= 0 ? own : 'store/raw/vi/${s.$1}.png');
         if (!File(raw).existsSync()) continue;
         final shot = await _load(raw);
         final headline = lang == 'vi' ? s.$3 : s.$4;

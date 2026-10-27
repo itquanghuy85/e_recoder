@@ -68,7 +68,7 @@ function Still($png, $seconds, $out) {
 Still "store/video/cards/title_$Lang.png" 3 "$Work\t.mp4"
 Still "store/video/cards/notification_$Lang.png" 4 "$Work\n.mp4"
 Still "store/video/cards/end_$Lang.png" 3 "$Work\e.mp4"
-$shots = @("2_editor", "3_auto", "4_modes")
+$shots = @("2_editor", "6_auto", "7_modes")
 $loc = if ($Lang -eq "vi") { "vi-VN" } else { "en-US" }
 $i = 0
 foreach ($s in $shots) {
