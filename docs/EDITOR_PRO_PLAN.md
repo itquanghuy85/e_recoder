@@ -111,6 +111,6 @@ Không làm (có lý do trong HANDOVER): làm nét, chuyển cảnh "nước", t
 
 - Xem trước chạy ngược là từng bước (nhảy khung), xuất mới là chạy ngược thật.
 - Chạy ngược và video PiP giới hạn 30 s/đoạn; PiP video dùng ảnh mẫu 15 khung/s, không có tiếng riêng ngoài track âm thanh.
-- `e2_overlays` không còn bước chọn ảnh/PiP từ trình chọn (trình chọn Oppo nhớ thư mục, toạ độ thay đổi); ảnh được chọn xác nhận ở `e2_pick_probe`, PiP video CHƯA có kịch bản máy thật tự động (xuất ảnh PiP đã thấy trong ảnh mẫu lần chạy trước, video PiP chưa kiểm).
+- `e2_overlays` không còn bước chọn ảnh/PiP từ trình chọn (trình chọn Oppo nhớ thư mục, toạ độ thay đổi); ảnh được chọn xác nhận ở `e2_pick_probe`, PiP video đã kiểm trên S25 bằng `e2_pip_s25` (trình chọn Samsung riêng).
 - Hướng xoay (cùng/ngược chiều kim đồng hồ) đã khớp trong ảnh xuất của `e2b_crop_rotate`; chưa thử mọi góc trên thiết bị khác.
-- Chưa thử trên Samsung S25 Ultra sau khi làm trình dựng mới.
+- Samsung S25 Ultra: e1, e2, e2b, e3, e4 (kịch bản riêng), e7, PiP video đều PASS (27/10/2026).

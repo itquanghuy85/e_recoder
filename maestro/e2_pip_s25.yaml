@@ -1,0 +1,35 @@
+appId: com.huluca.escreenrecorder
+name: E6 picture-in-picture video (Samsung picker)
+tags:
+  - p0
+  - module-editor
+---
+- runFlow: helpers/open_edit.yaml
+- tapOn:
+    id: "tool_overlay"
+- tapOn:
+    id: "add_pip"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    point: 7%, 7%
+- waitForAnimationToEnd
+- tapOn:
+    point: 30%, 28%
+- waitForAnimationToEnd
+- tapOn:
+    point: 72%, 39%
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 20000
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000

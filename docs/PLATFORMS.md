@@ -30,11 +30,11 @@ Giao diện dựng là Flutter dùng chung; **bộ xuất** (Media3 trên Androi
 | Tốc độ hằng, ramp tốc độ, chạy ngược (≤30 s) | ✅ | 🕓 | Đã thử Oppo + S25 (`e3_motion`) |
 | Chuyển cảnh (mờ đen/trắng, trượt, phóng) | ✅ | 🕓 | Đã thử Oppo + S25 |
 | Âm lượng/fade từng đoạn, tắt tiếng khi nhanh | ✅ | 🕓 | Đã thử Oppo |
-| Nhạc nền từ file, thu giọng, hạ nhạc khi có giọng | ✅ | 🕓 | Oppo PASS; S25 chưa thử trọn (kịch bản chọn tệp lệch) |
+| Nhạc nền từ file, thu giọng, hạ nhạc khi có giọng | ✅ | 🕓 | Đã thử Oppo + S25 (`e4_audio`, `e4_audio_s25`) |
 | Xoay, cắt, đổi tỉ lệ, màu | ✅ | 🕓 | Đã thử Oppo + S25 (`e2b_crop_rotate`) |
 | Chữ nâng cao, hình vẽ, ảnh chèn, chuyển động vào/ra | ✅ | 🕓 | Đã thử Oppo + S25 (`e2_overlays`) |
 | Hình-trong-hình (ảnh) | ✅ | 🕓 | Đã thử |
-| Hình-trong-hình (video) | ✅ | 🕓 | **Chưa thử trên máy thật** |
+| Hình-trong-hình (video) | ✅ | 🕓 | Đã thử S25 (`e2_pip_s25`) |
 | Xuất MP4 theo mẫu, ước lượng dung lượng, GIF, lưu khung hình | ✅ | 🕓 | Đã thử Oppo + S25 |
 | Xuất chạy nền (có thông báo + Huỷ) | ✅ | ⚠️ | iOS giới hạn xử lý nền khi tắt màn hình |
 | Mẫu dự án | ✅ | 🕓 | |
