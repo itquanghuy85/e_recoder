@@ -1,0 +1,47 @@
+appId: com.huluca.escreenrecorder
+name: G3 project survives leaving the editor, reset clears it
+tags:
+  - p1
+  - module-editor
+---
+- runFlow: helpers/record_clip.yaml
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- assertVisible: ".*0 chữ.*"
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "add_text"
+- assertVisible: ".*1 chữ.*"
+# Leave and come back: the project is restored from the store.
+- back
+- back
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- assertVisible: ".*1 chữ.*"
+# Reset drops every edit (undoable).
+- tapOn:
+    id: "editor_menu"
+- tapOn: "Làm lại từ đầu"
+- tapOn:
+    id: "reset_confirm"
+- assertVisible: ".*0 chữ.*"
+- tapOn:
+    id: "editor_undo"
+- assertVisible: ".*1 chữ.*"

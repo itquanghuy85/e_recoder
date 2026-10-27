@@ -1,0 +1,42 @@
+appId: com.huluca.escreenrecorder
+name: G3 GIF export of a short edit
+tags:
+  - p1
+  - module-editor
+---
+- runFlow: helpers/record_clip.yaml
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+# Keep only the first 4 s: split there and delete the rest.
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "cut_split"
+- tapOn:
+    id: "cut_delete"
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "fmt_gif"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible: "Đã xuất xong"
+    timeout: 240000
+- assertNotVisible:
+    id: "export_view"

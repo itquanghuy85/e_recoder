@@ -1,0 +1,41 @@
+appId: com.huluca.escreenrecorder
+name: G1 record without floating bar or countdown, system audio, stop from app
+tags:
+  - p1
+  - module-record
+---
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- tapOn:
+    id: "profile_card"
+- tapOn:
+    id: "res_p720"
+- tapOn:
+    id: "quality_low"
+- tapOn:
+    id: "audio_both"
+- tapOn:
+    id: "countdown_0"
+- tapOn:
+    id: "floating_bar_switch"
+- tapOn: "Đóng"
+- assertVisible: ".*720p · 30 fps · Nhẹ.*"
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: ${OTHER_APP || 'com.android.settings'}
+    stopApp: false
+- scroll
+- scroll
+- scroll
+# Back in the app the live view shows the timer and the stop button.
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- assertVisible: "Đang quay"
+- takeScreenshot: artifacts/g1_live_view
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 20000
+- runFlow: helpers/reset_rec_settings.yaml

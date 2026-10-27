@@ -1,0 +1,18 @@
+appId: com.huluca.escreenrecorder
+name: Helper - grant overlay permission (ColorOS, Vietnamese)
+tags:
+  - helper
+---
+# Run while the "Hiển thị trên các ứng dụng khác" list is open (the app opens it itself).
+- scrollUntilVisible:
+    element:
+      text: "E Screen Recorder"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "E Screen Recorder"
+# The switch sits at the right of the single row on the detail page.
+- tapOn:
+    point: "88%,33%"
+- back
+- back
+- back

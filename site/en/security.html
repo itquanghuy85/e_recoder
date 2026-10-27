@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security — E Screen Recorder</title>
+<meta name="description" content="How E Screen Recorder protects you: data stays on device, no Internet permission, minimal permissions, and how to report a vulnerability.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="../assets/logo.png">
+<link rel="alternate" hreflang="vi" href="../vi/security.html">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="index.html"><img src="../assets/logo.png" alt="" width="34" height="34">E Screen Recorder</a>
+<nav class="main" aria-label="Main"><a href="index.html">Home</a><a href="privacy.html">Privacy</a><a href="security.html" aria-current="page">Security</a><a href="support.html">Support</a></nav>
+<a class="lang" href="../vi/security.html" hreflang="vi">Tiếng Việt</a>
+</div></header>
+<main><div class="wrap">
+
+<h1>Security</h1>
+<p class="meta">Last updated: {{UPDATED}}</p>
+<p class="lead">The safest way to protect your data is to never let it leave your device. That is how E Screen Recorder is built.</p>
+<div class="grid">
+<div class="card ok"><h3>No way out to the network</h3><p>The release build requests no Internet permission. No servers, no accounts, no advertising or analytics SDKs.</p></div>
+<div class="card ok"><h3>Minimal permissions, asked at the right time</h3><p>Microphone only if you choose sound. Screen capture is confirmed by Android every time. No access to photos, contacts, messages or location.</p></div>
+<div class="card ok"><h3>Saved where Android wants it</h3><p>Videos are saved through MediaStore into the app's own folder under Movies; no broad storage access is needed.</p></div>
+<div class="card ok"><h3>Cover tool for secrets</h3><p>Covers added in the editor are burned into the exported video and cannot be removed from the exported file.</p></div>
+</div>
+
+<h2>What to know while recording</h2>
+<div class="card warn"><ul>
+<li>System notifications, passwords or messages that appear on screen end up in the video. Turn on Do Not Disturb before recording.</li>
+<li>Apps that protect their content (banking, some video players) appear black in recordings.</li>
+<li>Review the video and cover sensitive information before sharing.</li>
+</ul></div>
+
+<h2>App integrity</h2>
+<ul>
+<li>Distributed through Google Play, signed with a private key using Play App Signing. Do not install the app from other sources.</li>
+<li>Code is shrunk and obfuscated (R8) in release builds.</li>
+<li>The app targets the latest Android release and follows Android's background-service restrictions.</li>
+</ul>
+
+<h2>Report a vulnerability</h2>
+<p>If you find a vulnerability, please send a description and steps to reproduce to <a href="mailto:{{SUPPORT_EMAIL}}">{{SUPPORT_EMAIL}}</a>. We will respond and fix it as soon as possible. Please do not disclose publicly before a fix is available.</p>
+
+</div></main>
+<footer><div class="wrap"><span>© {{YEAR}} {{DEVELOPER}}. E Screen Recorder is free and has no ads.</span><a href="privacy.html">Privacy</a><a href="security.html">Security</a><a href="support.html">Support</a></div></footer>
+</body>
+</html>

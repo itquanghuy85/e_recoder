@@ -1,0 +1,72 @@
+appId: com.huluca.escreenrecorder
+name: E1-E4 editor core - split, delete, duplicate, speed, mute, freeze, transition, export
+tags:
+  - p0
+  - module-editor
+---
+# Keep 6 s of the clip as [A 3 s][B 3 s]; duplicate B, B' at 2x and muted, a 2 s freeze before B',
+# dip-to-black into the freeze. Expected export length: 3 + 3 + 2 + 1.5 = 9.5 s.
+- runFlow: helpers/record_clip.yaml
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "cut_split"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "cut_split"
+- tapOn:
+    id: "cut_delete"
+- takeScreenshot: artifacts/e1_trimmed
+- tapOn:
+    id: "cut_duplicate"
+- takeScreenshot: artifacts/e1_duplicated
+- tapOn:
+    id: "tool_speed"
+- tapOn:
+    id: "speed_2_0"
+- tapOn:
+    id: "tool_audio"
+- tapOn:
+    id: "audio_mute"
+- takeScreenshot: artifacts/e1_audio
+- tapOn:
+    id: "tool_cut"
+- tapOn:
+    id: "cut_freeze"
+- takeScreenshot: artifacts/e1_freeze
+- tapOn:
+    id: "tool_transition"
+- tapOn:
+    id: "trans_dipBlack"
+- takeScreenshot: artifacts/e1_transition
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000
+- takeScreenshot: artifacts/e1_export_done

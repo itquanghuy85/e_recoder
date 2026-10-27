@@ -1,0 +1,40 @@
+appId: com.huluca.escreenrecorder
+name: G2 marker gallery - every tool on light and dark backdrop
+tags:
+  - p1
+  - module-marker
+  - read-only
+---
+- launchApp:
+    stopApp: false
+- tapOn:
+    text: "Cài đặt.*"
+- tapOn:
+    text: ".*Dấu đánh dấu.*"
+- assertVisible: "Xem thử"
+# Let the cue->take sequence settle before each capture (take is at 500 ms, hold ~1.8 s).
+- repeat:
+    times: 1
+    commands:
+      - tapOn: "Ngón tay"
+      - waitForAnimationToEnd:
+          timeout: 1200
+      - takeScreenshot: artifacts/g2_finger_light
+      - tapOn: "Nền tối"
+      - waitForAnimationToEnd:
+          timeout: 600
+      - takeScreenshot: artifacts/g2_finger_dark
+      - tapOn: "Nền sáng"
+- tapOn: "Chạm"
+- takeScreenshot: artifacts/g2_ripple
+- tapOn: "Mũi tên"
+- takeScreenshot: artifacts/g2_arrow
+- tapOn: "Vòng tròn"
+- takeScreenshot: artifacts/g2_circle
+- tapOn: "Khung"
+- takeScreenshot: artifacts/g2_rect
+- tapOn: "Bút"
+- takeScreenshot: artifacts/g2_pen
+- tapOn: "Số bước"
+- takeScreenshot: artifacts/g2_number
+- tapOn: "Ngón tay"

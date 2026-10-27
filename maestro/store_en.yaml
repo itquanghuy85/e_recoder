@@ -1,0 +1,101 @@
+appId: com.huluca.escreenrecorder
+name: Store screenshots (English)
+tags:
+  - store
+---
+# Run after store_vi (needs its clean-mode clip in the Library). The app language is switched with
+#   adb shell cmd locale set-app-locales com.huluca.escreenrecorder --locales en-US
+# and restored with --locales "" (scripts/store/make_store_assets.ps1 -English does both).
+- launchApp:
+    stopApp: false
+- tapOn:
+    text: "Record.*"
+- waitForAnimationToEnd:
+    timeout: 1200
+- takeScreenshot: store/en_01_record
+- tapOn:
+    text: "Settings.*"
+- tapOn:
+    id: "settings_markers"
+- tapOn: "Tap"
+- waitForAnimationToEnd:
+    timeout: 900
+- takeScreenshot: store/en_02_markers
+- scrollUntilVisible:
+    element:
+      id: "corner_2"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: store/en_03_modes
+- scrollUntilVisible:
+    element:
+      text: "Finger"
+    direction: UP
+    timeout: 20000
+- tapOn: "Finger"
+- back
+- tapOn:
+    text: "Library.*"
+- waitForAnimationToEnd:
+    timeout: 1200
+- takeScreenshot: store/en_04_library
+- tapOn:
+    text: ".*ESR_.*"
+    index: 1
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "tool_marker"
+- waitForAnimationToEnd:
+    timeout: 900
+- takeScreenshot: store/en_05_editor
+- tapOn:
+    id: "tool_auto"
+- tapOn:
+    id: "auto_run"
+- extendedWaitUntil:
+    visible:
+      id: "auto_result"
+    timeout: 120000
+- takeScreenshot: store/en_06_auto
+- back
+- back
+- tapOn:
+    text: "Settings.*"
+- tapOn:
+    text: "Dark"
+- tapOn:
+    text: "Record.*"
+- waitForAnimationToEnd:
+    timeout: 900
+- takeScreenshot: store/en_08_dark
+- tapOn:
+    text: "Settings.*"
+- tapOn:
+    text: "System"

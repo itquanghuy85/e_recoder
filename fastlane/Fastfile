@@ -1,0 +1,36 @@
+# Usage (from the repo root, after `flutter build appbundle --release`):
+#   fastlane android validate     # dry run: checks the listing + bundle with Google, uploads nothing
+#   fastlane android listing      # push texts + images only
+#   fastlane android internal     # bundle -> Internal testing
+#   fastlane android closed       # bundle -> Closed testing (needed for new personal accounts: 12 testers x 14 days)
+#   fastlane android production   # bundle -> Production (staged rollout 20 %)
+default_platform(:android)
+
+AAB = "build/app/outputs/bundle/release/app-release.aab"
+
+platform :android do
+  desc "Validate the listing and bundle without publishing"
+  lane :validate do
+    upload_to_play_store(track: "internal", aab: AAB, validate_only: true, skip_upload_screenshots: false)
+  end
+
+  desc "Only the store listing (texts, icon, feature graphic, screenshots)"
+  lane :listing do
+    upload_to_play_store(skip_upload_aab: true, skip_upload_apk: true, skip_upload_changelogs: true)
+  end
+
+  desc "Upload to Internal testing"
+  lane :internal do
+    upload_to_play_store(track: "internal", aab: AAB, release_status: "completed")
+  end
+
+  desc "Upload to Closed testing (alpha)"
+  lane :closed do
+    upload_to_play_store(track: "alpha", aab: AAB, release_status: "completed")
+  end
+
+  desc "Promote to Production with a staged rollout"
+  lane :production do
+    upload_to_play_store(track: "production", aab: AAB, rollout: "0.2", release_status: "inProgress")
+  end
+end

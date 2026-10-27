@@ -1,0 +1,26 @@
+name: Publish privacy & support site
+# Needs the repository secret SUPPORT_EMAIL (or edit store/store_config.json) and GitHub Pages set to "GitHub Actions".
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", "store/store_config.json"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    runs-on: windows-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fill tokens
+        shell: pwsh
+        run: ./scripts/store/build_site.ps1
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site_dist
+      - uses: actions/deploy-pages@v4

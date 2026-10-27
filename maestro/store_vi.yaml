@@ -1,0 +1,163 @@
+appId: com.huluca.escreenrecorder
+name: Store screenshots (Vietnamese)
+tags:
+  - store
+---
+# Produces the raw screenshots for the store listing; scripts/store/make_store_assets.ps1 frames them.
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- tapOn:
+    text: "Quay.*"
+- takeScreenshot: store/vi_01_record
+# Marker settings: the water-style markers and the two ways to mark.
+- tapOn:
+    text: "Cài đặt.*"
+- tapOn:
+    id: "settings_markers"
+- tapOn: "Chạm"
+- waitForAnimationToEnd:
+    timeout: 900
+- takeScreenshot: store/vi_02_markers
+- scrollUntilVisible:
+    element:
+      id: "corner_2"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: store/vi_03_modes
+- scrollUntilVisible:
+    element:
+      text: "Ngón tay"
+    direction: UP
+    timeout: 20000
+- tapOn: "Ngón tay"
+- back
+# Clean recording with three hidden-corner markers.
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_clean
+      CORNER: corner_2
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: com.android.settings
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Vùng đánh dấu ẩn"
+    timeout: 15000
+- tapOn: "Vùng đánh dấu ẩn"
+- tapOn:
+    point: 50%, 40%
+- waitForAnimationToEnd:
+    timeout: 1200
+- tapOn: "Vùng đánh dấu ẩn"
+- tapOn:
+    point: 30%, 62%
+- waitForAnimationToEnd:
+    timeout: 1200
+- tapOn: "Vùng đánh dấu ẩn"
+- tapOn:
+    point: 70%, 75%
+- waitForAnimationToEnd:
+    timeout: 1200
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 25000
+- tapOn:
+    text: "Thư viện.*"
+# Maestro turns accessibility on, which keeps snackbars up: swipe it away.
+- swipe:
+    start: 40%, 65%
+    end: 40%, 90%
+    duration: 300
+- waitForAnimationToEnd:
+    timeout: 1200
+- takeScreenshot: store/vi_04_library
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "tool_marker"
+- waitForAnimationToEnd:
+    timeout: 900
+- takeScreenshot: store/vi_05_editor
+- tapOn:
+    id: "tool_auto"
+- tapOn:
+    id: "auto_run"
+- extendedWaitUntil:
+    visible:
+      id: "auto_result"
+    timeout: 120000
+- takeScreenshot: store/vi_06_auto
+- back
+- back
+# Live dot mode: the only thing on screen is the small dot and the marker.
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_dot
+      CORNER: corner_2
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: com.android.settings
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Bật chế độ chỉ điểm"
+    timeout: 15000
+- tapOn: "Bật chế độ chỉ điểm"
+- tapOn:
+    point: 52%, 31%
+- takeScreenshot: store/vi_07_live
+- longPressOn: "Bật chế độ chỉ điểm"
+- tapOn: "Dừng quay"
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 25000
+# Dark theme.
+- tapOn:
+    text: "Cài đặt.*"
+- tapOn:
+    text: "Tối"
+- tapOn:
+    text: "Quay.*"
+- waitForAnimationToEnd:
+    timeout: 900
+- takeScreenshot: store/vi_08_dark
+- tapOn:
+    text: "Cài đặt.*"
+- tapOn:
+    text: "Theo hệ thống"

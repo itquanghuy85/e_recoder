@@ -1,0 +1,26 @@
+appId: com.huluca.escreenrecorder
+name: G0 smoke - shell, navigation, theme
+tags:
+  - p0
+  - module-shell
+---
+# No clearState: ColorOS blocks `pm clear` over adb. The flow ends in the default tab/theme.
+# Flutter exposes navigation labels as "<label>\nTab n of 3", hence the regex taps.
+- launchApp
+- assertVisible: "Bắt đầu quay"
+- takeScreenshot: artifacts/g0_record
+- tapOn:
+    text: "Thư viện.*"
+# The library may be empty or not: either way its tab is the one on screen.
+- assertVisible: ".*(Chưa có video nào|Thư viện).*"
+- tapOn:
+    text: "Cài đặt.*"
+- assertVisible: "Giao diện"
+- tapOn: "Tối"
+- takeScreenshot: artifacts/g0_settings_dark
+- tapOn: "Sáng"
+- takeScreenshot: artifacts/g0_settings_light
+- tapOn: "Theo hệ thống"
+- tapOn:
+    text: "Quay.*"
+- assertVisible: "Bắt đầu quay"

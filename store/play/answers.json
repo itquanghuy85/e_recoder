@@ -1,0 +1,107 @@
+{
+  "_comment": "Every answer the Google Play Console asks for, in one machine-readable place. The agent playbook (docs/store/AGENT_PLAYBOOK.md) tells which screen each block belongs to. Values were derived from the code (AndroidManifest.xml, release APK permissions) - re-check them whenever a permission or SDK is added.",
+  "app": {
+    "name": "E Screen Recorder",
+    "package": "com.huluca.escreenrecorder",
+    "defaultLanguage": "vi-VN",
+    "type": "App",
+    "free": true,
+    "category": "Tools",
+    "tags": ["Screen recorder", "Video editor", "Tutorial"],
+    "contactDetails": { "email": "<developer.supportEmail>", "website": "<site.baseUrl>", "phone": "optional" }
+  },
+  "appAccess": { "restricted": false, "note": "All functionality is available without login or special access." },
+  "ads": { "containsAds": false },
+  "contentRating": {
+    "category": "Utility, Productivity, Communication, or Other",
+    "email": "<developer.supportEmail>",
+    "answers": {
+      "violence": "No",
+      "sexualContent": "No",
+      "language": "No",
+      "controlledSubstances": "No",
+      "gambling": "No",
+      "userGeneratedContent": "No - the app has no sharing community or server; users only create files on their own device",
+      "shareUserLocation": "No",
+      "personalInfoCollected": "No",
+      "digitalPurchases": "No",
+      "webBrowser": "No"
+    },
+    "expectedRating": "Everyone / PEGI 3 / IARC 3+"
+  },
+  "targetAudience": {
+    "ageGroups": ["18 and over", "16-17", "13-15"],
+    "excludeChildren": true,
+    "appealsToChildren": false,
+    "note": "Do NOT tick any group under 13: ticking one triggers Families Policy requirements."
+  },
+  "newsApp": false,
+  "covidApp": false,
+  "government": false,
+  "financialFeatures": "None",
+  "health": "None",
+  "dataSafety": {
+    "collectsOrSharesUserData": false,
+    "allDataEncryptedInTransit": "Not applicable (no data leaves the device)",
+    "userCanRequestDeletion": "Not applicable - no data is collected. Users delete their videos on the device; uninstalling removes projects and settings.",
+    "dataTypes": {
+      "_comment": "Answer 'No' to every data type. Audio/video recorded stays on the device and is never transmitted off the device, so it is not 'collected' under Google's definition.",
+      "locationData": "not collected",
+      "personalInfo": "not collected",
+      "financialInfo": "not collected",
+      "healthAndFitness": "not collected",
+      "messages": "not collected",
+      "photosAndVideos": "not collected (processed on device only)",
+      "audioFiles": "not collected (processed on device only)",
+      "filesAndDocs": "not collected",
+      "calendar": "not collected",
+      "contacts": "not collected",
+      "appActivity": "not collected",
+      "webBrowsing": "not collected",
+      "appInfoAndPerformance": "not collected",
+      "deviceOrOtherIds": "not collected"
+    },
+    "securityPractices": {
+      "dataEncryptedInTransit": "n/a",
+      "committedToPlayFamiliesPolicy": false,
+      "independentSecurityReview": false
+    }
+  },
+  "permissionsDeclarations": {
+    "foregroundServiceMediaProjection": {
+      "form": "App content > Foreground service permissions (Play Console asks per FGS type)",
+      "type": "mediaProjection",
+      "userFacingFeature": "Screen recording. The user taps Start recording, accepts Android's screen-capture dialog, and a persistent notification with Pause and Stop is shown for the whole recording. The service must keep running while the user uses other apps, otherwise the recording would stop as soon as the app is backgrounded.",
+      "impactIfDeferredOrInterrupted": "The recording stops or loses frames when the user switches apps, which makes the product unusable.",
+      "video": "store/video/permission_demo.mp4"
+    },
+    "foregroundServiceDataSync": {
+      "type": "dataSync (mediaProcessing on Android 15+)",
+      "userFacingFeature": "Exporting an edited video. The user taps Export, a progress notification with a Cancel button is shown, and the export keeps running if the user leaves the app or turns the screen off.",
+      "impactIfDeferredOrInterrupted": "A long export (re-encoding minutes of video) would be killed in the background and the user would lose the result.",
+      "video": "store/video/permission_demo.mp4"
+    },
+    "foregroundServiceMicrophone": {
+      "type": "microphone",
+      "userFacingFeature": "Optional microphone narration while recording; only started when the user chooses sound input in the recording profile.",
+      "video": "store/video/permission_demo.mp4"
+    },
+    "systemAlertWindow": {
+      "permission": "android.permission.SYSTEM_ALERT_WINDOW",
+      "justification": "Core feature: shows the 3-2-1 countdown, a small marker dot and point-ahead markers on top of the app being recorded so viewers see where the user is about to tap. It is optional: if denied, the app records and is controlled from the notification.",
+      "note": "Not a restricted permission in Play Console, but be ready to explain it in review notes."
+    },
+    "recordAudio": { "justification": "Microphone narration, only when the user selects it." },
+    "postNotifications": { "justification": "Pause/Stop controls on the mandatory foreground-service notification." },
+    "vibrate": { "justification": "Haptic confirmation of a marker in clean-recording mode." },
+    "notRequested": ["INTERNET", "READ_EXTERNAL_STORAGE", "MANAGE_EXTERNAL_STORAGE", "ACCESS_FINE_LOCATION", "READ_CONTACTS", "READ_SMS", "BIND_ACCESSIBILITY_SERVICE", "REQUEST_INSTALL_PACKAGES", "QUERY_ALL_PACKAGES"]
+  },
+  "release": {
+    "firstTrack": "internal",
+    "countries": "All countries / regions where Google Play is available",
+    "pricing": "Free",
+    "newPersonalAccountRule": "Personal developer accounts created after 2023-11-13 must run a Closed test with at least 12 testers opted in for 14 continuous days before applying for Production access.",
+    "stagedRolloutPercent": 20
+  },
+  "reviewNotesToGoogle": "E Screen Recorder is a local, offline screen recorder (no Internet permission). Review path: open the app, tap Start recording, accept the system dialog, tap Start now after the 3-2-1 countdown. A small marker dot appears in a corner (or nothing at all in 'Record clean' mode). Open any other app, then stop from the notification or by long-pressing the dot. The video is saved in Movies/E Screen Recorder and appears in the Library tab; tap it, then Edit. No account or special access is needed."
+}

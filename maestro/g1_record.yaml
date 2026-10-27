@@ -1,0 +1,43 @@
+appId: com.huluca.escreenrecorder
+name: G1 record - start, countdown, pause, resume, stop, library
+tags:
+  - p0
+  - module-record
+---
+# Preconditions (one-off, ColorOS blocks adb grants): overlay permission granted
+# (maestro/helpers/grant_overlay.yaml) and mic/notification permissions allowed.
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- assertVisible: "Bắt đầu quay"
+- runFlow: helpers/start_recording.yaml
+# The app steps aside; record something else on screen.
+- launchApp:
+    appId: ${OTHER_APP || 'com.android.settings'}
+    stopApp: false
+# Dot mode: only the small marker dot is on screen; a long press opens the control pill.
+- extendedWaitUntil:
+    visible: "Bật chế độ chỉ điểm"
+    timeout: 15000
+- longPressOn: "Bật chế độ chỉ điểm"
+- extendedWaitUntil:
+    visible: "Đã quay.*"
+    timeout: 5000
+- takeScreenshot: artifacts/g1_recording_bar
+- tapOn: "Tạm dừng"
+- assertVisible: "Tiếp tục"
+- takeScreenshot: artifacts/g1_paused_bar
+- tapOn: "Tiếp tục"
+- assertVisible: "Tạm dừng"
+- tapOn: "Dừng quay"
+# Back in our app: the saved video appears in the library.
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 20000
+- tapOn:
+    text: "Thư viện.*"
+- assertVisible: "ESR_.*"
+- takeScreenshot: artifacts/g1_library

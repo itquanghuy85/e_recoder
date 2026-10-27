@@ -1,0 +1,1 @@
+Phiên bản đầu tiên: quay màn hình có dấu báo trước, hai cách đánh dấu, trình chỉnh sửa và dựng tự động, xuất MP4/GIF.

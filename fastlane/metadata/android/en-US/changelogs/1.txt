@@ -1,0 +1,1 @@
+First release: point-ahead markers, two ways to mark, on-device editor with auto direct, MP4/GIF export.

@@ -1,0 +1,20 @@
+appId: com.huluca.escreenrecorder
+name: Helper - open the newest exported edit (a short video) in the editor
+tags:
+  - helper
+---
+# env: PATTERN (default ".*ESR_edit_.*")
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ${PATTERN || '.*ESR_edit_.*'}
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000

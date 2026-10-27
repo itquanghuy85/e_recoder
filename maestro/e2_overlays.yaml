@@ -1,0 +1,60 @@
+appId: com.huluca.escreenrecorder
+name: E5-E6 picture look and overlays - square fill, vivid, callout, arrow, image, picture in picture, styled text, export
+tags:
+  - p0
+  - module-editor
+---
+# Needs esr_pic.png and esr_pip.mp4 in Download (scripts/qa/push_test_media.ps1) and a short edit in the library.
+- runFlow: helpers/open_edit.yaml
+- tapOn:
+    id: "tool_picture"
+- tapOn:
+    id: "aspect_r1x1"
+- tapOn:
+    id: "aspect_fill"
+- runFlow: helpers/scroll_panel.yaml
+- tapOn:
+    id: "preset_vivid"
+- takeScreenshot: artifacts/e2_picture
+- tapOn:
+    id: "tool_overlay"
+- tapOn:
+    id: "add_shape_bubble"
+- tapOn:
+    id: "bubble_text"
+- eraseText: 30
+- inputText: "Bam vao day"
+- hideKeyboard
+- takeScreenshot: artifacts/e2_bubble
+- tapOn:
+    id: "tool_overlay"
+- tapOn:
+    id: "add_shape_arrow"
+- takeScreenshot: artifacts/e2_arrow
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "add_text"
+- runFlow: helpers/scroll_panel.yaml
+- runFlow: helpers/scroll_panel.yaml
+- tapOn:
+    id: "font_serif"
+- tapOn:
+    id: "text_box"
+- runFlow: helpers/scroll_panel.yaml
+- runFlow: helpers/scroll_panel.yaml
+- runFlow: helpers/scroll_panel.yaml
+- tapOn:
+    id: "text_motion_enter_pop"
+- takeScreenshot: artifacts/e2_text
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000
+- takeScreenshot: artifacts/e2_export_done

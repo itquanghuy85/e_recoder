@@ -1,0 +1,43 @@
+appId: com.huluca.escreenrecorder
+name: E5 rotate 90 and crop on a short edit, then export
+tags:
+  - p0
+  - module-editor
+---
+- runFlow: helpers/open_edit.yaml
+- tapOn:
+    id: "tool_picture"
+- tapOn:
+    id: "pic_rotate"
+- takeScreenshot: artifacts/e2b_rotated
+- tapOn:
+    id: "pic_crop"
+- extendedWaitUntil:
+    visible:
+      id: "crop_done"
+    timeout: 8000
+- takeScreenshot: artifacts/e2b_crop_open
+# Drag the top-left and bottom-right corners inwards.
+- swipe:
+    start: 6%, 21%
+    end: 26%, 34%
+    duration: 500
+- swipe:
+    start: 94%, 79%
+    end: 74%, 66%
+    duration: 500
+- takeScreenshot: artifacts/e2b_crop_dragged
+- tapOn:
+    id: "crop_done"
+- takeScreenshot: artifacts/e2b_cropped
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000
+- takeScreenshot: artifacts/e2b_export_done

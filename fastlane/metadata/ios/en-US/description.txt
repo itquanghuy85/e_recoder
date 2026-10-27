@@ -1,0 +1,32 @@
+Record tutorial videos where viewers always know where you are about to tap.
+
+E Screen Recorder is a free screen recorder with no ads that does what other recorders skip: it shows viewers where you are about to touch BEFORE the screen changes.
+
+POINT-AHEAD MARKERS WITH A WATER-LIKE LOOK
+• Finger, water-drop tap, arrow, circle, box, pen and step numbers.
+• Gradients and motion: spreading ripples, flowing shine, an arrow that nods toward the target.
+• An amber ring closes in on the target before the marker appears, then the tap happens.
+• Pick colour and thickness; scale, rotate and recolour markers in the editor.
+
+TWO WAYS TO MARK WHILE RECORDING
+• Small corner dot: choose the marker beforehand and only a dot stays on screen. Tap the dot, touch where you are about to press, then press for real.
+• Record clean, edit later: nothing on screen. Touch the hidden corner (the phone buzzes), touch where you are about to press, press for real. Markers are drawn beautifully in the editor.
+
+EDIT ON YOUR PHONE
+• Cut, split, join videos, change speed from 0.5× to 3×.
+• Add text, cover sensitive info, zoom into what matters.
+• Auto direct: zooms into your markers, renumbers the steps, speeds up stretches where the screen does not change.
+• Unlimited undo, projects save automatically.
+• Export MP4 (original, 1080p, 720p, 480p) or GIF and share instantly.
+
+RELIABLE RECORDING
+• 720p, 1080p or native; 30 or 60 fps.
+• Record with the microphone or device audio (Android 10+).
+• Countdown, pause, resume; control from the notification.
+• Light and dark themes, Vietnamese and English.
+
+PRIVATE BY DESIGN
+• No account, no ads, no data collection.
+• The app does not request the Internet permission: your videos stay on your phone.
+
+Note: copy-protected content and banking apps appear black in recordings; that is Android's protection at work.

@@ -1,0 +1,32 @@
+{
+  "_comment": "Single source of truth for everything published to the stores and the site. Fill the empty fields once; scripts and the agent playbook read from here.",
+  "app": {
+    "name": "E Screen Recorder",
+    "package": "com.huluca.escreenrecorder",
+    "version": "1.0.0",
+    "versionCode": 1,
+    "category": "TOOLS",
+    "price": "free",
+    "containsAds": false,
+    "inAppPurchases": false,
+    "minAndroid": "10 (API 29)",
+    "targetSdk": 36
+  },
+  "developer": {
+    "name": "Huluca Tech",
+    "supportEmail": "",
+    "website": "",
+    "phone": "",
+    "country": "VN"
+  },
+  "site": {
+    "baseUrl": "",
+    "_comment_baseUrl": "Where site/ is hosted, no trailing slash, e.g. https://huluca.github.io/e-screen-recorder",
+    "updated": "2026-10-27"
+  },
+  "playUrl": "https://play.google.com/store/apps/details?id=com.huluca.escreenrecorder",
+  "locales": {
+    "default": "vi-VN",
+    "additional": ["en-US"]
+  }
+}

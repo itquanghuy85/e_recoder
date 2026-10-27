@@ -1,0 +1,24 @@
+appId: com.huluca.escreenrecorder
+name: G3 join two recordings
+tags:
+  - p1
+  - module-library
+---
+- runFlow: helpers/record_clip.yaml
+- runFlow: helpers/record_clip.yaml
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    id: "library_select"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    text: ".*ESR_.*"
+    index: 1
+- assertVisible: "Đã chọn 2"
+- tapOn:
+    id: "library_join"
+- extendedWaitUntil:
+    visible: "Đã ghép xong"
+    timeout: 240000

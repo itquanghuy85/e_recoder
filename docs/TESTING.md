@@ -1,0 +1,65 @@
+# Kiểm thử
+
+## Unit / widget
+```
+flutter analyze
+flutter test
+```
+
+## Maestro (máy thật)
+Maestro CLI cài tại `D:\JOB\_tools\maestro\x\maestro\bin` (bản 2.11.0, tải từ GitHub chính thức). Lệnh `maestro` trong npm là gói khác, hỏng — không dùng.
+
+```
+$env:JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"   # bắt buộc, nếu không chữ có dấu không khớp
+$env:Path="D:\JOB\_tools\maestro\x\maestro\bin;$env:Path"
+flutter build apk --debug
+adb -s <serial> install -r build\app\outputs\flutter-apk\app-debug.apk
+maestro.bat --device <serial> test maestro\<flow>.yaml
+```
+
+Lưu ý máy Oppo/ColorOS:
+- `pm clear`, `pm grant`, `appops set` qua adb bị chặn → không dùng `clearState`; cấp quyền (overlay, thông báo) bằng tay một lần, hoặc để flow bấm hộp thoại.
+- Máy phải mở khoá màn hình; `adb shell svc power stayon true` giữ sáng khi cắm USB.
+- Nhãn thanh điều hướng của Flutter có dạng `<nhãn>\nTab n of 3` → dùng regex `text: "Thư viện.*"`.
+- Ảnh chụp của Maestro nằm ở `C:\Users\<user>\.maestro\tests\<ngày>\...`.
+
+## Máy thử
+| Serial | Máy | Android |
+|---|---|---|
+| T4E6S8IFU4AQBM8L | Oppo CPH2325 | 13 |
+| NJR8W86LKRVW7DHQ | Oppo CPH2203 | 13 (hay khoá màn hình) |
+
+## Flow
+| Flow | Giai đoạn | Nội dung |
+|---|---|---|
+| g0_smoke | G0 | Khung app, điều hướng, đổi giao diện |
+| g1_record | G1 | Quay (chấm nhỏ → nhấn giữ mở thanh): đếm ngược, tạm dừng, tiếp tục, dừng, lưu vào thư viện |
+| g1_library | G1 | Phát, đổi tên, xoá (xác nhận) |
+| g1_no_bar | G1 | Không thanh nổi/đếm ngược, âm thanh cả hai, dừng từ app, khôi phục cấu hình |
+| g2_marker_gallery | G2 | Xem thử 7 công cụ dấu, nền sáng/tối |
+| g2_live_markers | G2 | Quay thật bằng chấm nhỏ: chọn dấu trước, đổi công cụ qua khay (tự tạm dừng), mũi tên, chạm, số bước, hoàn tác |
+| g5_dot_mode | G6 | Chỉ còn 1 chấm khi quay; bấm chấm → chạm chỗ → tự thoát; nhấn giữ mở thanh; khay tạm dừng quay |
+| g6_clean_mode | G6 | Quay sạch: vùng ẩn → cú chạm bị nuốt → bấm thật; editor có sẵn 3 dấu |
+| g7_auto_direct | G6 | Quay sạch → editor → tab Tự động (phóng to, đánh số, tua đoạn đứng yên) → hoàn tác một lần → xuất |
+| g3_editor | G3 | Quay clip mẫu → mở editor → cắt, tốc độ, dấu, chữ, che, phóng → xuất 480p |
+| e1_edit_core / e2_overlays / e2b_crop_rotate / e2_pick_probe / e3_motion / e4_audio / e7_background | E1–E7 | Trình dựng chuyên nghiệp: cắt/ghép, lớp phủ, cắt-xoay, chuyển động, âm thanh (nhạc từ trình chọn), xuất nền. Chạy gộp: `scripts/qa/run_editor_batch.ps1` (xác minh file xuất bằng `verify_export.ps1`). Cần `scripts/qa/push_test_media.ps1` trước |
+| g3_gif | G3 | Cắt còn 4 s → xuất GIF |
+| g3_join | G3 | Quay 2 clip → chọn → Ghép |
+| g3_project | G3 | Thêm chữ → thoát → mở lại còn nguyên → Làm lại từ đầu → Hoàn tác |
+| store_vi / store_en | G7 | Chụp ảnh thô cho cửa hàng (vi, en) — không phải test nghiệm thu |
+| store_video_a / store_video_b | G7 | Quay video giới thiệu bằng chính app (`scripts/store/make_videos.ps1`) |
+| helpers/set_mark_mode | — | Chọn chế độ đánh dấu (env MODE, CORNER) trong Cài đặt |
+| helpers/record_clip | — | Quay ~12 s màn hình Cài đặt, để lại clip mới nhất |
+| helpers/grant_overlay | — | Cấp quyền overlay một lần (ColorOS) |
+| helpers/reset_rec_settings | — | Đưa cấu hình quay về mặc định, dừng bản quay còn sót |
+
+**Chạy flow:** `powershell -File scripts\run_flow.ps1 <tên_flow> [-Cold]` (UTF-8 JVM, loại 3uTools, `-Cold` = khởi động lạnh app; in `RESULT: PASS/FAIL`). Không dùng `launchApp: stopApp: true` (id ngữ nghĩa Flutter không xuất hiện kịp).
+`run_flow.ps1` còn: chờ cây ngữ nghĩa Flutter sẵn sàng (id `profile_card`...), canh để 3uTools (PC) không kéo app khác lên trước trong lúc chạy, và chạy lại 1 lần nếu hỏng trong 4 bước đầu (lần chạy đầu sau khi cài hay mất foreground). Ảnh `takeScreenshot` nằm ở `C:\Users\<user>\.maestro\tests\<ngày>\<tên flow>\takeScreenshot\`. Log app trên ColorOS bị ngập bởi Maestro: ghi `adb logcat` ra file song song khi cần.
+Kiểm chứng video xuất: `scripts\verify_latest.ps1` (xem rotation bằng `ffprobe -show_entries stream_side_data=rotation`).
+Bộ đếm "tự thoát chế độ chỉ điểm" ~0,9 s: flow phải bật lại chế độ trước khi bấm công cụ tiếp theo.
+Unit test Kotlin: `cd android; .\gradlew.bat :app:testDebugUnitTest --offline`.
+
+Kiểm chứng file video: `powershell -File scripts\verify_latest.ps1 [-Sheet]` (kéo bản mới nhất, in luồng bằng ffprobe, tuỳ chọn tạo ảnh lưới khung hình).
+Lưu ý: nhãn Flutter gộp nhiều Text (thẻ danh sách, thẻ cấu hình) → assert bằng regex `.*chuỗi.*`; id nút = `Semantics(identifier: ...)`.
+Hay gặp: flow hỏng ngay ở `profile_card` vì máy Oppo bị đưa về màn hình chính (sau một lần chạy hỏng, sau khi cài bản mới, hoặc khởi động lạnh). Cách xử lý: `adb shell am force-stop com.huluca.escreenrecorder`, HOME, `am start -n com.huluca.escreenrecorder/.MainActivity`, đợi ~10 s rồi chạy lại (flow nào hỏng khi "warm" thì thử `-Cold` và ngược lại). Một bản quay còn chạy dở do flow hỏng cũng làm flow sau lệch: force-stop app. Trước đây ghi nhận: lần chạy đầu sau khi cài bản mới hay hỏng ở `profile_card` (app chưa kịp lên): mở app bằng tay, đợi ~10 s rồi chạy lại. Chế độ quay sạch: lắc máy / rung phản hồi cần kiểm tay.
+Máy thử có thể bị 3uTools (PC) kéo ứng dụng khác lên trước: `adb shell am force-stop cn.tools3u.mobile`.

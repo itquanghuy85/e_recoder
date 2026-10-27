@@ -1,0 +1,18 @@
+appId: com.huluca.escreenrecorder
+name: E7 export keeps running when the app goes to the background
+tags:
+  - p0
+  - module-editor
+---
+- runFlow: helpers/open_edit.yaml
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- waitForAnimationToEnd:
+    timeout: 2000
+- pressKey: home
+- waitForAnimationToEnd:
+    timeout: 4000

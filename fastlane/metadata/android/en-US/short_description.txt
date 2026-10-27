@@ -1,0 +1,1 @@
+Screen recorder that shows where you are about to tap. Edit on device.

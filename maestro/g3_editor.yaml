@@ -1,0 +1,78 @@
+appId: com.huluca.escreenrecorder
+name: G3 editor - cut, speed, marker, text, cover, zoom, export
+tags:
+  - p0
+  - module-editor
+---
+- runFlow: helpers/record_clip.yaml
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- takeScreenshot: artifacts/g3_open
+# Move the playhead 3 s into the clip.
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+# Cut: split here, speed the second part up.
+- tapOn:
+    id: "cut_split"
+- tapOn:
+    id: "tool_speed"
+- tapOn:
+    id: "speed_2_0"
+- takeScreenshot: artifacts/g3_cut
+# Marker: an arrow whose take is on the playhead.
+- tapOn:
+    id: "tool_marker"
+- tapOn:
+    id: "add_marker_arrow"
+- takeScreenshot: artifacts/g3_marker
+- tapOn:
+    id: "overlay_delete"
+- tapOn:
+    id: "add_marker_finger"
+# Text
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "add_text"
+- tapOn:
+    id: "text_field"
+- eraseText: 30
+- inputText: "Buoc 1"
+- hideKeyboard
+- takeScreenshot: artifacts/g3_text
+# Cover and zoom
+- tapOn:
+    id: "tool_cover"
+- tapOn:
+    id: "add_cover"
+- takeScreenshot: artifacts/g3_cover
+- tapOn:
+    id: "tool_zoom"
+- tapOn:
+    id: "add_zoom"
+- takeScreenshot: artifacts/g3_zoom
+# Export at 480p
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 240000
+- takeScreenshot: artifacts/g3_export_done

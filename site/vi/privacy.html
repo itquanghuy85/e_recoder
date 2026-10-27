@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chính sách quyền riêng tư — E Screen Recorder</title>
+<meta name="description" content="E Screen Recorder không thu thập, không gửi và không chia sẻ dữ liệu của bạn. Video ở lại trên thiết bị.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="../assets/logo.png">
+<link rel="alternate" hreflang="en" href="../en/privacy.html">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="index.html"><img src="../assets/logo.png" alt="" width="34" height="34">E Screen Recorder</a>
+<nav class="main" aria-label="Điều hướng"><a href="index.html">Trang chủ</a><a href="privacy.html" aria-current="page">Quyền riêng tư</a><a href="security.html">Bảo mật</a><a href="support.html">Hỗ trợ</a></nav>
+<a class="lang" href="../en/privacy.html" hreflang="en">English</a>
+</div></header>
+<main><div class="wrap">
+
+<h1>Chính sách quyền riêng tư</h1>
+<p class="meta">Cập nhật lần cuối: {{UPDATED}}</p>
+<p class="lead">Tóm lại: video của bạn ở lại trên máy của bạn. E Screen Recorder không có tài khoản, không quảng cáo, không phân tích sử dụng và không gửi bất kỳ dữ liệu nào ra khỏi thiết bị.</p>
+<div class="card ok"><strong>Bản phát hành không có quyền Internet.</strong> Ứng dụng không khai báo quyền <code>INTERNET</code>, nên về mặt kỹ thuật nó không thể tải dữ liệu của bạn lên bất kỳ máy chủ nào.</div>
+
+<h2>1. Ai chịu trách nhiệm</h2>
+<p>{{DEVELOPER}} (nhà phát triển ứng dụng). Liên hệ: <a href="mailto:{{SUPPORT_EMAIL}}">{{SUPPORT_EMAIL}}</a>.</p>
+
+<h2>2. Dữ liệu ứng dụng xử lý trên thiết bị</h2>
+<table><thead><tr><th>Dữ liệu</th><th>Dùng để</th><th>Lưu ở đâu</th></tr></thead><tbody>
+<tr><td>Hình ảnh màn hình bạn chọn quay (sau khi bạn đồng ý trong hộp thoại của Android)</td><td>Tạo tệp video</td><td>Thư mục <code>Movies/E Screen Recorder</code> trên thiết bị</td></tr>
+<tr><td>Âm thanh micro hoặc âm thanh trong máy (chỉ khi bạn bật)</td><td>Ghi tiếng vào video</td><td>Nằm trong tệp video</td></tr>
+<tr><td>Dự án chỉnh sửa: vị trí cắt, dấu, chữ, khối che</td><td>Cho bạn sửa tiếp lần sau</td><td>Cơ sở dữ liệu cục bộ của ứng dụng</td></tr>
+<tr><td>Cài đặt: độ phân giải, giao diện, kiểu dấu</td><td>Nhớ lựa chọn của bạn</td><td>Bộ nhớ cục bộ của ứng dụng</td></tr>
+<tr><td>Ảnh GIF bạn xuất</td><td>Chia sẻ ảnh động</td><td>Thư mục <code>Pictures/E Screen Recorder</code></td></tr>
+</tbody></table>
+
+<h2>3. Những gì ứng dụng không làm</h2>
+<ul>
+<li>Không tải video, âm thanh, ảnh màn hình hay dự án lên máy chủ nào.</li>
+<li>Không dùng tài khoản, định danh quảng cáo, công cụ phân tích hay báo lỗi tự động.</li>
+<li>Không hiện quảng cáo, không bán hay chia sẻ dữ liệu cho bên thứ ba.</li>
+<li>Không đọc tin nhắn, danh bạ, vị trí, ảnh hay tệp khác trên máy của bạn.</li>
+</ul>
+<p>Chỉ khi bạn bấm <strong>Chia sẻ</strong>, tệp bạn chọn được gửi tới ứng dụng bạn chọn qua hộp thoại chia sẻ của Android. Từ lúc đó, tệp thuộc quyền của ứng dụng nhận.</p>
+
+<h2>4. Quyền Android và lý do</h2>
+<table><thead><tr><th>Quyền</th><th>Lý do</th></tr></thead><tbody>
+<tr><td>Quay màn hình (hộp thoại hệ thống, hỏi mỗi lần)</td><td>Ghi lại nội dung hiển thị. Android luôn hỏi bạn trước.</td></tr>
+<tr><td><code>FOREGROUND_SERVICE</code> (loại <em>mediaProjection</em>, <em>microphone</em>)</td><td>Giữ việc quay chạy ổn định khi bạn chuyển sang ứng dụng khác. Có thông báo đang quay.</td></tr>
+<tr><td><code>RECORD_AUDIO</code> (micro)</td><td>Chỉ khi bạn chọn quay có tiếng micro.</td></tr>
+<tr><td><code>SYSTEM_ALERT_WINDOW</code> (hiện trên ứng dụng khác)</td><td>Hiện chấm đánh dấu, đếm ngược 3·2·1 và dấu báo trước lên màn hình đang quay.</td></tr>
+<tr><td><code>POST_NOTIFICATIONS</code></td><td>Hiện nút Tạm dừng / Dừng khi đang quay.</td></tr>
+<tr><td><code>VIBRATE</code></td><td>Rung nhẹ xác nhận đã đánh dấu ở chế độ quay sạch.</td></tr>
+</tbody></table>
+
+<h2>5. Nội dung nhạy cảm trên màn hình</h2>
+<p>Màn hình có thể chứa mật khẩu, tin nhắn, số điện thoại hay thông tin tài chính. Hãy kiểm tra video trước khi chia sẻ và dùng <strong>khối che</strong> trong trình chỉnh sửa để che thông tin nhạy cảm. Chấm đánh dấu và dấu vẽ lúc quay ở chế độ "chấm nhỏ" được ghi vào video; chế độ "quay sạch" không ghi gì ngoài màn hình thật. Các ứng dụng đặt cờ bảo vệ nội dung (ví dụ ngân hàng) sẽ hiện màn hình đen trong video — đó là cơ chế bảo vệ của Android.</p>
+
+<h2>6. Trẻ em</h2>
+<p>Ứng dụng không nhắm tới trẻ em dưới 13 tuổi và không thu thập thông tin cá nhân của bất kỳ ai.</p>
+
+<h2>7. Xoá dữ liệu của bạn</h2>
+<ul>
+<li>Xoá video trong mục <strong>Thư viện</strong> của ứng dụng, hoặc bằng ứng dụng Ảnh/Tệp.</li>
+<li>Gỡ cài đặt ứng dụng sẽ xoá dự án chỉnh sửa và cài đặt. Video đã xuất nằm trong thư mục Movies/Pictures và do bạn quản lý.</li>
+<li>Vì chúng tôi không giữ dữ liệu nào của bạn, không có gì để yêu cầu xoá trên máy chủ.</li>
+</ul>
+
+<h2>8. Thay đổi chính sách</h2>
+<p>Nếu sau này ứng dụng thay đổi cách xử lý dữ liệu, chính sách này sẽ được cập nhật trước khi bản mới phát hành và ngày cập nhật ở đầu trang sẽ đổi.</p>
+
+<h2>9. Liên hệ</h2>
+<p>Câu hỏi về quyền riêng tư: <a href="mailto:{{SUPPORT_EMAIL}}">{{SUPPORT_EMAIL}}</a>.</p>
+
+</div></main>
+<footer><div class="wrap"><span>© {{YEAR}} {{DEVELOPER}}. E Screen Recorder là ứng dụng miễn phí, không quảng cáo.</span><a href="privacy.html">Quyền riêng tư</a><a href="security.html">Bảo mật</a><a href="support.html">Hỗ trợ</a></div></footer>
+</body>
+</html>

@@ -1,0 +1,51 @@
+appId: com.huluca.escreenrecorder
+name: E2-E3 speed ramp, reverse and a slide transition on a short edit, then export
+tags:
+  - p0
+  - module-editor
+---
+# [A 2 s][B1 2 s ramp 1x->3x, slide-left in][B2 rest, played backwards]. Export length: about 2 + 1.1 + (rest) s.
+- runFlow: helpers/open_edit.yaml
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "cut_split"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "cut_split"
+- tapOn:
+    id: "tool_speed"
+- runFlow: helpers/scroll_panel.yaml
+- tapOn:
+    id: "speed_reverse"
+- takeScreenshot: artifacts/e3_reverse
+- tapOn:
+    id: "tool_cut"
+- tapOn:
+    id: "seek_back"
+- tapOn:
+    id: "tool_speed"
+- tapOn:
+    id: "speed_ramp"
+- takeScreenshot: artifacts/e3_ramp
+- tapOn:
+    id: "tool_transition"
+- tapOn:
+    id: "trans_slideLeft"
+- takeScreenshot: artifacts/e3_transition
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 400000
+- takeScreenshot: artifacts/e3_export_done

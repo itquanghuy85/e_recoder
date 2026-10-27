@@ -1,0 +1,28 @@
+appId: com.huluca.escreenrecorder
+name: Helper - record a short clip of the Settings app (about 12 s)
+tags:
+  - helper
+---
+# Leaves a fresh, known-length recording at the top of the library.
+- runFlow: reset_rec_settings.yaml
+- runFlow: start_recording.yaml
+- launchApp:
+    appId: ${OTHER_APP || 'com.android.settings'}
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Bật chế độ chỉ điểm"
+    timeout: 15000
+- scroll
+- scroll
+- scroll
+- scroll
+- scroll
+- scroll
+- longPressOn: "Bật chế độ chỉ điểm"
+- tapOn: "Dừng quay"
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 25000

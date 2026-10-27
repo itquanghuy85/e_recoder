@@ -1,0 +1,532 @@
+{
+  "@@locale": "vi",
+  "appTitle": "E Screen Recorder",
+  "navRecord": "Quay",
+  "navLibrary": "Thư viện",
+  "navSettings": "Cài đặt",
+  "cancel": "Huỷ",
+  "save": "Lưu",
+  "close": "Đóng",
+  "recordStart": "Bắt đầu quay",
+  "recordStop": "Dừng quay",
+  "recordPause": "Tạm dừng",
+  "recordResume": "Tiếp tục",
+  "recentTitle": "Gần đây",
+  "seeAll": "Xem tất cả",
+  "libraryEmptyTitle": "Chưa có video nào",
+  "libraryEmptyBody": "Quay màn hình đầu tiên của bạn, video sẽ nằm ở đây.",
+  "profileTitle": "Cấu hình quay",
+  "resetDefaults": "Khôi phục mặc định",
+  "optResolution": "Độ phân giải",
+  "optFps": "Tốc độ khung hình",
+  "optQuality": "Chất lượng",
+  "optAudio": "Âm thanh",
+  "optCountdown": "Đếm ngược",
+  "optFloatingBar": "Dấu đánh dấu khi quay",
+  "floatingBarHint": "Bật để đánh dấu khi quay (chấm nhỏ ở góc hoặc quay sạch, chọn trong Cài đặt). Tắt để chỉ điều khiển bằng thông báo.",
+  "resolution720": "720p",
+  "resolution1080": "1080p",
+  "resolutionNative": "Gốc",
+  "fpsValue": "{fps} fps",
+  "@fpsValue": {
+    "placeholders": {
+      "fps": {
+        "type": "int"
+      }
+    }
+  },
+  "qualityLow": "Nhẹ",
+  "qualityBalanced": "Cân bằng",
+  "qualityHigh": "Nét",
+  "audioNone": "Không có",
+  "audioMic": "Micro",
+  "audioSystem": "Âm thanh máy",
+  "audioBoth": "Cả hai",
+  "countdownOff": "Tắt",
+  "countdownSeconds": "{n} giây",
+  "@countdownSeconds": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "profileSummary": "{resolution} · {fps} fps · {quality}",
+  "@profileSummary": {
+    "placeholders": {
+      "resolution": {
+        "type": "String"
+      },
+      "fps": {
+        "type": "int"
+      },
+      "quality": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEdit": "Chỉnh cấu hình quay",
+  "statusRecording": "Đang quay",
+  "statusPaused": "Đã tạm dừng",
+  "statusCountdown": "Sắp quay…",
+  "statusSaving": "Đang lưu video…",
+  "recordingHint": "Mở ứng dụng bạn muốn quay. Bấm chấm nhỏ ở góc để đánh dấu chỗ sắp bấm; nhấn giữ chấm để mở thanh điều khiển.",
+  "recordingHintNoBar": "Mở ứng dụng bạn muốn quay. Điều khiển bằng thông báo.",
+  "recordingHintClean": "Mở ứng dụng bạn muốn quay. Chạm vùng ẩn ở góc, chạm chỗ sắp bấm (máy rung nhẹ), rồi bấm thật. Dừng bằng thông báo.",
+  "savedSnack": "Đã lưu {name}",
+  "@savedSnack": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "actionView": "Xem",
+  "errLowStorage": "Bộ nhớ sắp đầy. Hãy giải phóng dung lượng rồi quay lại.",
+  "errMic": "Cần quyền micro để quay có tiếng. Chọn âm thanh \"Không có\" hoặc cấp quyền trong Cài đặt của máy.",
+  "errOverlay": "Cần quyền hiển thị trên ứng dụng khác để dùng đếm ngược và thanh nổi. Bật quyền rồi quay lại ứng dụng.",
+  "errStart": "Không bắt đầu quay được. Hãy thử lại.",
+  "errCapture": "Quá trình quay bị gián đoạn.",
+  "errEmpty": "Video không có dữ liệu. Hãy quay lại.",
+  "errSave": "Không lưu được video vào bộ nhớ máy.",
+  "libraryTitle": "Thư viện",
+  "menuShare": "Chia sẻ",
+  "menuRename": "Đổi tên",
+  "menuDelete": "Xoá",
+  "menuEdit": "Chỉnh sửa",
+  "menuMore": "Thao tác khác",
+  "renameTitle": "Đổi tên video",
+  "renameField": "Tên video",
+  "deleteTitle": "Xoá video này?",
+  "deleteBody": "{name} sẽ bị xoá khỏi máy và không khôi phục được.",
+  "@deleteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteDone": "Đã xoá video",
+  "needsPermission": "Video này do bản cài trước tạo nên hệ thống không cho sửa. Hãy xoá bằng ứng dụng Thư viện của máy.",
+  "genericError": "Không thực hiện được. Hãy thử lại.",
+  "videoMeta": "{date} · {size}",
+  "@videoMeta": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "playerError": "Không phát được video này.",
+  "playVideo": "Phát",
+  "pauseVideo": "Dừng phát",
+  "settingsMarkers": "Dấu đánh dấu",
+  "settingsMarkersSub": "Ngón tay, mũi tên, vòng tròn… báo trước chỗ sắp bấm",
+  "settingsMarkersHint": "Dấu hiện lên và được ghi vào video trước khi bạn bấm, để người xem biết sẽ bấm vào đâu.",
+  "markerPreviewTitle": "Xem thử",
+  "previewLight": "Nền sáng",
+  "previewDark": "Nền tối",
+  "previewMockSave": "Lưu",
+  "markerDefaultTool": "Dấu mặc định",
+  "markerFinger": "Ngón tay",
+  "markerRipple": "Chạm",
+  "markerArrow": "Mũi tên",
+  "markerCircle": "Vòng tròn",
+  "markerRect": "Khung",
+  "markerPen": "Bút",
+  "markerNumber": "Số bước",
+  "markerColor": "Màu",
+  "colorRed": "Đỏ",
+  "colorAmber": "Vàng",
+  "colorGreen": "Xanh lá",
+  "colorCyan": "Xanh lơ",
+  "colorMagenta": "Hồng",
+  "colorWhite": "Trắng",
+  "colorBlack": "Đen",
+  "markerThickness": "Độ dày nét",
+  "thicknessThin": "Mảnh",
+  "thicknessMedium": "Vừa",
+  "thicknessThick": "Dày",
+  "adjustScale": "Cỡ",
+  "adjustRotate": "Xoay",
+  "adjustOpacity": "Độ trong",
+  "markerAdjustNote": "Cỡ, xoay và độ trong chỉ để xem thử. Khi quay, hãy chụm hai ngón để đổi cỡ và xoay dấu.",
+  "markerHold": "Giữ dấu sau khi đặt xong",
+  "holdSeconds": "{s} giây",
+  "@holdSeconds": {
+    "placeholders": {
+      "s": {
+        "type": "String"
+      }
+    }
+  },
+  "markerAutoExit": "Tự thoát chế độ chỉ điểm sau khi đặt",
+  "markerAutoExitHint": "Đặt dấu xong, thanh nổi trở về bình thường để bạn bấm thật vào đích.",
+  "markerBarNote": "Thanh nổi và dấu sẽ hiện trong video.",
+  "splashTagline": "Cho người xem biết trước chỗ bạn sắp bấm",
+  "markModeTitle": "Cách đánh dấu khi quay",
+  "markModeDot": "Chấm nhỏ ở góc",
+  "markModeDotHint": "Chọn dấu trước. Khi quay chỉ còn một chấm nhỏ: bấm chấm, chạm vào chỗ sắp bấm, rồi mới bấm thật. Chấm và dấu hiện trong video.",
+  "markModeClean": "Quay sạch, dựng sau",
+  "markModeCleanHint": "Màn hình không có gì chen vào. Chạm vùng ẩn ở góc, chạm chỗ sắp bấm (máy rung nhẹ), rồi bấm thật. Dấu được vẽ đẹp trong trình chỉnh sửa.",
+  "markCornerTitle": "Vị trí chấm và vùng ẩn",
+  "cornerTL": "Trên trái",
+  "cornerTR": "Trên phải",
+  "cornerBL": "Dưới trái",
+  "cornerBR": "Dưới phải",
+  "markShake": "Lắc máy để đánh dấu",
+  "markShakeHint": "Lắc hai lần để bắt đầu đánh dấu. Cú lắc có thể làm rung video.",
+  "markDotNote": "Nhấn giữ chấm để mở thanh điều khiển và đổi dấu (video tạm dừng khi chọn dấu, nên bảng chọn không lọt vào video).",
+  "markCleanNote": "Chế độ sạch cũng có nút “Đánh dấu” trong thông báo. Vùng ẩn ở góc không nhìn thấy trong video.",
+  "toolAuto": "Tự động",
+  "autoTitle": "Dựng tự động",
+  "autoHint": "Tự phóng to vào chỗ đánh dấu, đánh số lại các bước và tua nhanh đoạn màn hình đứng yên. Mọi thứ vẫn sửa và hoàn tác được.",
+  "autoZoomOpt": "Phóng to vào dấu",
+  "autoNumberOpt": "Đánh số lại các bước",
+  "autoIdleOpt": "Tua nhanh đoạn đứng yên",
+  "autoRun": "Dựng tự động",
+  "autoRunning": "Đang phân tích video…",
+  "autoDone": "Xong: {zooms} phóng to, {steps} bước đánh số, {idle} đoạn tua nhanh.",
+  "@autoDone": {
+    "placeholders": {
+      "zooms": {
+        "type": "int"
+      },
+      "steps": {
+        "type": "int"
+      },
+      "idle": {
+        "type": "int"
+      }
+    }
+  },
+  "autoNothing": "Không có gì để dựng thêm. Hãy thêm dấu hoặc quay đoạn dài hơn.",
+  "autoAfterRec": "Sau khi quay sạch",
+  "onbSkip": "Bỏ qua",
+  "onbNext": "Tiếp",
+  "onbStart": "Bắt đầu dùng",
+  "onbTitle1": "Người xem luôn biết bạn sắp bấm vào đâu",
+  "onbBody1": "Dấu hiện lên trước, màn hình đổi sau. Video hướng dẫn của bạn dễ theo dõi hơn nhiều.",
+  "onbTitle2": "Ba bước để chỉ điểm",
+  "onbStep1": "Khi đang quay, bật chế độ chỉ điểm trên thanh nổi, chọn dấu rồi đặt lên đích.",
+  "onbStep2": "Chế độ tự tắt sau khi đặt. Dấu vòng vàng thu vào đích, rồi giữ lại vài giây.",
+  "onbStep3": "Bấm thật vào đích. Người xem đã biết cần nhìn vào đâu.",
+  "onbTitle3": "Cho phép vài quyền",
+  "onbBody3": "Chỉ xin những quyền thật sự cần. Video luôn nằm trên máy của bạn.",
+  "permOverlayTitle": "Hiện trên ứng dụng khác",
+  "permOverlayBody": "Để hiện thanh nổi, đếm ngược và dấu đánh dấu trên màn hình lúc quay.",
+  "permMicTitle": "Micro",
+  "permMicBody": "Chỉ dùng khi bạn chọn quay có tiếng.",
+  "permNotifTitle": "Thông báo",
+  "permNotifBody": "Hiện nút Tạm dừng và Dừng khi đang quay.",
+  "permBatteryTitle": "Quay lâu không bị ngắt",
+  "permBatteryBody": "Một số máy (Xiaomi, Oppo, Vivo, Samsung) tự tắt ứng dụng chạy nền. Vào cài đặt ứng dụng và đặt Pin thành không hạn chế.",
+  "permGranted": "Đã cấp",
+  "permGrant": "Cấp quyền",
+  "permOpenSettings": "Mở cài đặt ứng dụng",
+  "settingsPermissions": "Quyền và pin",
+  "settingsPermissionsSub": "Kiểm tra các quyền cần để quay",
+  "settingsGuide": "Hướng dẫn",
+  "settingsGuideSub": "Xem lại cách dùng dấu báo trước",
+  "settingsPrivacy": "Quyền riêng tư",
+  "settingsPrivacySub": "Video ở lại trên máy của bạn",
+  "settingsAbout": "Giới thiệu",
+  "settingsAboutSub": "Phiên bản và thông tin ứng dụng",
+  "aboutVersion": "Phiên bản {v}",
+  "@aboutVersion": {
+    "placeholders": {
+      "v": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutBody": "E Screen Recorder là ứng dụng quay màn hình miễn phí, không quảng cáo, không cần tài khoản.",
+  "aboutLicenses": "Phông chữ Barlow theo giấy phép SIL OFL. Biểu tượng bàn tay dựa trên Material Icons (Apache-2.0).",
+  "privacyH1": "Video ở lại trên máy",
+  "privacyP1": "Mọi video, dự án chỉnh sửa và ảnh chụp đều được lưu trên chính thiết bị của bạn. Ứng dụng không tải video, âm thanh hay màn hình lên máy chủ nào.",
+  "privacyH2": "Không tài khoản, không theo dõi",
+  "privacyP2": "Ứng dụng không yêu cầu đăng nhập, không có quảng cáo và không thu thập số liệu sử dụng hay định danh thiết bị.",
+  "privacyH3": "Quyền dùng để làm gì",
+  "privacyP3": "Quay màn hình: để ghi lại nội dung hiển thị khi bạn đồng ý trong hộp thoại của hệ thống. Micro: chỉ khi bạn chọn quay có tiếng. Hiện trên ứng dụng khác: để hiện thanh điều khiển và dấu đánh dấu. Thông báo: để hiện nút Tạm dừng và Dừng.",
+  "privacyH4": "Nội dung nhạy cảm",
+  "privacyP4": "Video quay màn hình có thể chứa mật khẩu, tin nhắn hay số điện thoại. Hãy dùng khối che trong trình chỉnh sửa trước khi chia sẻ. Ứng dụng chỉ chia sẻ khi bạn chọn Chia sẻ.",
+  "privacyH5": "Xoá dữ liệu",
+  "privacyP5": "Xoá video trong Thư viện hoặc gỡ cài đặt ứng dụng để xoá dự án chỉnh sửa. Video đã xuất nằm trong thư mục Movies/E Screen Recorder và Pictures/E Screen Recorder.",
+  "toolCut": "Cắt",
+  "toolMarker": "Dấu",
+  "toolText": "Chữ",
+  "toolCover": "Che",
+  "toolZoom": "Phóng",
+  "splitHere": "Cắt tại đây",
+  "deleteSegment": "Xoá đoạn",
+  "moveLeft": "Dịch đoạn sang trái",
+  "moveRight": "Dịch đoạn sang phải",
+  "segmentSpeed": "Tốc độ đoạn này",
+  "trimHint": "Chạm đoạn trên timeline rồi kéo hai đầu để cắt bớt.",
+  "markerAddHint": "Đưa đầu phát tới đúng lúc bạn bấm. Dấu sẽ hiện báo trước 0,5 giây, rồi mới tới lúc bấm.",
+  "clipHold": "Giữ dấu",
+  "clipLength": "Thời lượng",
+  "textAdd": "Thêm chữ",
+  "textHint": "Chữ nằm trên video và không bị phóng to theo hiệu ứng phóng.",
+  "textField": "Nội dung",
+  "textSize": "Cỡ chữ",
+  "coverAdd": "Thêm khối che",
+  "coverHint": "Khối đặc che số điện thoại, mật khẩu… khỏi người xem. Kéo trên video để đặt vị trí.",
+  "coverWidth": "Rộng",
+  "coverHeight": "Cao",
+  "zoomAdd": "Thêm phóng to",
+  "zoomHint": "Phóng to vào một vùng rồi thu lại êm ái.",
+  "zoomScale": "Mức phóng",
+  "zoomDragHint": "Kéo trên video để chọn vùng sẽ phóng vào.",
+  "undo": "Hoàn tác",
+  "redo": "Làm lại",
+  "exportAction": "Xuất",
+  "exportTitle": "Xuất video",
+  "exportSummary": "Thời lượng {duration}",
+  "@exportSummary": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFormat": "Định dạng",
+  "formatMp4": "MP4",
+  "formatGif": "GIF",
+  "exportQuality": "Chất lượng",
+  "qualityOriginal": "Gốc",
+  "resolution480": "480p",
+  "gifHint": "GIF nhẹ, không có tiếng. Đẹp nhất với đoạn ngắn dưới 15 giây.",
+  "exportStart": "Bắt đầu xuất",
+  "exportRunning": "Đang xuất {pct}%",
+  "@exportRunning": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
+  "exportDone": "Đã xuất xong",
+  "exportError": "Xuất không thành công. Hãy thử lại.",
+  "timelineSummary": "Dòng thời gian: {segments} đoạn, {markers} dấu, {texts} chữ, {covers} khối che, {zooms} phóng to",
+  "@timelineSummary": {
+    "placeholders": {
+      "segments": {
+        "type": "int"
+      },
+      "markers": {
+        "type": "int"
+      },
+      "texts": {
+        "type": "int"
+      },
+      "covers": {
+        "type": "int"
+      },
+      "zooms": {
+        "type": "int"
+      }
+    }
+  },
+  "selectMode": "Chọn",
+  "selectedCount": "Đã chọn {n}",
+  "@selectedCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "joinAction": "Ghép",
+  "joinTitle": "Ghép video",
+  "joinSummary": "Ghép {n} video theo thứ tự đã chọn.",
+  "@joinSummary": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "joinDone": "Đã ghép xong",
+  "resetProject": "Làm lại từ đầu",
+  "resetTitle": "Bỏ mọi chỉnh sửa?",
+  "resetBody": "Video gốc không bị ảnh hưởng. Bạn vẫn có thể bấm Hoàn tác ngay sau đó.",
+  "seekBack": "Lùi 1 giây",
+  "seekForward": "Tiến 1 giây",
+  "timelineZoomOut": "Thu nhỏ timeline",
+  "timelineZoomIn": "Phóng to timeline",
+  "editorLoadError": "Không mở được video để chỉnh sửa.",
+  "settingsTheme": "Giao diện",
+  "themeSystem": "Theo hệ thống",
+  "themeLight": "Sáng",
+  "themeDark": "Tối",
+  "toolSpeed": "Tốc độ",
+  "toolTransition": "Chuyển cảnh",
+  "toolAudio": "Âm thanh",
+  "editFreeze": "Đóng băng khung",
+  "editDuplicate": "Nhân đôi",
+  "editBlank": "Để trống",
+  "editMultiSelect": "Chọn nhiều",
+  "editMultiHint": "Chạm các đoạn để chọn; thao tác áp cho tất cả đoạn đã chọn.",
+  "frameBack": "Lùi 1 khung hình",
+  "frameForward": "Tiến 1 khung hình",
+  "timelineFit": "Vừa khung",
+  "reorderHint": "Giữ một đoạn rồi trượt ngang để đổi thứ tự.",
+  "speedFree": "Tốc độ tự do",
+  "speedRamp": "Đổi tốc độ dần",
+  "speedRampFrom": "Đầu đoạn",
+  "speedRampTo": "Cuối đoạn",
+  "speedReverse": "Chạy ngược",
+  "speedReverseHint": "Chạy ngược không có tiếng và tối đa 30 giây cho mỗi đoạn.",
+  "speedStillHint": "Đây là khung đóng băng: chỉ chỉnh được thời lượng.",
+  "freezeLength": "Thời lượng đóng băng",
+  "transNone": "Không",
+  "transDipBlack": "Mờ qua đen",
+  "transDipWhite": "Mờ qua trắng",
+  "transSlideLeft": "Trượt trái",
+  "transSlideRight": "Trượt phải",
+  "transSlideUp": "Trượt lên",
+  "transSlideDown": "Trượt xuống",
+  "transZoom": "Phóng mờ",
+  "transLength": "Thời lượng",
+  "transApplyAll": "Áp dụng mọi điểm cắt",
+  "transFirstHint": "Đoạn đầu không có chuyển cảnh. Chọn đoạn từ thứ 2 trở đi.",
+  "transHint": "Chuyển cảnh nằm ở chỗ nối vào đoạn đang chọn; tổng thời lượng video không đổi.",
+  "audioVolume": "Âm lượng",
+  "audioMute": "Tắt tiếng đoạn này",
+  "audioFadeIn": "Mờ vào",
+  "audioFadeOut": "Mờ ra",
+  "audioStillHint": "Khung đóng băng và đoạn trống không có tiếng.",
+  "toolPicture": "Hình",
+  "toolOverlay": "Lớp phủ",
+  "picRotate": "Xoay 90°",
+  "picCrop": "Cắt khung",
+  "picCropReset": "Bỏ cắt khung",
+  "picAspect": "Tỉ lệ khung xuất",
+  "aspectAuto": "Gốc",
+  "aspect916": "9:16",
+  "aspect11": "1:1",
+  "aspect45": "4:5",
+  "aspect169": "16:9",
+  "picFit": "Viền đen",
+  "picFill": "Lấp đầy",
+  "picFitHint": "Khung khác tỉ lệ: thêm viền đen hoặc lấp đầy và cắt phần thừa.",
+  "picFilters": "Màu sắc",
+  "presetNone": "Gốc",
+  "presetVivid": "Rực rỡ",
+  "presetWarm": "Ấm",
+  "presetCool": "Lạnh",
+  "presetBw": "Đen trắng",
+  "presetVintage": "Hoài cổ",
+  "presetFade": "Nhạt",
+  "colorBrightness": "Độ sáng",
+  "colorContrast": "Tương phản",
+  "colorSaturation": "Bão hoà",
+  "colorWarmth": "Nhiệt độ",
+  "picRotateNote": "Xoay và cắt khung nên làm trước khi thêm dấu; dấu đã đặt có thể lệch.",
+  "cropTitle": "Cắt khung hình",
+  "cropDone": "Xong",
+  "ovAddImage": "Thêm ảnh",
+  "ovAddPip": "Hình trong hình",
+  "ovPipHint": "Chọn ảnh hoặc video ngắn (tối đa 30 giây) đặt ở góc màn hình.",
+  "shapeRect": "Khung chữ nhật",
+  "shapeEllipse": "Hình tròn",
+  "shapeLine": "Đường thẳng",
+  "shapeArrow": "Mũi tên",
+  "shapeBubble": "Chú thích",
+  "ovWidth": "Độ rộng",
+  "ovOpacity": "Độ mờ",
+  "ovRotation": "Xoay",
+  "ovStroke": "Độ dày nét",
+  "ovFilled": "Tô đầy",
+  "ovBubbleText": "Chữ trong chú thích",
+  "ovPipVolume": "Âm thanh",
+  "ovPipStart": "Bắt đầu tại",
+  "ovPipLength": "Thời lượng",
+  "ovHint": "Thêm ảnh, hình vẽ, chú thích hoặc hình trong hình; kéo trên màn hình để đặt vị trí, chụm hai ngón để đổi cỡ và xoay.",
+  "motionTitle": "Chuyển động",
+  "motionEnter": "Xuất hiện",
+  "motionExit": "Biến mất",
+  "motionNone": "Không",
+  "motionFade": "Mờ dần",
+  "motionPop": "Nảy lên",
+  "motionSlideUp": "Trượt lên",
+  "motionSlideDown": "Trượt xuống",
+  "motionSlideLeft": "Trượt trái",
+  "motionSlideRight": "Trượt phải",
+  "motionKeyframe": "Di chuyển đến vị trí cuối",
+  "motionSetEnd": "Đặt vị trí hiện tại làm điểm cuối",
+  "motionClear": "Bỏ chuyển động",
+  "motionEase": "Nhịp chuyển động",
+  "easeLinear": "Đều",
+  "easeIn": "Chậm rồi nhanh",
+  "easeOut": "Nhanh rồi chậm",
+  "easeInOut": "Mượt",
+  "textFont": "Phông chữ",
+  "fontBarlow": "Barlow",
+  "fontSans": "Hiện đại",
+  "fontCondensed": "Hẹp",
+  "fontSerif": "Có chân",
+  "fontMono": "Đơn cách",
+  "fontCursive": "Viết tay",
+  "textOutline": "Viền chữ",
+  "textBox": "Nền chữ",
+  "textShadow": "Đổ bóng",
+  "textBold": "In đậm",
+  "textAlignLabel": "Căn lề",
+  "alignLeft": "Trái",
+  "alignCenter": "Giữa",
+  "alignRight": "Phải",
+  "autoStepLabels": "Thêm chữ Bước N cho dấu số",
+  "audioTracks": "Nhạc và giọng nói",
+  "audioAddMusic": "Thêm nhạc từ máy",
+  "audioRecordVoice": "Thu giọng nói",
+  "audioStopVoice": "Dừng thu",
+  "audioVoiceHint": "Nên dùng tai nghe để giọng nói không lẫn tiếng từ loa.",
+  "audioStartAt": "Bắt đầu tại",
+  "audioLoop": "Lặp lại đến hết video",
+  "audioDuck": "Hạ nhạc khi có giọng nói",
+  "audioNormalize": "Chuẩn hoá âm lượng",
+  "audioNormalized": "Đã chuẩn hoá âm lượng",
+  "audioNoSound": "Đoạn này không có tiếng để đo.",
+  "audioMicDenied": "Cần quyền micro để thu giọng nói.",
+  "audioMusicName": "Nhạc",
+  "audioVoiceName": "Giọng nói",
+  "audioTracksNone": "Chưa có nhạc hay giọng nói.",
+  "exportPreset": "Mẫu xuất",
+  "presetCustom": "Tuỳ chọn",
+  "presetYoutube": "YouTube 1080p",
+  "presetVertical": "TikTok / Reels 9:16",
+  "presetShare": "Gửi nhanh (≤ 24 MB)",
+  "presetGif": "Ảnh GIF",
+  "presetVerticalNote": "Khung xuất sẽ đổi sang 9:16.",
+  "exportEstimate": "Dung lượng ước tính {size}",
+  "@exportEstimate": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "exportCapMissed": "Video quá dài để vừa 24 MB: chất lượng sẽ thấp. Hãy cắt ngắn bớt.",
+  "exportStill": "Lưu khung hình này thành ảnh",
+  "stillSaved": "Đã lưu ảnh vào thư viện ảnh",
+  "exportBackgroundHint": "Có thể thoát app: thông báo sẽ cho biết khi xuất xong.",
+  "templateSave": "Lưu làm mẫu",
+  "templateApply": "Dùng mẫu",
+  "templateName": "Tên mẫu",
+  "templateNone": "Chưa có mẫu nào.",
+  "templateApplied": "Đã áp dụng mẫu",
+  "templateSaved": "Đã lưu mẫu",
+  "templateDelete": "Xoá mẫu",
+  "menuTemplates": "Mẫu dự án",
+  "exportNotifTitle": "Đang xuất video",
+  "exportNotifDone": "Xuất xong. Chạm để mở.",
+  "exportNotifFailed": "Xuất không thành công.",
+  "stepLabelPrefix": "Bước ",
+  "speedMuteFast": "Tắt tiếng khi nhanh hơn 2×",
+  "iosNoRecording": "Bản iOS chưa quay được màn hình. Hiện có thư viện và trình chỉnh sửa; quay màn hình và dấu nổi trên ứng dụng khác chỉ có trên Android."
+}

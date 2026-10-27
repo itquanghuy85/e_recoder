@@ -1,0 +1,83 @@
+appId: com.huluca.escreenrecorder
+name: G2 live markers - choose the tool beforehand, one dot, point first then press the real target
+tags:
+  - p0
+  - module-marker
+---
+# Preconditions: overlay permission granted. The dot is the only thing on screen while recording.
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_dot
+      CORNER: corner_3
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: ${OTHER_APP || 'com.android.settings'}
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Bật chế độ chỉ điểm"
+    timeout: 15000
+# 1) Finger (the default tool): dot -> touch the spot -> back to idle by itself.
+- tapOn: "Bật chế độ chỉ điểm"
+- tapOn:
+    point: 50%, 46%
+- takeScreenshot: artifacts/g2_finger_live
+- extendedWaitUntil:
+    visible: "Bật chế độ chỉ điểm"
+    timeout: 4000
+# 2) Switch tools through the picker (the recording pauses while it is open), place an arrow.
+- longPressOn: "Bật chế độ chỉ điểm"
+- tapOn: "Chọn dấu.*"
+- tapOn: "Công cụ mũi tên"
+- takeScreenshot: artifacts/g2_tray
+- tapOn: "Xong chọn dấu"
+- tapOn:
+    text: "Đã quay.*"
+- tapOn: "Bật chế độ chỉ điểm"
+- swipe:
+    start: 88%, 46%
+    end: 66%, 33%
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 1800
+- takeScreenshot: artifacts/g2_arrow_live
+- extendedWaitUntil:
+    visible: "Bật chế độ chỉ điểm"
+    timeout: 4000
+# 3) Ripple, then number, then undo the number and clear, all from the picker.
+- longPressOn: "Bật chế độ chỉ điểm"
+- tapOn: "Chọn dấu.*"
+- tapOn: "Công cụ chạm"
+- tapOn: "Xong chọn dấu"
+- tapOn:
+    text: "Đã quay.*"
+- tapOn: "Bật chế độ chỉ điểm"
+- tapOn:
+    point: 50%, 45%
+- extendedWaitUntil:
+    visible: "Bật chế độ chỉ điểm"
+    timeout: 4000
+- longPressOn: "Bật chế độ chỉ điểm"
+- tapOn: "Chọn dấu.*"
+- tapOn: "Công cụ số bước"
+- tapOn: "Hoàn tác dấu"
+- tapOn: "Xoá hết dấu"
+- tapOn: "Xong chọn dấu"
+- tapOn:
+    text: "Đã quay.*"
+# The next tap reaches the app underneath (the dot is not in the way).
+- tapOn:
+    text: "Vị trí.*"
+    optional: true
+- back
+- longPressOn: "Bật chế độ chỉ điểm"
+- tapOn: "Dừng quay"
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 20000

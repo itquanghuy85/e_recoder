@@ -1,0 +1,42 @@
+appId: com.huluca.escreenrecorder
+name: G1 library - play, rename, delete
+tags:
+  - p1
+  - module-library
+---
+# Needs at least one recording (run g1_record.yaml first). Deletes only the clip it renames.
+- launchApp:
+    stopApp: false
+- tapOn:
+    text: "Thư viện.*"
+# Play the newest clip.
+- tapOn:
+    text: "ESR_.*"
+    index: 0
+- assertVisible: "Phát"
+- tapOn:
+    id: "player_toggle"
+- assertVisible: "Dừng phát"
+- takeScreenshot: artifacts/g1_player
+- back
+# Rename the newest clip.
+- tapOn:
+    text: "Thao tác khác"
+    index: 0
+- tapOn: "Đổi tên"
+- eraseText: 60
+- inputText: "demo clip"
+- tapOn: "Lưu"
+- assertVisible: ".*demo clip\\.mp4.*"
+- takeScreenshot: artifacts/g1_renamed
+# Delete it: confirmation first, destructive button is outlined.
+- tapOn:
+    text: "Thao tác khác"
+    index: 0
+- tapOn: "Xoá"
+- assertVisible: "Xoá video này?"
+- takeScreenshot: artifacts/g1_delete_dialog
+- tapOn:
+    id: "delete_confirm"
+- assertVisible: "Đã xoá video"
+- assertNotVisible: ".*demo clip\\.mp4.*"

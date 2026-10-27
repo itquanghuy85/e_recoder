@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy — E Screen Recorder</title>
+<meta name="description" content="E Screen Recorder does not collect, send or share your data. Your videos stay on your device.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="../assets/logo.png">
+<link rel="alternate" hreflang="vi" href="../vi/privacy.html">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site"><div class="wrap">
+<a class="brand" href="index.html"><img src="../assets/logo.png" alt="" width="34" height="34">E Screen Recorder</a>
+<nav class="main" aria-label="Main"><a href="index.html">Home</a><a href="privacy.html" aria-current="page">Privacy</a><a href="security.html">Security</a><a href="support.html">Support</a></nav>
+<a class="lang" href="../vi/privacy.html" hreflang="vi">Tiếng Việt</a>
+</div></header>
+<main><div class="wrap">
+
+<h1>Privacy Policy</h1>
+<p class="meta">Last updated: {{UPDATED}}</p>
+<p class="lead">In short: your videos stay on your phone. E Screen Recorder has no accounts, no ads, no analytics and sends no data off your device.</p>
+<div class="card ok"><strong>The release build has no Internet permission.</strong> The app does not declare <code>INTERNET</code>, so technically it cannot upload your data to any server.</div>
+
+<h2>1. Who is responsible</h2>
+<p>{{DEVELOPER}} (the app developer). Contact: <a href="mailto:{{SUPPORT_EMAIL}}">{{SUPPORT_EMAIL}}</a>.</p>
+
+<h2>2. Data the app handles on your device</h2>
+<table><thead><tr><th>Data</th><th>Used for</th><th>Stored</th></tr></thead><tbody>
+<tr><td>What is on screen when you choose to record (after you agree in Android's dialog)</td><td>Creating the video file</td><td><code>Movies/E Screen Recorder</code> on the device</td></tr>
+<tr><td>Microphone or device audio (only if you turn it on)</td><td>Adding sound to the video</td><td>Inside the video file</td></tr>
+<tr><td>Edit projects: cuts, markers, text, covers</td><td>Letting you continue editing later</td><td>The app's local database</td></tr>
+<tr><td>Settings: resolution, theme, marker style</td><td>Remembering your choices</td><td>The app's local storage</td></tr>
+<tr><td>GIFs you export</td><td>Sharing animated images</td><td><code>Pictures/E Screen Recorder</code></td></tr>
+</tbody></table>
+
+<h2>3. What the app does not do</h2>
+<ul>
+<li>It does not upload videos, audio, screenshots or projects to any server.</li>
+<li>It uses no accounts, advertising IDs, analytics or automatic crash reporting.</li>
+<li>It shows no ads and does not sell or share data with third parties.</li>
+<li>It does not read your messages, contacts, location, photos or other files.</li>
+</ul>
+<p>Only when you tap <strong>Share</strong> is the file you chose sent to the app you choose through Android's share sheet. From then on the file belongs to the receiving app.</p>
+
+<h2>4. Android permissions and why</h2>
+<table><thead><tr><th>Permission</th><th>Why</th></tr></thead><tbody>
+<tr><td>Screen capture (system dialog, asked every time)</td><td>To record what is on screen. Android always asks you first.</td></tr>
+<tr><td><code>FOREGROUND_SERVICE</code> (types <em>mediaProjection</em>, <em>microphone</em>)</td><td>Keeps recording reliable while you use other apps. A recording notification is shown.</td></tr>
+<tr><td><code>RECORD_AUDIO</code> (microphone)</td><td>Only if you choose to record with microphone sound.</td></tr>
+<tr><td><code>SYSTEM_ALERT_WINDOW</code> (display over other apps)</td><td>To show the marker dot, the 3·2·1 countdown and point-ahead markers on the screen being recorded.</td></tr>
+<tr><td><code>POST_NOTIFICATIONS</code></td><td>To show Pause / Stop buttons while recording.</td></tr>
+<tr><td><code>VIBRATE</code></td><td>A light buzz confirming a marker in clean-recording mode.</td></tr>
+</tbody></table>
+
+<h2>5. Sensitive content on screen</h2>
+<p>Your screen may show passwords, messages, phone numbers or financial details. Review your video before sharing and use the <strong>cover</strong> tool in the editor to hide sensitive information. The marker dot and markers drawn while recording in "small dot" mode are recorded into the video; "clean" mode records nothing but the real screen. Apps that protect their content (for example banking apps) appear black in recordings — that is Android's protection at work.</p>
+
+<h2>6. Children</h2>
+<p>The app is not directed to children under 13 and does not collect personal information from anyone.</p>
+
+<h2>7. Deleting your data</h2>
+<ul>
+<li>Delete videos in the app's <strong>Library</strong>, or with your Photos/Files app.</li>
+<li>Uninstalling the app removes edit projects and settings. Exported videos live in Movies/Pictures and are yours to manage.</li>
+<li>Because we hold no data about you, there is nothing to delete on a server.</li>
+</ul>
+
+<h2>8. Changes to this policy</h2>
+<p>If the app ever changes how it handles data, this policy will be updated before the new version ships, and the date at the top will change.</p>
+
+<h2>9. Contact</h2>
+<p>Privacy questions: <a href="mailto:{{SUPPORT_EMAIL}}">{{SUPPORT_EMAIL}}</a>.</p>
+
+</div></main>
+<footer><div class="wrap"><span>© {{YEAR}} {{DEVELOPER}}. E Screen Recorder is free and has no ads.</span><a href="privacy.html">Privacy</a><a href="security.html">Security</a><a href="support.html">Support</a></div></footer>
+</body>
+</html>

@@ -1,0 +1,70 @@
+appId: com.huluca.escreenrecorder
+name: Store video A - recording with the small dot (recorded by the app itself)
+tags:
+  - store
+---
+# Start from the Record tab with the small dot mode; scripts/store/make_videos.ps1 runs the screen-capture loop for the consent dialog.
+- launchApp:
+    stopApp: false
+- tapOn: "Bắt đầu quay"
+- runFlow:
+    when:
+      visible: "Trong khi dùng ứng dụng"
+    commands:
+      - tapOn: "Trong khi dùng ứng dụng"
+- runFlow:
+    when:
+      visible: "Cho phép"
+    commands:
+      - tapOn: "Cho phép"
+- extendedWaitUntil:
+    visible: "Bắt đầu ngay"
+    timeout: 8000
+- waitForAnimationToEnd:
+    timeout: 1200
+- tapOn: "Bắt đầu ngay"
+- launchApp:
+    appId: com.android.settings
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Bật chế độ chỉ điểm"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 1500
+# 1) Point first at the Bluetooth row, then press it for real.
+- tapOn: "Bật chế độ chỉ điểm"
+- tapOn:
+    point: 45%, 59%
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    point: 45%, 59%
+- waitForAnimationToEnd:
+    timeout: 1800
+- back
+- waitForAnimationToEnd:
+    timeout: 1000
+# 2) Same for the display row.
+- tapOn: "Bật chế độ chỉ điểm"
+- tapOn:
+    point: 45%, 86%
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    point: 45%, 86%
+- waitForAnimationToEnd:
+    timeout: 1800
+- back
+- waitForAnimationToEnd:
+    timeout: 1000
+# Long press on the dot opens the control pill; stop from there.
+- longPressOn: "Bật chế độ chỉ điểm"
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn: "Dừng quay"
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 25000

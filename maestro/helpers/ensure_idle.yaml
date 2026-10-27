@@ -1,0 +1,16 @@
+appId: com.huluca.escreenrecorder
+name: Helper - stop a recording that is still running
+tags:
+  - helper
+---
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- runFlow:
+    when:
+      visible: "Dừng quay"
+    commands:
+      - tapOn: "Dừng quay"
+      - extendedWaitUntil:
+          visible: "Bắt đầu quay"
+          timeout: 30000

@@ -1,0 +1,12 @@
+appId: com.huluca.escreenrecorder
+name: Prep - small dot mode, bottom-left
+tags:
+  - helper
+---
+- launchApp:
+    stopApp: false
+- runFlow:
+    file: set_mark_mode.yaml
+    env:
+      MODE: mode_dot
+      CORNER: corner_2

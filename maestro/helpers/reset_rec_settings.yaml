@@ -1,0 +1,57 @@
+appId: com.huluca.escreenrecorder
+name: Helper - reset capture profile to defaults
+tags:
+  - helper
+---
+# Make sure our app is the foreground window (the first Maestro run after an install or a
+# cold start sometimes begins on the launcher).
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+# Flows must not depend on whatever profile a previous run left behind (ColorOS blocks pm clear).
+# A cold debug start can take ~10 s before Flutter draws its first frame.
+- extendedWaitUntil:
+    visible:
+      id: "onb_skip"
+    timeout: 3000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: "onb_skip"
+    commands:
+      - tapOn:
+          id: "onb_skip"
+- extendedWaitUntil:
+    visible: "Quay.*"
+    timeout: 40000
+- tapOn:
+    text: "Quay.*"
+# A previous run that failed mid-way can leave a recording running: stop it first.
+- runFlow:
+    when:
+      visible: "Dừng quay"
+    commands:
+      - tapOn: "Dừng quay"
+      # The stop button may be the floating bar over another app: come back to ours.
+      - launchApp:
+          appId: com.huluca.escreenrecorder
+          stopApp: false
+      - extendedWaitUntil:
+          visible: "Bắt đầu quay"
+          timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: "profile_card"
+    timeout: 30000
+- tapOn:
+    id: "profile_card"
+- tapOn:
+    id: "rec_reset"
+- tapOn: "Đóng"
+# Marker mode is persisted too: always start from the small dot in the bottom-left corner.
+- runFlow:
+    file: set_mark_mode.yaml
+    env:
+      MODE: mode_dot
+      CORNER: corner_2

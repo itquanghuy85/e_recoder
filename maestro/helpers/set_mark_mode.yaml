@@ -1,0 +1,25 @@
+appId: com.huluca.escreenrecorder
+name: Helper - choose the marker mode and corner in Settings
+tags:
+  - helper
+---
+# env: MODE = mode_dot | mode_clean, CORNER = corner_0..3. Ends back on the Record tab.
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn:
+    text: "Cài đặt.*"
+- tapOn:
+    id: "settings_markers"
+- scrollUntilVisible:
+    element:
+      id: ${CORNER}
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: ${MODE}
+- tapOn:
+    id: ${CORNER}
+- back
+- tapOn:
+    text: "Quay.*"

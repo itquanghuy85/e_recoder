@@ -1,0 +1,82 @@
+appId: com.huluca.escreenrecorder
+name: G7 auto direct - clean recording, then zoom + steps + idle speed-up in one tap, export
+tags:
+  - p0
+  - module-editor
+---
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_clean
+      CORNER: corner_2
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: ${OTHER_APP || 'com.android.settings'}
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Vùng đánh dấu ẩn"
+    timeout: 15000
+# Two markers far apart in time, with a long still stretch between them.
+- tapOn: "Vùng đánh dấu ẩn"
+- tapOn:
+    point: 50%, 40%
+- waitForAnimationToEnd:
+    timeout: 1500
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 9000
+    optional: true
+- tapOn: "Vùng đánh dấu ẩn"
+- tapOn:
+    point: 30%, 62%
+- waitForAnimationToEnd:
+    timeout: 1500
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 25000
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- assertVisible: "Dòng thời gian: 1 đoạn, 2 dấu, 0 chữ, 0 khối che, 2 phóng to"
+# Automatic direction: the zooms came from the recording; the still stretch is found now.
+- tapOn:
+    id: "tool_auto"
+- tapOn:
+    id: "auto_run"
+- extendedWaitUntil:
+    visible:
+      id: "auto_result"
+    timeout: 90000
+- takeScreenshot: artifacts/g7_auto_done
+- assertVisible: "Dòng thời gian: [3-9] đoạn.*"
+# Everything is one undo step.
+- tapOn:
+    id: "editor_undo"
+- assertVisible: "Dòng thời gian: 1 đoạn.*"
+- tapOn:
+    id: "editor_redo"
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 240000

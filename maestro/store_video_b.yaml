@@ -1,0 +1,107 @@
+appId: com.huluca.escreenrecorder
+name: Store video B - the editor (recorded by the app itself)
+tags:
+  - store
+---
+# Needs a recent clip in the Library (run store_video_a first). Clean mode: nothing overlays this recording.
+- launchApp:
+    stopApp: false
+- runFlow: helpers/start_recording.yaml
+# The app steps aside when recording starts: bring it back so the recording shows the editor.
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Thư viện.*"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    text: "Thư viện.*"
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "player_edit"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "tool_marker"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "add_marker_ripple"
+- waitForAnimationToEnd:
+    timeout: 1800
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "add_text"
+- tapOn:
+    id: "text_field"
+- eraseText: 30
+- inputText: "Buoc 1"
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn:
+    id: "tool_zoom"
+- tapOn:
+    id: "add_zoom"
+- waitForAnimationToEnd:
+    timeout: 1800
+- tapOn:
+    id: "tool_auto"
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "auto_run"
+- extendedWaitUntil:
+    visible:
+      id: "auto_result"
+    timeout: 120000
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    id: "editor_play"
+- waitForAnimationToEnd:
+    timeout: 4000
+- tapOn:
+    id: "editor_play"
+- back
+- runFlow:
+    when:
+      notVisible: "Quay.*"
+    commands:
+      - back
+- runFlow:
+    when:
+      notVisible: "Quay.*"
+    commands:
+      - back
+# The Record tab icon (a tap by label sometimes misses on this device).
+- tapOn:
+    point: 17%, 92%
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 30000

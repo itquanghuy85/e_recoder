@@ -1,0 +1,37 @@
+appId: com.huluca.escreenrecorder
+name: G4 onboarding - three pages, permissions page, then the app
+tags:
+  - p1
+  - module-onboarding
+---
+# First run shows the introduction by itself; later runs reopen it from Settings -> Hướng dẫn
+# (ColorOS blocks `pm clear`, so the flow handles both starting points).
+- launchApp:
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Quay.*|Bỏ qua"
+    timeout: 40000
+- runFlow:
+    when:
+      notVisible:
+        id: "onb_next"
+    commands:
+      - tapOn:
+          text: "Cài đặt.*"
+      - tapOn:
+          id: "settings_guide"
+- assertVisible: ".*Người xem luôn biết.*"
+- takeScreenshot: artifacts/g4_onb_1
+- tapOn:
+    id: "onb_next"
+- assertVisible: ".*Ba bước để chỉ điểm.*"
+- takeScreenshot: artifacts/g4_onb_2
+- tapOn:
+    id: "onb_next"
+- assertVisible: ".*Cho phép vài quyền.*"
+- takeScreenshot: artifacts/g4_onb_3
+- tapOn:
+    id: "onb_next"
+- extendedWaitUntil:
+    visible: "Quay.*"
+    timeout: 10000

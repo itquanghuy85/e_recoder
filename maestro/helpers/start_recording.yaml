@@ -1,0 +1,26 @@
+﻿appId: com.huluca.escreenrecorder
+name: Helper - tap Start recording and accept the system consent
+tags:
+  - helper
+---
+# The first tap after the app comes to the front is sometimes swallowed (the consent dialog
+# never opens), so retry the whole "tap -> dialogs" sequence.
+- retry:
+    maxRetries: 3
+    commands:
+      - tapOn: "Bắt đầu quay"
+      - runFlow:
+          when:
+            visible: "Trong khi dùng ứng dụng"
+          commands:
+            - tapOn: "Trong khi dùng ứng dụng"
+      - runFlow:
+          when:
+            visible: "Cho phép"
+          commands:
+            - tapOn: "Cho phép"
+      - extendedWaitUntil:
+          visible: "Bắt đầu ngay|Chia sẻ màn hình"
+          timeout: 8000
+# AOSP says "Bắt đầu ngay"; Samsung One UI (Android 14+) says "Chia sẻ màn hình" (default: whole screen).
+- tapOn: "Bắt đầu ngay|Chia sẻ màn hình"
