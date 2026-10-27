@@ -41,8 +41,8 @@ Giao diện dựng là Flutter dùng chung; **bộ xuất** (Media3 trên Androi
 
 ## 3. Tình trạng iOS và vì sao
 
-- Dự án chưa có thư mục `ios/`; không có bản iOS nào để cài. Build iOS cần macOS + Xcode (và tài khoản Apple Developer để phát hành).
-- Bộ cờ chuẩn của repo: `.github/workflows/ios.yml` dựng iOS trên máy macOS của GitHub (xem file). Chỉ khi workflow đó chạy xanh và có thử trên iPhone thật thì cột iOS ở trên mới được đổi từ 🕓 sang ✅.
+- Đã có khung `ios/` (chạy được phần thư viện/trình chỉnh sửa theo giao diện Flutter, chưa có quay màn hình, chưa build thử); chưa có bản iOS nào để cài. Build iOS cần macOS + Xcode (và tài khoản Apple Developer để phát hành).
+- Kiểm tra tự động: `.github/workflows/ios.yml` dựng iOS trên máy macOS của GitHub (xem file). Chỉ khi workflow đó chạy xanh và có thử trên iPhone thật thì cột iOS ở trên mới được đổi từ 🕓 sang ✅.
 - Không thể đưa lên iOS: dấu nổi trên app khác, đếm ngược nổi, thu tiếng nội bộ của app khác. Đây là giới hạn của hệ điều hành, không phải thiếu sót của app.
 
 ## 4. Chung cho mọi nền tảng
