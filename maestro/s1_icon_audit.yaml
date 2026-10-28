@@ -1,0 +1,38 @@
+appId: com.huluca.escreenrecorder
+name: S1 icon audit - screenshots of the main screens (run before and after a visual change)
+tags:
+  - module-ui
+---
+- runFlow: helpers/record_clip.yaml
+- takeScreenshot: artifacts/s1_record
+- tapOn:
+    text: "Thư viện.*"
+- takeScreenshot: artifacts/s1_library
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- takeScreenshot: artifacts/s1_player
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- runFlow: helpers/ensure_tools_open.yaml
+- takeScreenshot: artifacts/s1_editor_cut
+- tapOn:
+    id: "tool_marker"
+- takeScreenshot: artifacts/s1_editor_marker
+- tapOn:
+    id: "tool_audio"
+- takeScreenshot: artifacts/s1_editor_audio
+- tapOn:
+    id: "tool_cover"
+- takeScreenshot: artifacts/s1_editor_cover
+- back
+- tapOn:
+    text: "Cài đặt.*"
+- takeScreenshot: artifacts/s1_settings
+- tapOn:
+    id: "settings_markers"
+- takeScreenshot: artifacts/s1_marker_settings

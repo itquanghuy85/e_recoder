@@ -98,7 +98,7 @@ class EditorTools extends StatelessWidget {
           child: InkWell(
             onTap: onToggleCollapsed,
             child: SizedBox(
-              height: 32,
+              height: 44,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -128,7 +128,7 @@ class EditorTools extends StatelessWidget {
             EditorTool.values.skip(6).toList(),
           ])
             SizedBox(
-              height: 50,
+              height: 44,
               child: Row(
                 children: [
                   for (final e in row)
@@ -143,17 +143,17 @@ class EditorTools extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Container(
-                                width: 46,
-                                height: 26,
+                                width: 40,
+                                height: 24,
                                 decoration: BoxDecoration(
                                   color: tool == e
                                       ? cs.tertiaryContainer
                                       : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(13),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
                                   toolIcon(e),
-                                  size: 20,
+                                  size: 18,
                                   color: tool == e
                                       ? cs.onTertiaryContainer
                                       : cs.onSurfaceVariant,

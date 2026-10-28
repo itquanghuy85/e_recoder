@@ -45,7 +45,8 @@ TextStyle timecodeStyle(BuildContext context, {double size = 14}) {
 ThemeData buildTheme(Brightness b) {
   final c = b == Brightness.dark ? Tally.darkScheme : Tally.lightScheme;
   final text = _textTheme(c);
-  const minTarget = Size(48, 48);
+  // Targets are 44 dp (the glyphs inside are smaller): denser screens without missed taps.
+  const minTarget = Size(44, 44);
   return ThemeData(
     useMaterial3: true,
     colorScheme: c,
@@ -55,6 +56,15 @@ ThemeData buildTheme(Brightness b) {
     visualDensity: VisualDensity.standard,
     materialTapTargetSize: MaterialTapTargetSize.padded,
     splashFactory: InkSparkle.splashFactory,
+    // Glyphs 22 dp instead of 24; an icon button keeps its 44 dp target.
+    iconTheme: IconThemeData(size: 22, color: c.onSurfaceVariant),
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        iconSize: 22,
+        minimumSize: minTarget,
+        padding: const EdgeInsets.all(10),
+      ),
+    ),
     appBarTheme: AppBarTheme(
       backgroundColor: c.surface,
       surfaceTintColor: Colors.transparent,
@@ -68,10 +78,11 @@ ThemeData buildTheme(Brightness b) {
       surfaceTintColor: Colors.transparent,
       // Selection is key cyan; tally red is reserved for "live" and the primary record action.
       indicatorColor: c.tertiaryContainer,
-      height: 72,
+      height: 64,
       labelTextStyle: WidgetStatePropertyAll(text.labelMedium),
       iconTheme: WidgetStateProperty.resolveWith(
         (s) => IconThemeData(
+          size: 22,
           color: s.contains(WidgetState.selected)
               ? c.onTertiaryContainer
               : c.onSurfaceVariant,

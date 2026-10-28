@@ -448,7 +448,6 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                         child: Semantics(
                           identifier: 'editor_fullscreen',
                           child: IconButton.filledTonal(
-                            visualDensity: VisualDensity.compact,
                             tooltip: t.enterFullscreen,
                             onPressed: () => showEditorFullscreen(
                               context,
@@ -527,7 +526,7 @@ class _Transport extends StatelessWidget {
       builder: (context, _) {
         final c = controller;
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Space.sm),
+          padding: const EdgeInsets.symmetric(horizontal: Space.xs),
           child: Row(
             children: [
               Semantics(
@@ -535,7 +534,7 @@ class _Transport extends StatelessWidget {
                 child: IconButton.filled(
                   tooltip: c.playing ? t.pauseVideo : t.playVideo,
                   style: IconButton.styleFrom(
-                    minimumSize: const Size(48, 48),
+                    minimumSize: const Size(44, 44),
                     backgroundColor: cs.tertiary,
                     foregroundColor: cs.onTertiary,
                   ),
@@ -543,22 +542,30 @@ class _Transport extends StatelessWidget {
                   icon: Icon(c.playing ? Icons.pause : Icons.play_arrow),
                 ),
               ),
-              const SizedBox(width: Space.md),
-              Text(
-                formatClock(c.outMs),
-                style: timecodeStyle(context, size: 14),
-              ),
-              Text(
-                ' / ${formatClock(c.project.outDurationMs)}',
-                style: timecodeStyle(
-                  context,
-                  size: 14,
-                ).copyWith(color: cs.onSurfaceVariant),
+              const SizedBox(width: Space.sm),
+              // The clock gives way (it scales down) before anything can overflow the row.
+              Expanded(
+                child: FittedBox(
+                  alignment: Alignment.centerLeft,
+                  fit: BoxFit.scaleDown,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: formatClock(c.outMs)),
+                        TextSpan(
+                          text: ' / ${formatClock(c.project.outDurationMs)}',
+                          style: TextStyle(color: cs.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                    maxLines: 1,
+                    style: timecodeStyle(context, size: 13),
+                  ),
+                ),
               ),
               Semantics(
                 identifier: 'seek_back',
                 child: IconButton(
-                  visualDensity: VisualDensity.compact,
                   tooltip: t.seekBack,
                   onPressed: () => c.seekOut(c.outMs - 1000),
                   icon: const Icon(Icons.chevron_left),
@@ -567,27 +574,22 @@ class _Transport extends StatelessWidget {
               Semantics(
                 identifier: 'seek_fwd',
                 child: IconButton(
-                  visualDensity: VisualDensity.compact,
                   tooltip: t.seekForward,
                   onPressed: () => c.seekOut(c.outMs + 1000),
                   icon: const Icon(Icons.chevron_right),
                 ),
               ),
-              const Spacer(),
               IconButton(
-                visualDensity: VisualDensity.compact,
                 tooltip: t.timelineZoomOut,
                 onPressed: onZoomOut,
                 icon: const Icon(Icons.zoom_out),
               ),
               IconButton(
-                visualDensity: VisualDensity.compact,
                 tooltip: t.timelineFit,
                 onPressed: onFit,
                 icon: const Icon(Icons.fit_screen_outlined),
               ),
               IconButton(
-                visualDensity: VisualDensity.compact,
                 tooltip: t.timelineZoomIn,
                 onPressed: onZoomIn,
                 icon: const Icon(Icons.zoom_in),

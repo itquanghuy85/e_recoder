@@ -24,7 +24,7 @@ class MarkerTray(private val ctx: Context, private val layer: MarkerLayer) : Lin
 
     init {
         orientation = VERTICAL
-        setPadding(ctx.dp(8f), ctx.dp(8f), ctx.dp(8f), ctx.dp(8f))
+        setPadding(ctx.dp(6f), ctx.dp(6f), ctx.dp(6f), ctx.dp(6f))
         background = GradientDrawable().apply {
             setColor(Tokens.SURFACE)
             cornerRadius = ctx.dp(20f).toFloat()

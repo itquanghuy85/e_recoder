@@ -12,7 +12,7 @@ tags:
 - tapOn: "E Screen Recorder"
 # The switch sits at the right of the single row on the detail page.
 - tapOn:
-    point: "88%,33%"
+    point: "86%,38%"
 - back
 - back
 - back

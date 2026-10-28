@@ -390,7 +390,6 @@ class _PreviewHeader extends SliverPersistentHeaderDelegate {
               label: toggleLabel,
               button: true,
               child: IconButton.filledTonal(
-                visualDensity: VisualDensity.compact,
                 onPressed: onToggle,
                 icon: Icon(dark ? Icons.light_mode : Icons.dark_mode, size: 20),
               ),
