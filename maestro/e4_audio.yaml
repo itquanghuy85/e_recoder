@@ -14,19 +14,23 @@ tags:
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: artifacts/e4_picker
-- tapOn:
-    point: 7%, 7%
-- waitForAnimationToEnd
-- tapOn:
-    point: 22%, 19%
-- waitForAnimationToEnd
-- tapOn:
-    point: 72%, 44%
+# Pick the tone by its name (it is in Recent, or in Downloads via the side menu), not by position.
+- runFlow:
+    when:
+      notVisible: "esr_tone.m4a"
+    commands:
+      - tapOn: "Hiển thị gốc"
+      - tapOn: "Tải xuống"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- tapOn: "esr_tone.m4a"
 - extendedWaitUntil:
     visible:
       id: "editor_play"
     timeout: 10000
 - takeScreenshot: artifacts/e4_music
+# "Record voice" sits under "add music": drag the panel (not the whole screen) a little more.
+- runFlow: helpers/scroll_panel.yaml
 - tapOn:
     id: "audio_voice"
 - runFlow:

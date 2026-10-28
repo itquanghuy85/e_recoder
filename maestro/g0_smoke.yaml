@@ -21,6 +21,7 @@ tags:
 - tapOn: "Sáng"
 - takeScreenshot: artifacts/g0_settings_light
 - tapOn: "Theo hệ thống"
+# "Quay.*" alone also matches the empty library's "Quay màn hình đầu tiên…": name the tab.
 - tapOn:
-    text: "Quay.*"
+    text: "Quay.*Tab 1.*"
 - assertVisible: "Bắt đầu quay"

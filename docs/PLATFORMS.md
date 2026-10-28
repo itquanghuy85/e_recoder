@@ -38,6 +38,12 @@ Giao diện dựng là Flutter dùng chung; **bộ xuất** (Media3 trên Androi
 | Xuất MP4 theo mẫu, ước lượng dung lượng, GIF, lưu khung hình | ✅ | 🕓 | Đã thử Oppo + S25 |
 | Xuất chạy nền (có thông báo + Huỷ) | ✅ | ⚠️ | iOS giới hạn xử lý nền khi tắt màn hình |
 | Mẫu dự án | ✅ | 🕓 | |
+| Vùng che: khối đặc, làm mờ, mosaic, tiêu điểm; vùng di chuyển giữa hai điểm | ✅ | 🕓 | Oppo CPH2203 (`e10_regions`, `e11_region_motion`); bộ xuất dùng shader GL riêng nên iOS phải viết lại |
+| Nhập phụ đề SRT, kiểu chữ dựng sẵn | ✅ | 🕓 | Oppo CPH2203 (`e9_subtitles`) |
+| Phóng to khi dùng tự động: mức, tốc độ vào/ra, giữ thêm; thanh công cụ ẩn được; xem toàn màn hình | ✅ | 🕓 | S25 + Oppo (`e8_tools_zoom`) |
+| Zoom hai ngón khung xem trước (chỉ để xem), sóng âm trên timeline | ✅ | 🕓 | Oppo CPH2203 (`integration_test/editor_zoom_test.dart`; `e12_waveform`) |
+| Hiệu ứng giọng (trầm, cao, sóc chuột, robot, echo, vang) và giảm ồn cho giọng lồng tiếng | ✅ | 🕓 | Oppo CPH2203 đo bằng `scripts/qa/voice_fx_check.sh` + `voice_fx_editor_check.sh` |
+| Phụ đề tự động từ lời nói, chạy trên máy | ⚠️ Android 13+ | 🕓 | Oppo CPH2203, tiếng Việt thật (`scripts/qa/auto_captions_check.sh`). Dùng bộ nhận dạng của Android (chế độ chỉ chạy trên máy); Android dưới 13 báo "chưa hỗ trợ"; tiếng Anh cần hệ thống tải gói ngôn ngữ một lần. iOS dùng `SFSpeechRecognizer` với `requiresOnDeviceRecognition` |
 
 ## 3. Tình trạng iOS và vì sao
 

@@ -48,10 +48,29 @@ Lưu ý máy Oppo/ColorOS:
 | g3_project | G3 | Thêm chữ → thoát → mở lại còn nguyên → Làm lại từ đầu → Hoàn tác |
 | store_vi / store_en | G7 | Chụp ảnh thô cho cửa hàng (vi, en) — không phải test nghiệm thu |
 | store_video_a / store_video_b | G7 | Quay video giới thiệu bằng chính app (`scripts/store/make_videos.ps1`) |
+| g2c_exit_delay | G2 | Cài đặt dấu: thanh trượt chờ giữa lúc đặt dấu và lúc bấm được |
+| g2d_marker_preview_sticky | G2 | Cài đặt dấu: xem thử dính đầu trang khi cuộn, thanh trượt 0,5–10 s, nền sáng/tối vẫn đổi |
+| g2e_hold_short / g2e_hold_long / g2e_hold_stay | G2 | Quay thật với thời gian hiệu ứng ngắn nhất / dài nhất (sang màn hình chính) / tắt tự thoát; đo bằng `scripts/qa/marker_lifetime.py` |
+| e8_tools_zoom | E | Ẩn/hiện công cụ, xem toàn màn hình, phóng to (mức, tốc độ vào/ra) và tinh chỉnh phóng tự động |
+| e9_subtitles | E | Nhập .srt, kiểu chữ dựng sẵn, xuất (cần `esr_subs.srt` trong Download; bộ chọn Oppo hay không thấy file: không phải lỗi mới) |
+| e10_regions / e11_region_motion | E | Làm mờ / mosaic / tiêu điểm theo ba khoảng thời gian; khối di chuyển giữa hai điểm; xuất |
+| e12_waveform | E | Timeline vẽ sóng âm của clip |
+| s1_icon_audit | UI | Ảnh chụp các màn hình chính (chạy trước/sau khi đổi giao diện) |
 | helpers/set_mark_mode | — | Chọn chế độ đánh dấu (env MODE, CORNER) trong Cài đặt |
 | helpers/record_clip | — | Quay ~12 s màn hình Cài đặt, để lại clip mới nhất |
 | helpers/grant_overlay | — | Cấp quyền overlay một lần (ColorOS) |
 | helpers/reset_rec_settings | — | Đưa cấu hình quay về mặc định, dừng bản quay còn sót |
+
+## Kiểm thử trên máy không cần Maestro (`integration_test/`)
+Maestro không tạo được cử chỉ hai ngón và `sendevent` bị SELinux chặn trên Oppo, nên các kiểm tra sau chạy bằng `flutter test integration_test/... -d <serial>` (app thật trên máy, cử chỉ Flutter đưa vào app):
+| Script | Kiểm gì |
+|---|---|
+| `scripts/qa/run_integration.sh <serial> integration_test/editor_zoom_test.dart` | Zoom hai ngón khung xem trước: chụm ra/vào, kéo, 1×–5×, nút đặt lại, chạm đúp, toàn màn hình vẫn chạy (kèm ảnh chụp từng bước) |
+| `scripts/qa/run_integration.sh <serial> integration_test/ui_audit_test.dart <thư mục>` | Ảnh chụp các màn hình để so trước/sau khi đổi giao diện; tràn bố cục làm test hỏng |
+| `scripts/qa/voice_fx_check.sh <serial>` | Mọi hiệu ứng giọng + giảm ồn trên file thật; đo cao độ, mức ồn, đỉnh, độ dài |
+| `scripts/qa/voice_fx_editor_check.sh <serial>` | Hiệu ứng giọng qua giao diện editor rồi xuất; đo tần số trong video xuất |
+| `scripts/qa/auto_captions_check.sh <serial> vi|en` | Phụ đề tự động với lời nói thật (giọng đọc của chính máy, `DebugTts` chỉ có ở bản debug): tạo, hoàn tác/làm lại, xuất; in phụ đề so với câu đã đọc |
+Lưu ý: `flutter test` gỡ rồi cài lại app nên mất quyền (overlay, micro) và video cũ không còn trong thư viện (thư viện chỉ liệt kê video do chính lần cài đó quay). Các script giữ máy sáng (`svc power stayon usb`); màn hình tắt làm test đứng. Sau khi chạy xong cần cài lại bản debug thường và cấp lại quyền "Hiển thị trên ứng dụng khác" trước khi chạy Maestro. `scripts/qa/run_flow_retry.sh <serial> <flow>` chạy flow và tự khởi động lại app nếu hỏng ở vài bước đầu.
 
 **Chạy flow:** `powershell -File scripts\run_flow.ps1 <tên_flow> [-Cold]` (UTF-8 JVM, loại 3uTools, `-Cold` = khởi động lạnh app; in `RESULT: PASS/FAIL`). Không dùng `launchApp: stopApp: true` (id ngữ nghĩa Flutter không xuất hiện kịp).
 `run_flow.ps1` còn: chờ cây ngữ nghĩa Flutter sẵn sàng (id `profile_card`...), canh để 3uTools (PC) không kéo app khác lên trước trong lúc chạy, và chạy lại 1 lần nếu hỏng trong 4 bước đầu (lần chạy đầu sau khi cài hay mất foreground). Ảnh `takeScreenshot` nằm ở `C:\Users\<user>\.maestro\tests\<ngày>\<tên flow>\takeScreenshot\`. Log app trên ColorOS bị ngập bởi Maestro: ghi `adb logcat` ra file song song khi cần.
