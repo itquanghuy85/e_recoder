@@ -83,6 +83,7 @@ class _FullscreenPageState extends State<_FullscreenPage> {
                     video: widget.video,
                     pipVideos: widget.pipVideos,
                     repaint: widget.repaint,
+                    viewZoom: false,
                   ),
                 ),
               ),

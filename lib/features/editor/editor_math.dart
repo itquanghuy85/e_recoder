@@ -1,3 +1,5 @@
+import 'dart:ui' show Offset, Size;
+
 import 'edit_project.dart';
 
 /// Mirror of ZoomTransformation.kt (same ramps, same clamp). Keep both in step.
@@ -59,4 +61,47 @@ abstract final class RegionMath {
     final x = a.clamp(0.0, 1.0);
     return x * x * (3 - 2 * x);
   }
+}
+
+/// Zoom and pan of the editor's preview for LOOKING only: it is never saved in the project and
+/// never reaches the export. A content point `p` (stage pixels at 1x) shows at `p * scale + offset`.
+class ViewZoom {
+  const ViewZoom([this.scale = 1, this.offset = Offset.zero]);
+
+  static const double minScale = 1;
+  static const double maxScale = 5;
+
+  final double scale;
+  final Offset offset;
+
+  bool get isZoomed => scale > 1.001;
+
+  /// Where a point of the stage (as touched, at 1x) lies in the content.
+  Offset toContent(Offset screen) => (screen - offset) / scale;
+
+  /// The view in which content point [q] sits under [focal] at [scale]; the picture always keeps
+  /// covering the whole [box] (no empty margins when panned to an edge).
+  static ViewZoom pinch({
+    required Offset q,
+    required Offset focal,
+    required double scale,
+    required Size box,
+  }) {
+    final s = scale.clamp(minScale, maxScale).toDouble();
+    final o = focal - q * s;
+    return ViewZoom(
+      s,
+      Offset(
+        o.dx.clamp(box.width - box.width * s, 0.0).toDouble(),
+        o.dy.clamp(box.height - box.height * s, 0.0).toDouble(),
+      ),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is ViewZoom && other.scale == scale && other.offset == offset;
+
+  @override
+  int get hashCode => Object.hash(scale, offset);
 }

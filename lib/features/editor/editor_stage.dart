@@ -77,8 +77,14 @@ class EditorStage extends StatefulWidget {
     this.pipVideos = const {},
     this.repaint,
     this.captureKey,
+    this.viewZoom = true,
   });
   final EditorController controller;
+
+  /// Two-finger zoom and pan of the preview (only for looking; never saved or exported). Only
+  /// active while no overlay is selected: with one selected, pinch edits that overlay instead.
+  /// Off in the full-screen viewer, which has its own zoom.
+  final bool viewZoom;
   final VideoPlayerController video;
 
   /// One player per picture-in-picture video, by item id (kept in step by the screen).
@@ -107,8 +113,29 @@ class _EditorStageState extends State<EditorStage> {
   ShapeItem? _gShape;
   PipItem? _gPip;
 
+  // view zoom (look only)
+  ViewZoom _view = const ViewZoom();
+  bool _viewMode = false;
+  double _viewScale0 = 1;
+  Offset _viewQ = Offset.zero;
+  DateTime? _lastTapAt;
+  Offset _lastTapPos = Offset.zero;
+
+  ViewZoom get _z => widget.viewZoom ? _view : const ViewZoom();
+
+  void _resetView() {
+    if (_view.isZoomed) setState(() => _view = const ViewZoom());
+  }
+
   void _start(ScaleStartDetails d) {
     final id = c.selectedId;
+    _viewMode = id == null && widget.viewZoom;
+    if (_viewMode) {
+      // Nothing selected: pinch and drag move the VIEW, not the project.
+      _viewScale0 = _view.scale;
+      _viewQ = _view.toContent(d.localFocalPoint);
+      return;
+    }
     if (id == null) return;
     c.beginGesture();
     final p = c.project;
@@ -124,11 +151,23 @@ class _EditorStageState extends State<EditorStage> {
   void _update(ScaleUpdateDetails d) {
     final g = _g;
     if (g == null || g.w <= 0) return;
+    if (_viewMode) {
+      final next = ViewZoom.pinch(
+        q: _viewQ,
+        focal: d.localFocalPoint,
+        scale: _viewScale0 * d.scale,
+        box: Size(g.w, g.h),
+      );
+      if (next != _view) setState(() => _view = next);
+      return;
+    }
     // Output-space deltas (text, images, shapes) and picture-space deltas (markers, covers, zoom).
-    final ox = d.focalPointDelta.dx / g.w;
-    final oy = d.focalPointDelta.dy / g.h;
-    final px = d.focalPointDelta.dx / g.fullW;
-    final py = d.focalPointDelta.dy / g.fullH;
+    // A finger moves 1/zoom as far in the content when the view is zoomed in.
+    final vz = _z.scale;
+    final ox = d.focalPointDelta.dx / (g.w * vz);
+    final oy = d.focalPointDelta.dy / (g.h * vz);
+    final px = d.focalPointDelta.dx / (g.fullW * vz);
+    final py = d.focalPointDelta.dy / (g.fullH * vz);
     final two = d.pointerCount >= 2;
     final p = c.project;
     final m = _gMarker;
@@ -247,6 +286,7 @@ class _EditorStageState extends State<EditorStage> {
   }
 
   void _end(ScaleEndDetails d) {
+    _viewMode = false;
     _gMarker = _gText = null;
     _gCover = null;
     _gZoom = null;
@@ -260,13 +300,29 @@ class _EditorStageState extends State<EditorStage> {
   void _tap(TapUpDetails d) {
     final g = _g;
     if (g == null || g.w <= 0) return;
-    // Compare in OUTPUT fractions; picture-space items are converted first.
-    final p = Offset(d.localPosition.dx / g.w, d.localPosition.dy / g.h);
+    // A quick second tap near the first puts a zoomed view back to fit.
+    final now = DateTime.now();
+    final last = _lastTapAt;
+    if (widget.viewZoom &&
+        last != null &&
+        now.difference(last) < const Duration(milliseconds: 320) &&
+        (d.localPosition - _lastTapPos).distance < 48) {
+      _lastTapAt = null;
+      _resetView();
+      return;
+    }
+    _lastTapAt = now;
+    _lastTapPos = d.localPosition;
+    // Compare in OUTPUT fractions; picture-space items are converted first. The touch is mapped
+    // through the view zoom, and the reach shrinks with it so a zoomed view stays precise.
+    final z = _z;
+    final at = z.toContent(d.localPosition);
+    final p = Offset(at.dx / g.w, at.dy / g.h);
     final t = c.sourceMs;
     final out = c.outMs;
     final pr = c.project;
     String? best;
-    var bestDist = 0.12;
+    var bestDist = 0.12 / z.scale;
     void consider(String id, Offset at) {
       final dist = (at - p).distance;
       if (dist < bestDist) {
@@ -328,16 +384,38 @@ class _EditorStageState extends State<EditorStage> {
               builder: (context, box) {
                 final g = StageGeometry(p, Size(box.maxWidth, box.maxHeight));
                 _g = g;
-                return GestureDetector(
+                final z = _z;
+                // The capture boundary sits INSIDE the zoom, so "save this frame" is never zoomed.
+                final stage = GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTapUp: _tap,
                   onScaleStart: _start,
                   onScaleUpdate: _update,
                   onScaleEnd: _end,
-                  child: RepaintBoundary(
-                    key: widget.captureKey,
-                    child: ClipRect(child: _frame(context, p, g, cs)),
+                  child: ClipRect(
+                    child: Transform(
+                      transform: Matrix4.identity()
+                        ..translateByDouble(z.offset.dx, z.offset.dy, 0, 1)
+                        ..scaleByDouble(z.scale, z.scale, 1, 1),
+                      child: RepaintBoundary(
+                        key: widget.captureKey,
+                        child: ClipRect(child: _frame(context, p, g, cs)),
+                      ),
+                    ),
                   ),
+                );
+                // The same widget tree at every zoom: if the gesture detector were re-created when the
+                // badge appears, the pinch in progress would be cut off right at its start.
+                return Stack(
+                  children: [
+                    Positioned.fill(child: stage),
+                    if (z.isZoomed)
+                      Positioned(
+                        left: 6,
+                        top: 6,
+                        child: _ZoomBadge(scale: z.scale, onReset: _resetView),
+                      ),
+                  ],
                 );
               },
             ),
@@ -793,5 +871,47 @@ class _EditorStageState extends State<EditorStage> {
         ),
       ),
     ];
+  }
+}
+
+/// Shown while the preview is zoomed: the zoom factor, tap to go back to fit.
+class _ZoomBadge extends StatelessWidget {
+  const _ZoomBadge({required this.scale, required this.onReset});
+  final double scale;
+  final VoidCallback onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Semantics(
+      identifier: 'stage_zoom_reset',
+      button: true,
+      label: '${scale.toStringAsFixed(1).replaceAll('.', ',')}×',
+      child: Material(
+        color: cs.surfaceContainerHighest.withValues(alpha: 0.92),
+        shape: const StadiumBorder(),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onReset,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 36, minWidth: 44),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.fit_screen_outlined, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${scale.toStringAsFixed(1).replaceAll('.', ',')}×',
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
