@@ -1,0 +1,30 @@
+appId: com.huluca.escreenrecorder
+name: E12 editor - the timeline draws the sound of the clip
+tags:
+  - p0
+  - module-editor
+---
+# Needs a library video with sound named ESR_wavetest (scripts/qa/push_test_media.ps1 adds one).
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn:
+    text: "Thư viện.*"
+- scrollUntilVisible:
+    element: ".*ESR_wavetest.*"
+    direction: DOWN
+    timeout: 30000
+- tapOn:
+    text: ".*ESR_wavetest.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- runFlow: helpers/ensure_tools_open.yaml
+# The waveform is read in the background: give it a moment, then look at the timeline.
+- waitForAnimationToEnd:
+    timeout: 4000
+- takeScreenshot: artifacts/e12_waveform

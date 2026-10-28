@@ -155,6 +155,10 @@
   "adjustOpacity": "Độ trong",
   "markerAdjustNote": "Cỡ, xoay và độ trong chỉ để xem thử. Khi quay, hãy chụm hai ngón để đổi cỡ và xoay dấu.",
   "markerHold": "Giữ dấu sau khi đặt xong",
+  "markerHoldShort": "Ngắn",
+  "markerHoldLong": "Dài",
+  "markerHoldHint": "Tính từ lúc đặt xong. Hết thời gian dấu mờ dần rồi biến mất, kể cả khi bạn vẫn ở chế độ đánh dấu hoặc đã chuyển sang trang khác.",
+  "previewToggleBackdrop": "Đổi nền xem thử sáng/tối",
   "holdSeconds": "{s} giây",
   "@holdSeconds": {
     "placeholders": {
@@ -165,6 +169,15 @@
   },
   "markerAutoExit": "Tự thoát chế độ chỉ điểm sau khi đặt",
   "markerAutoExitHint": "Đặt dấu xong, thanh nổi trở về bình thường để bạn bấm thật vào đích.",
+  "markerExitDelay": "Chờ {s} giây rồi mới cho bấm",
+  "@markerExitDelay": {
+    "placeholders": {
+      "s": {
+        "type": "String"
+      }
+    }
+  },
+  "markerExitDelayHint": "Thời gian từ lúc đặt dấu đến lúc bạn bấm thật được. Càng ngắn càng nhanh, nhưng dấu cần đủ lâu để người xem kịp nhìn.",
   "markerBarNote": "Thanh nổi và dấu sẽ hiện trong video.",
   "splashTagline": "Cho người xem biết trước chỗ bạn sắp bấm",
   "markModeTitle": "Cách đánh dấu khi quay",
@@ -273,13 +286,27 @@
   "textHint": "Chữ nằm trên video và không bị phóng to theo hiệu ứng phóng.",
   "textField": "Nội dung",
   "textSize": "Cỡ chữ",
-  "coverAdd": "Thêm khối che",
-  "coverHint": "Khối đặc che số điện thoại, mật khẩu… khỏi người xem. Kéo trên video để đặt vị trí.",
+  "coverAdd": "Thêm vùng",
+  "coverStyleSolid": "Khối đặc",
+  "coverStyleBlur": "Làm mờ",
+  "coverStyleMosaic": "Mosaic",
+  "coverStyleSpotlight": "Tiêu điểm",
+  "coverStrength": "Cường độ",
+  "coverMove": "Di chuyển",
+  "coverMoveHint": "Vùng trượt mượt từ điểm đầu tới điểm cuối trong suốt thời gian của nó. Chọn điểm rồi kéo trên video.",
+  "coverPointStart": "Điểm đầu",
+  "coverPointEnd": "Điểm cuối",
+  "coverHint": "Che số điện thoại, mật khẩu… bằng khối đặc, làm mờ hoặc mosaic; hoặc làm tối phần còn lại để nhấn mạnh một vùng (tiêu điểm). Kéo trên video để đặt vị trí.",
   "coverWidth": "Rộng",
   "coverHeight": "Cao",
   "zoomAdd": "Thêm phóng to",
   "zoomHint": "Phóng to vào một vùng rồi thu lại êm ái.",
   "zoomScale": "Mức phóng",
+  "zoomIn": "Phóng vào",
+  "zoomOut": "Thu lại",
+  "zoomHold": "Giữ thêm",
+  "zoomTimingHint": "Phóng vào/Thu lại là thời gian để phóng tới mức đầy đủ và để trở về; càng ngắn càng nhanh. Giữ thêm là thời gian vẫn phóng sau khi dấu đã mờ.",
+  "zoomAutoTuning": "Tinh chỉnh phóng tự động",
   "zoomDragHint": "Kéo trên video để chọn vùng sẽ phóng vào.",
   "undo": "Hoàn tác",
   "redo": "Làm lại",
@@ -373,6 +400,26 @@
   "editMultiHint": "Chạm các đoạn để chọn; thao tác áp cho tất cả đoạn đã chọn.",
   "frameBack": "Lùi 1 khung hình",
   "frameForward": "Tiến 1 khung hình",
+  "enterFullscreen": "Xem toàn màn hình",
+  "exitFullscreen": "Thoát toàn màn hình",
+  "toolsHide": "Ẩn công cụ",
+  "toolsShow": "Hiện công cụ",
+  "presetClassic": "Cổ điển",
+  "presetSubtitle": "Phụ đề",
+  "presetYellow": "Vàng",
+  "presetNeon": "Neon",
+  "presetClean": "Gọn",
+  "presetLabel": "Nhãn",
+  "subtitlesImport": "Nhập phụ đề (.srt)",
+  "subtitlesImported": "Đã thêm {n} dòng phụ đề.",
+  "@subtitlesImported": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "subtitlesNone": "Không đọc được dòng phụ đề nào trong tệp này.",
   "timelineFit": "Vừa khung",
   "reorderHint": "Giữ một đoạn rồi trượt ngang để đổi thứ tự.",
   "speedFree": "Tốc độ tự do",

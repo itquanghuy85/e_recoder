@@ -11,6 +11,7 @@ import '../marker/marker_timing.dart';
 import 'edit_project.dart';
 import 'editor_controller.dart';
 import 'editor_math.dart';
+import 'region_preview.dart';
 
 /// Where the picture and the output frame sit on screen, derived from the project's [PictureLook].
 ///
@@ -202,12 +203,14 @@ class _EditorStageState extends State<EditorStage> {
     final cv = _gCover;
     if (cv != null) {
       final cur = p.covers.firstWhere((e) => e.id == cv.id);
-      final w = cur.x1 - cur.x0;
-      final h = cur.y1 - cur.y0;
-      final x0 = (cur.x0 + px).clamp(0.0, 1.0 - w);
-      final y0 = (cur.y0 + py).clamp(0.0, 1.0 - h);
+      final r = cur.editRect(c.coverEditEnd);
+      final x0 = (r.left + px).clamp(0.0, 1.0 - r.width);
+      final y0 = (r.top + py).clamp(0.0, 1.0 - r.height);
       c.updateCover(
-        cur.copyWith(x0: x0, y0: y0, x1: x0 + w, y1: y0 + h),
+        cur.withRect(
+          Rect.fromLTWH(x0, y0, r.width, r.height),
+          atEnd: c.coverEditEnd,
+        ),
         record: false,
       );
       return;
@@ -410,18 +413,7 @@ class _EditorStageState extends State<EditorStage> {
         Positioned.fill(child: video),
         for (final cv in p.covers)
           if (t >= cv.startMs && t <= cv.endMs)
-            Positioned(
-              left: cv.x0 * fw,
-              top: cv.y0 * fh,
-              width: (cv.x1 - cv.x0) * fw,
-              height: (cv.y1 - cv.y0) * fh,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: cv.color,
-                  borderRadius: BorderRadius.circular(6 * fw / 360),
-                ),
-              ),
-            ),
+            RegionPreview(item: cv, fw: fw, fh: fh, t: t),
         for (final m in p.markers) ..._marker(m, t, fw, fh, k),
       ],
     );
@@ -776,7 +768,7 @@ class _EditorStageState extends State<EditorStage> {
     }
     final cv = p.covers.where((e) => e.id == id).firstOrNull;
     if (cv != null) {
-      r = fromPicture(Rect.fromLTRB(cv.x0, cv.y0, cv.x1, cv.y1));
+      r = fromPicture(cv.editRect(c.coverEditEnd));
     }
     final z = p.zooms.where((e) => e.id == id).firstOrNull;
     if (z != null) {

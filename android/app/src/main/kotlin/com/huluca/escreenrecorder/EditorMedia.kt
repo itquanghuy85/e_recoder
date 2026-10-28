@@ -88,6 +88,80 @@ object EditorMedia {
     }
 
     /**
+     * Peak level (0..1) of every [bucketMs] slice of a video's sound, for drawing a waveform; null
+     * when there is no sound. Decodes at most the first 15 minutes.
+     */
+    fun waveform(ctx: Context, uri: String, durationMs: Long, bucketMs: Long): List<Double>? {
+        val n = ((durationMs + bucketMs - 1) / bucketMs).toInt().coerceIn(1, 20000)
+        val peaks = DoubleArray(n)
+        val ex = MediaExtractor()
+        var codec: MediaCodec? = null
+        try {
+            ex.setDataSource(ctx, Uri.parse(uri), null)
+            val track = (0 until ex.trackCount).firstOrNull {
+                ex.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true
+            } ?: return null
+            val format = ex.getTrackFormat(track)
+            ex.selectTrack(track)
+            codec = MediaCodec.createDecoderByType(format.getString(MediaFormat.KEY_MIME)!!)
+            codec.configure(format, null, null, 0)
+            codec.start()
+            val info = MediaCodec.BufferInfo()
+            val limitUs = minOf(durationMs, 15 * 60_000L) * 1000
+            var rate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+            var channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+            var eos = false
+            var outDone = false
+            while (!outDone) {
+                if (!eos) {
+                    val i = codec.dequeueInputBuffer(10_000)
+                    if (i >= 0) {
+                        val buf = codec.getInputBuffer(i)!!
+                        val size = ex.readSampleData(buf, 0)
+                        if (size < 0 || ex.sampleTime > limitUs) {
+                            codec.queueInputBuffer(i, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                            eos = true
+                        } else {
+                            codec.queueInputBuffer(i, 0, size, ex.sampleTime, 0)
+                            ex.advance()
+                        }
+                    }
+                }
+                val o = codec.dequeueOutputBuffer(info, 10_000)
+                if (o == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                    val f = codec.outputFormat
+                    rate = f.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                    channels = f.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                } else if (o >= 0) {
+                    val out = codec.getOutputBuffer(o)!!
+                    out.position(info.offset)
+                    out.limit(info.offset + info.size)
+                    val s = out.asShortBuffer()
+                    var frame = 0L
+                    val perFrameUs = 1_000_000.0 / rate
+                    while (s.remaining() >= channels) {
+                        var peak = 0
+                        for (c in 0 until channels) peak = maxOf(peak, kotlin.math.abs(s.get().toInt()))
+                        val tMs = ((info.presentationTimeUs + frame * perFrameUs) / 1000).toLong()
+                        val b = (tMs / bucketMs).toInt()
+                        if (b in 0 until n) peaks[b] = maxOf(peaks[b], peak / 32768.0)
+                        frame++
+                    }
+                    codec.releaseOutputBuffer(o, false)
+                    if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) outDone = true
+                }
+            }
+            return if (peaks.all { it <= 1e-6 }) null else peaks.toList()
+        } catch (_: Exception) {
+            return null
+        } finally {
+            try { codec?.stop() } catch (_: Exception) {}
+            codec?.release()
+            ex.release()
+        }
+    }
+
+    /**
      * RMS loudness (dBFS) of [startMs, endMs] of a video's sound, or null when it has none.
      * Reads at most 30 seconds. Used to even out the volume of segments.
      */

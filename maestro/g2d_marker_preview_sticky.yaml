@@ -1,0 +1,59 @@
+appId: com.huluca.escreenrecorder
+name: G2d marker settings - preview sticks while scrolling, effect time slider, light/dark still switch
+tags:
+  - p0
+  - module-marker
+---
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn:
+    text: "Cài đặt.*"
+- tapOn:
+    id: "settings_markers"
+# Top of the page: preview and the light/dark switch are both there.
+- assertVisible: "Nền sáng"
+- assertVisible: "Nền tối"
+- assertVisible:
+    id: "preview_theme"
+- takeScreenshot: artifacts/g2d_top
+# Scroll to the effect time: the title row is gone, the preview is still on screen (pinned).
+- scrollUntilVisible:
+    element:
+      id: "marker_hold"
+    direction: DOWN
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 2000
+- assertNotVisible: "Nền tối"
+- assertVisible:
+    id: "preview_theme"
+- assertVisible: "Giữ dấu sau khi đặt xong.*"
+- takeScreenshot: artifacts/g2d_scrolled
+# The slider shows seconds and has a short and a long end.
+- assertVisible: "Ngắn · 0,5 s.*Dài · 10 s"
+- swipe:
+    from:
+      id: "marker_hold"
+    direction: LEFT
+    duration: 800
+- assertVisible: ".*0,5 giây.*"
+- takeScreenshot: artifacts/g2d_hold_min
+- swipe:
+    from:
+      id: "marker_hold"
+    direction: RIGHT
+    duration: 800
+- assertVisible: ".*10 giây.*"
+- takeScreenshot: artifacts/g2d_hold_max
+# Back to the top: the page is as before and the backdrop still changes.
+- scrollUntilVisible:
+    element: "Nền tối"
+    direction: UP
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 2000
+- assertVisible: "Nền tối"
+- tapOn: "Nền tối"
+- takeScreenshot: artifacts/g2d_dark
+- tapOn: "Nền sáng"

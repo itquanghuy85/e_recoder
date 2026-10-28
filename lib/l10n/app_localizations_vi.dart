@@ -346,6 +346,19 @@ class AppL10nVi extends AppL10n {
   String get markerHold => 'Giữ dấu sau khi đặt xong';
 
   @override
+  String get markerHoldShort => 'Ngắn';
+
+  @override
+  String get markerHoldLong => 'Dài';
+
+  @override
+  String get markerHoldHint =>
+      'Tính từ lúc đặt xong. Hết thời gian dấu mờ dần rồi biến mất, kể cả khi bạn vẫn ở chế độ đánh dấu hoặc đã chuyển sang trang khác.';
+
+  @override
+  String get previewToggleBackdrop => 'Đổi nền xem thử sáng/tối';
+
+  @override
   String holdSeconds(String s) {
     return '$s giây';
   }
@@ -356,6 +369,15 @@ class AppL10nVi extends AppL10n {
   @override
   String get markerAutoExitHint =>
       'Đặt dấu xong, thanh nổi trở về bình thường để bạn bấm thật vào đích.';
+
+  @override
+  String markerExitDelay(String s) {
+    return 'Chờ $s giây rồi mới cho bấm';
+  }
+
+  @override
+  String get markerExitDelayHint =>
+      'Thời gian từ lúc đặt dấu đến lúc bạn bấm thật được. Càng ngắn càng nhanh, nhưng dấu cần đủ lâu để người xem kịp nhìn.';
 
   @override
   String get markerBarNote => 'Thanh nổi và dấu sẽ hiện trong video.';
@@ -649,11 +671,39 @@ class AppL10nVi extends AppL10n {
   String get textSize => 'Cỡ chữ';
 
   @override
-  String get coverAdd => 'Thêm khối che';
+  String get coverAdd => 'Thêm vùng';
+
+  @override
+  String get coverStyleSolid => 'Khối đặc';
+
+  @override
+  String get coverStyleBlur => 'Làm mờ';
+
+  @override
+  String get coverStyleMosaic => 'Mosaic';
+
+  @override
+  String get coverStyleSpotlight => 'Tiêu điểm';
+
+  @override
+  String get coverStrength => 'Cường độ';
+
+  @override
+  String get coverMove => 'Di chuyển';
+
+  @override
+  String get coverMoveHint =>
+      'Vùng trượt mượt từ điểm đầu tới điểm cuối trong suốt thời gian của nó. Chọn điểm rồi kéo trên video.';
+
+  @override
+  String get coverPointStart => 'Điểm đầu';
+
+  @override
+  String get coverPointEnd => 'Điểm cuối';
 
   @override
   String get coverHint =>
-      'Khối đặc che số điện thoại, mật khẩu… khỏi người xem. Kéo trên video để đặt vị trí.';
+      'Che số điện thoại, mật khẩu… bằng khối đặc, làm mờ hoặc mosaic; hoặc làm tối phần còn lại để nhấn mạnh một vùng (tiêu điểm). Kéo trên video để đặt vị trí.';
 
   @override
   String get coverWidth => 'Rộng';
@@ -669,6 +719,22 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get zoomScale => 'Mức phóng';
+
+  @override
+  String get zoomIn => 'Phóng vào';
+
+  @override
+  String get zoomOut => 'Thu lại';
+
+  @override
+  String get zoomHold => 'Giữ thêm';
+
+  @override
+  String get zoomTimingHint =>
+      'Phóng vào/Thu lại là thời gian để phóng tới mức đầy đủ và để trở về; càng ngắn càng nhanh. Giữ thêm là thời gian vẫn phóng sau khi dấu đã mờ.';
+
+  @override
+  String get zoomAutoTuning => 'Tinh chỉnh phóng tự động';
 
   @override
   String get zoomDragHint => 'Kéo trên video để chọn vùng sẽ phóng vào.';
@@ -826,6 +892,47 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get frameForward => 'Tiến 1 khung hình';
+
+  @override
+  String get enterFullscreen => 'Xem toàn màn hình';
+
+  @override
+  String get exitFullscreen => 'Thoát toàn màn hình';
+
+  @override
+  String get toolsHide => 'Ẩn công cụ';
+
+  @override
+  String get toolsShow => 'Hiện công cụ';
+
+  @override
+  String get presetClassic => 'Cổ điển';
+
+  @override
+  String get presetSubtitle => 'Phụ đề';
+
+  @override
+  String get presetYellow => 'Vàng';
+
+  @override
+  String get presetNeon => 'Neon';
+
+  @override
+  String get presetClean => 'Gọn';
+
+  @override
+  String get presetLabel => 'Nhãn';
+
+  @override
+  String get subtitlesImport => 'Nhập phụ đề (.srt)';
+
+  @override
+  String subtitlesImported(int n) {
+    return 'Đã thêm $n dòng phụ đề.';
+  }
+
+  @override
+  String get subtitlesNone => 'Không đọc được dòng phụ đề nào trong tệp này.';
 
   @override
   String get timelineFit => 'Vừa khung';

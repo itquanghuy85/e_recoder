@@ -567,6 +567,8 @@ class EditorTimelineState extends State<EditorTimeline> {
                   child: CustomPaint(
                     painter: _TimelinePainter(
                       chips: _chips(p, cs),
+                      segments: p.segments,
+                      wave: c.waveform,
                       scheme: cs,
                       outMs: c.outMs,
                       total: p.outDurationMs,
@@ -606,6 +608,8 @@ class EditorTimelineState extends State<EditorTimeline> {
 class _TimelinePainter extends CustomPainter {
   _TimelinePainter({
     required this.chips,
+    required this.segments,
+    required this.wave,
     required this.scheme,
     required this.outMs,
     required this.total,
@@ -624,6 +628,10 @@ class _TimelinePainter extends CustomPainter {
   });
 
   final List<_Chip> chips;
+  final List<Segment> segments;
+
+  /// Peak levels of the source sound per [EditorController.waveBucketMs] (null = none).
+  final List<double>? wave;
   final ColorScheme scheme;
   final int outMs;
   final int total;
@@ -670,6 +678,9 @@ class _TimelinePainter extends CustomPainter {
         canvas.drawShadow(Path()..addRRect(rr), Colors.black, 6, true);
       }
       canvas.drawRRect(rr, fill);
+      if (isVideo && wave != null) {
+        _waveform(canvas, rr, r, segments[ch.index], w);
+      }
 
       if (ch.kind == _Kind.marker) {
         // The cue part (ring converging) is hatched amber: it is the lead-in the viewer sees.
@@ -845,6 +856,47 @@ class _TimelinePainter extends CustomPainter {
   }
 
   static const double rulerH = EditorTimelineState.rulerH;
+
+  /// The sound of a segment as mirrored bars behind its label. Time runs through the segment
+  /// linearly in source time (a speed ramp is drawn as if it were constant); a reversed segment is
+  /// mirrored, and the bars follow the segment's volume.
+  void _waveform(Canvas canvas, RRect rr, Rect r, Segment seg, double width) {
+    final peaks = wave!;
+    if (seg.blank || seg.isStill || seg.volume <= 0 || r.width < 6) return;
+    const step = 3.0;
+    const bucketMs = EditorController.waveBucketMs;
+    final srcLen = seg.endMs - seg.startMs;
+    final msPerPx = srcLen / r.width;
+    final perColumn = math.max(1, (msPerPx * step / bucketMs).ceil());
+    final paint = Paint()
+      ..color = scheme.onSurface.withValues(alpha: 0.30)
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    final half = r.height * 0.40;
+    final gain = seg.volume.clamp(0.0, 2.0);
+    canvas.save();
+    canvas.clipRRect(rr);
+    final from = math.max(r.left, -step);
+    final to = math.min(r.right, width + step);
+    for (var px = from; px < to; px += step) {
+      final frac = ((px - r.left) / r.width).clamp(0.0, 1.0);
+      final src = seg.startMs + (seg.reverse ? 1 - frac : frac) * srcLen;
+      final b0 = (src / bucketMs).floor().clamp(0, peaks.length - 1);
+      var peak = 0.0;
+      for (var b = b0; b < math.min(peaks.length, b0 + perColumn); b++) {
+        peak = math.max(peak, peaks[b]);
+      }
+      // A touch of compression so quiet speech still shows.
+      final h = math.pow(peak, 0.6) * gain * half;
+      final bar = math.max(1.0, math.min(half, h.toDouble()));
+      canvas.drawLine(
+        Offset(px, r.center.dy - bar),
+        Offset(px, r.center.dy + bar),
+        paint,
+      );
+    }
+    canvas.restore();
+  }
 
   @override
   bool shouldRepaint(_TimelinePainter old) => true;

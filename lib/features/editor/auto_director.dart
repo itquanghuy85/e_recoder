@@ -13,6 +13,9 @@ class DirectorOptions {
     this.number = true,
     this.idle = true,
     this.stepLabel,
+    this.zoomScale = AutoDirector.zoomScale,
+    this.zoomRampMs = kZoomRampMs,
+    this.zoomHoldMs = 0,
   });
 
   /// Zoom smoothly into the area of each marker.
@@ -27,6 +30,15 @@ class DirectorOptions {
   /// When set (for example "Bước "), every step marker also gets a caption "Bước 1", "Bước 2" ...
   final String? stepLabel;
 
+  /// How far automatic zooms go in (a wide spread of markers still gets a gentler zoom).
+  final double zoomScale;
+
+  /// Time to zoom in and to come back (shorter = snappier).
+  final int zoomRampMs;
+
+  /// Extra time the zoom stays after the marker has faded.
+  final int zoomHoldMs;
+
   static const none = DirectorOptions(zoom: false, number: false, idle: false);
 
   DirectorOptions copyWith({
@@ -34,6 +46,9 @@ class DirectorOptions {
     bool? number,
     bool? idle,
     Object? stepLabel = _keep,
+    double? zoomScale,
+    int? zoomRampMs,
+    int? zoomHoldMs,
   }) => DirectorOptions(
     zoom: zoom ?? this.zoom,
     number: number ?? this.number,
@@ -41,6 +56,9 @@ class DirectorOptions {
     stepLabel: identical(stepLabel, _keep)
         ? this.stepLabel
         : stepLabel as String?,
+    zoomScale: zoomScale ?? this.zoomScale,
+    zoomRampMs: zoomRampMs ?? this.zoomRampMs,
+    zoomHoldMs: zoomHoldMs ?? this.zoomHoldMs,
   );
 
   static const Object _keep = Object();
@@ -87,7 +105,7 @@ abstract final class AutoDirector {
     var out = p;
     if (o.number) out = renumber(out);
     if (o.stepLabel != null) out = labelSteps(out, o.stepLabel!);
-    if (o.zoom) out = autoZoom(out);
+    if (o.zoom) out = autoZoom(out, o);
     if (o.idle && idleRanges.isNotEmpty) out = speedUpIdle(out, idleRanges);
     return out;
   }
@@ -169,13 +187,16 @@ abstract final class AutoDirector {
 
   /// One eased zoom per marker, merged when markers follow each other closely. Existing zoom clips
   /// are kept; a new window that would overlap one of them is dropped (clips must not overlap).
-  static EditProject autoZoom(EditProject p) {
+  static EditProject autoZoom(
+    EditProject p, [
+    DirectorOptions o = const DirectorOptions(),
+  ]) {
     final marks = [...p.markers]
       ..sort((a, b) => a.cueStartMs.compareTo(b.cueStartMs));
     final windows = <_Win>[];
     for (final m in marks) {
       final start = math.max(0, m.cueStartMs - zoomLeadMs);
-      final end = math.min(p.durationMs, m.endMs);
+      final end = math.min(p.durationMs, m.endMs + o.zoomHoldMs);
       if (end - start < 800) continue;
       final a = anchorOf(m.spec);
       final last = windows.isEmpty ? null : windows.last;
@@ -199,9 +220,11 @@ abstract final class AutoDirector {
           id: 'zm_${n++}_${w.start}',
           fx: f.dx,
           fy: f.dy,
-          scale: w.scale,
+          scale: w.scaleCapped(o.zoomScale),
           startMs: w.start,
           endMs: w.end,
+          inMs: o.zoomRampMs,
+          outMs: o.zoomRampMs,
         ),
       );
     }
@@ -281,9 +304,9 @@ class _Win {
   Offset get focus => Offset((minX + maxX) / 2, (minY + maxY) / 2);
 
   /// A wide spread needs a gentler zoom so both targets stay in frame.
-  double get scale {
+  double scaleCapped(double cap) {
     final span = math.max(maxX - minX, maxY - minY);
-    if (span <= 0.05) return AutoDirector.zoomScale;
-    return (0.8 / (span + 0.25)).clamp(1.2, AutoDirector.zoomScale);
+    if (span <= 0.05) return cap;
+    return (0.8 / (span + 0.25)).clamp(math.min(1.2, cap), cap).toDouble();
   }
 }

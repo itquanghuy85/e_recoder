@@ -1,0 +1,50 @@
+appId: com.huluca.escreenrecorder
+name: E11 editor - a block that glides between two points, then export
+tags:
+  - p0
+  - module-editor
+---
+- runFlow: helpers/record_clip.yaml
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_cover"
+# A plain block (0-3 s) that moves from the middle of the picture to a lower point.
+- tapOn:
+    id: "add_cover"
+- tapOn:
+    id: "cover_move"
+- assertVisible:
+    id: "cover_edit_end"
+- assertVisible:
+    id: "cover_edit_start"
+- takeScreenshot: artifacts/e11_move_on
+# Back to a still block, and on again: the switch is reversible in one step each way.
+- tapOn:
+    id: "cover_move"
+- assertNotVisible:
+    id: "cover_edit_end"
+- tapOn:
+    id: "cover_move"
+- assertVisible:
+    id: "cover_edit_end"
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000

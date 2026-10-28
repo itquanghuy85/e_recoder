@@ -1,0 +1,54 @@
+appId: com.huluca.escreenrecorder
+name: E9 editor - import an .srt as captions, apply a ready-made text style, export
+tags:
+  - p0
+  - module-editor
+---
+# Needs esr_subs.srt in Download (scripts/qa/push_test_media.ps1).
+- runFlow: helpers/record_clip.yaml
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "import_srt"
+- waitForAnimationToEnd:
+    timeout: 3000
+# Open the Downloads folder from the picker's side menu (search does not index plain files).
+- tapOn:
+    point: 8%, 7%
+- tapOn: "Tải xuống"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "esr_subs.srt"
+- extendedWaitUntil:
+    visible: "Đã thêm 2 dòng phụ đề."
+    timeout: 10000
+- assertVisible: "Dòng thời gian: .* 2 chữ.*"
+- takeScreenshot: artifacts/e9_imported
+# One caption selected: ready-made style applies in one tap.
+- tapOn:
+    id: "add_text"
+- tapOn:
+    id: "text_preset_yellow"
+- takeScreenshot: artifacts/e9_preset
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 240000

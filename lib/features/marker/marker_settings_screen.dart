@@ -7,6 +7,7 @@ import 'marker_inspector.dart';
 import 'marker_preview.dart';
 import 'marker_settings.dart';
 import 'marker_spec.dart';
+import 'marker_timing.dart';
 
 /// Demo geometry per tool, all aimed at the mock button at (0.5, 0.55).
 MarkerSpec demoMarker(
@@ -109,35 +110,52 @@ class _MarkerSettingsScreenState extends ConsumerState<MarkerSettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(t.settingsMarkers)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(Space.lg, 0, Space.lg, Space.xxl),
-        children: [
-          Text(
-            t.settingsMarkersHint,
-            style: tt.bodyMedium?.copyWith(color: c.onSurfaceVariant),
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(Space.lg, 0, Space.lg, 0),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                Text(
+                  t.settingsMarkersHint,
+                  style: tt.bodyMedium?.copyWith(color: c.onSurfaceVariant),
+                ),
+                const SizedBox(height: Space.lg),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(t.markerPreviewTitle, style: tt.titleMedium),
+                    ),
+                    SegmentedButton<bool>(
+                      showSelectedIcon: false,
+                      segments: [
+                        ButtonSegment(
+                          value: false,
+                          label: Text(t.previewLight),
+                        ),
+                        ButtonSegment(value: true, label: Text(t.previewDark)),
+                      ],
+                      selected: {_dark},
+                      onSelectionChanged: (v) =>
+                          setState(() => _dark = v.first),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Space.sm),
+              ]),
+            ),
           ),
-          const SizedBox(height: Space.lg),
-          Row(
-            children: [
-              Expanded(
-                child: Text(t.markerPreviewTitle, style: tt.titleMedium),
-              ),
-              SegmentedButton<bool>(
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(value: false, label: Text(t.previewLight)),
-                  ButtonSegment(value: true, label: Text(t.previewDark)),
-                ],
-                selected: {_dark},
-                onSelectionChanged: (v) => setState(() => _dark = v.first),
-              ),
-            ],
-          ),
-          const SizedBox(height: Space.md),
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 380),
-              child: MarkerPreview(
+          // The preview stays on top while the settings below scroll under it, and shrinks to a
+          // band around the marker so every change is visible as it is made.
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _PreviewHeader(
+              background: Theme.of(context).scaffoldBackgroundColor,
+              divider: c.outlineVariant,
+              toggleLabel: t.previewToggleBackdrop,
+              dark: _dark,
+              onToggle: () => setState(() => _dark = !_dark),
+              preview: MarkerPreview(
                 key: ValueKey('preview_${s.tool.name}'),
                 spec: spec,
                 darkBackdrop: _dark,
@@ -145,88 +163,246 @@ class _MarkerSettingsScreenState extends ConsumerState<MarkerSettingsScreen> {
               ),
             ),
           ),
-          const SizedBox(height: Space.xl),
-          Text(t.markerDefaultTool, style: tt.titleMedium),
-          const SizedBox(height: Space.sm),
-          Wrap(
-            spacing: Space.sm,
-            runSpacing: Space.sm,
-            children: [
-              for (final m in MarkerType.values)
-                ChoiceChip(
-                  avatar: Icon(markerTypeIcon(m), size: 18),
-                  label: Text(markerTypeLabel(t, m)),
-                  selected: s.tool == m,
-                  onSelected: (_) => n.update(s.copyWith(tool: m)),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              Space.lg,
+              Space.lg,
+              Space.lg,
+              Space.xxl,
+            ),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                Text(t.markerDefaultTool, style: tt.titleMedium),
+                const SizedBox(height: Space.sm),
+                Wrap(
+                  spacing: Space.sm,
+                  runSpacing: Space.sm,
+                  children: [
+                    for (final m in MarkerType.values)
+                      ChoiceChip(
+                        avatar: Icon(markerTypeIcon(m), size: 18),
+                        label: Text(markerTypeLabel(t, m)),
+                        selected: s.tool == m,
+                        onSelected: (_) => n.update(s.copyWith(tool: m)),
+                      ),
+                  ],
                 ),
-            ],
-          ),
-          const SizedBox(height: Space.xl),
-          _ModeSection(settings: s),
-          const SizedBox(height: Space.xl),
-          MarkerInspector(
-            spec: spec,
-            onChanged: (v) {
-              final ci = MarkerPalette.colors.indexOf(v.color);
-              setState(() {
-                _scale = v.scale;
-                _rotation = v.rotation;
-                _opacity = v.opacity;
-              });
-              if (ci != s.colorIndex || v.thickness != s.thickness) {
-                n.update(
-                  s.copyWith(
-                    colorIndex: ci < 0 ? s.colorIndex : ci,
-                    thickness: v.thickness,
+                const SizedBox(height: Space.xl),
+                _ModeSection(settings: s),
+                const SizedBox(height: Space.xl),
+                MarkerInspector(
+                  spec: spec,
+                  onChanged: (v) {
+                    final ci = MarkerPalette.colors.indexOf(v.color);
+                    setState(() {
+                      _scale = v.scale;
+                      _rotation = v.rotation;
+                      _opacity = v.opacity;
+                    });
+                    if (ci != s.colorIndex || v.thickness != s.thickness) {
+                      n.update(
+                        s.copyWith(
+                          colorIndex: ci < 0 ? s.colorIndex : ci,
+                          thickness: v.thickness,
+                        ),
+                      );
+                    }
+                  },
+                ),
+                Text(
+                  t.markerAdjustNote,
+                  style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                ),
+                const SizedBox(height: Space.xl),
+                Row(
+                  children: [
+                    Expanded(child: Text(t.markerHold, style: tt.titleMedium)),
+                    Text(
+                      t.holdSeconds(_secs(s.holdMs)),
+                      style: tt.titleSmall?.copyWith(color: c.primary),
+                    ),
+                  ],
+                ),
+                Semantics(
+                  key: const ValueKey('marker_hold_slider'),
+                  identifier: 'marker_hold',
+                  child: Slider(
+                    value: s.holdMs
+                        .clamp(MarkerTiming.minHoldMs, MarkerTiming.maxHoldMs)
+                        .toDouble(),
+                    min: MarkerTiming.minHoldMs.toDouble(),
+                    max: MarkerTiming.maxHoldMs.toDouble(),
+                    divisions:
+                        (MarkerTiming.maxHoldMs - MarkerTiming.minHoldMs) ~/
+                        500,
+                    label: t.holdSeconds(_secs(s.holdMs)),
+                    onChanged: (v) => n.update(s.copyWith(holdMs: v.round())),
                   ),
-                );
-              }
-            },
-          ),
-          Text(
-            t.markerAdjustNote,
-            style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
-          ),
-          const SizedBox(height: Space.xl),
-          Text(t.markerHold, style: tt.titleMedium),
-          const SizedBox(height: Space.sm),
-          Wrap(
-            spacing: Space.sm,
-            children: [
-              for (final ms in MarkerSettings.holdOptions)
-                ChoiceChip(
-                  label: Text(
-                    t.holdSeconds(
-                      ms % 1000 == 0
-                          ? '${ms ~/ 1000}'
-                          : (ms / 1000).toStringAsFixed(1).replaceAll('.', ','),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${t.markerHoldShort} · ${_secs(MarkerTiming.minHoldMs)} s',
+                      style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                    ),
+                    Text(
+                      '${t.markerHoldLong} · ${_secs(MarkerTiming.maxHoldMs)} s',
+                      style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: Space.xs),
+                Text(
+                  t.markerHoldHint,
+                  style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                ),
+                const SizedBox(height: Space.lg),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(t.markerAutoExit, style: tt.titleSmall),
+                  subtitle: Text(
+                    t.markerAutoExitHint,
+                    style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                  ),
+                  value: s.autoExit,
+                  onChanged: (v) => n.update(s.copyWith(autoExit: v)),
+                ),
+                if (s.autoExit) ...[
+                  Text(
+                    t.markerExitDelay(
+                      (s.exitDelayMs / 1000)
+                          .toStringAsFixed(1)
+                          .replaceAll('.', ','),
+                    ),
+                    style: tt.titleSmall,
+                  ),
+                  Semantics(
+                    identifier: 'marker_exit_delay',
+                    child: Slider(
+                      value: s.exitDelayMs.toDouble(),
+                      min: 0,
+                      max: 3000,
+                      divisions: 30,
+                      label: '${s.exitDelayMs} ms',
+                      onChanged: (v) =>
+                          n.update(s.copyWith(exitDelayMs: v.round())),
                     ),
                   ),
-                  selected: s.holdMs == ms,
-                  onSelected: (_) => n.update(s.copyWith(holdMs: ms)),
+                  Text(
+                    t.markerExitDelayHint,
+                    style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                  ),
+                ],
+                const SizedBox(height: Space.sm),
+                Text(
+                  s.mode == MarkMode.dot ? t.markDotNote : t.markCleanNote,
+                  style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
                 ),
-            ],
-          ),
-          const SizedBox(height: Space.lg),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(t.markerAutoExit, style: tt.titleSmall),
-            subtitle: Text(
-              t.markerAutoExitHint,
-              style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+              ]),
             ),
-            value: s.autoExit,
-            onChanged: (v) => n.update(s.copyWith(autoExit: v)),
-          ),
-          const SizedBox(height: Space.sm),
-          Text(
-            s.mode == MarkMode.dot ? t.markDotNote : t.markCleanNote,
-            style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
           ),
         ],
       ),
     );
   }
+
+  /// 2500 -> "2,5", 3000 -> "3".
+  static String _secs(int ms) => ms % 1000 == 0
+      ? '${ms ~/ 1000}'
+      : (ms / 1000).toStringAsFixed(1).replaceAll('.', ',');
+}
+
+/// Pinned header holding the marker preview. Expanded it shows (almost) the whole mock screen;
+/// scrolled, it collapses to a band centred on the marker. The preview is laid out once at a fixed
+/// size and only the window onto it changes, so nothing reflows or jumps while scrolling.
+class _PreviewHeader extends SliverPersistentHeaderDelegate {
+  _PreviewHeader({
+    required this.background,
+    required this.divider,
+    required this.toggleLabel,
+    required this.dark,
+    required this.onToggle,
+    required this.preview,
+  });
+
+  final Color background;
+  final Color divider;
+  final String toggleLabel;
+  final bool dark;
+  final VoidCallback onToggle;
+  final Widget preview;
+
+  static const double _max = 252;
+  static const double _min = 108;
+  static const double _frameW = 190;
+  static const double _frameH = _frameW * kPreviewFrameH / kPreviewFrameW;
+
+  @override
+  double get maxExtent => _max;
+
+  @override
+  double get minExtent => _min;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final extent = (_max - shrinkOffset).clamp(_min, _max);
+    // Keep the marker's usual spot (55 % down the frame) in the middle of what is visible.
+    final shift = (extent / 2 - 0.55 * _frameH).clamp(extent - _frameH, 0.0);
+    return Container(
+      decoration: BoxDecoration(
+        color: background,
+        border: overlapsContent
+            ? Border(bottom: BorderSide(color: divider))
+            : null,
+      ),
+      child: Stack(
+        children: [
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(Radii.md),
+              child: SizedBox(
+                width: _frameW,
+                height: extent,
+                child: OverflowBox(
+                  alignment: Alignment.topCenter,
+                  minWidth: _frameW,
+                  maxWidth: _frameW,
+                  minHeight: _frameH,
+                  maxHeight: _frameH,
+                  child: Transform.translate(
+                    offset: Offset(0, shift),
+                    child: preview,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: Space.sm,
+            top: Space.xs,
+            child: Semantics(
+              identifier: 'preview_theme',
+              label: toggleLabel,
+              button: true,
+              child: IconButton.filledTonal(
+                visualDensity: VisualDensity.compact,
+                onPressed: onToggle,
+                icon: Icon(dark ? Icons.light_mode : Icons.dark_mode, size: 20),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_PreviewHeader old) => true;
 }
 
 class _ModeSection extends ConsumerWidget {
@@ -314,7 +490,82 @@ class _ModeSection extends ConsumerWidget {
             onChanged: (v) =>
                 n.update(settings.copyWith(autoNumber: v ?? false)),
           ),
+          if (settings.autoZoom) ...[
+            Text(t.zoomAutoTuning, style: tt.titleSmall),
+            _TuneSlider(
+              label: t.zoomScale,
+              value: settings.zoomScale,
+              min: 1.2,
+              max: 4,
+              text:
+                  '${settings.zoomScale.toStringAsFixed(1).replaceAll('.', ',')}×',
+              onChanged: (v) => n.update(settings.copyWith(zoomScale: v)),
+            ),
+            _TuneSlider(
+              label: t.zoomIn,
+              value: settings.zoomRampMs.toDouble(),
+              min: 100,
+              max: 2000,
+              text:
+                  '${(settings.zoomRampMs / 1000).toStringAsFixed(2).replaceAll('.', ',')}s',
+              onChanged: (v) =>
+                  n.update(settings.copyWith(zoomRampMs: v.round())),
+            ),
+            _TuneSlider(
+              label: t.zoomHold,
+              value: settings.zoomHoldMs.toDouble(),
+              min: 0,
+              max: 5000,
+              text:
+                  '${(settings.zoomHoldMs / 1000).toStringAsFixed(1).replaceAll('.', ',')}s',
+              onChanged: (v) =>
+                  n.update(settings.copyWith(zoomHoldMs: v.round())),
+            ),
+            Text(
+              t.zoomTimingHint,
+              style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+            ),
+          ],
         ],
+      ],
+    );
+  }
+}
+
+class _TuneSlider extends StatelessWidget {
+  const _TuneSlider({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.text,
+    required this.onChanged,
+  });
+  final String label;
+  final double value;
+  final double min;
+  final double max;
+  final String text;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    return Row(
+      children: [
+        SizedBox(width: 84, child: Text(label, style: tt.labelLarge)),
+        Expanded(
+          child: Slider(
+            value: value.clamp(min, max),
+            min: min,
+            max: max,
+            onChanged: onChanged,
+          ),
+        ),
+        SizedBox(
+          width: 52,
+          child: Text(text, style: tt.bodySmall, textAlign: TextAlign.end),
+        ),
       ],
     );
   }

@@ -548,6 +548,46 @@ String fontLabel(AppL10n t, TextFont f) => switch (f) {
 };
 
 /// Font, outline, background, shadow, alignment, rotation, opacity and motion of a text.
+String textPresetLabel(AppL10n t, TextPreset p) => switch (p) {
+  TextPreset.classic => t.presetClassic,
+  TextPreset.subtitle => t.presetSubtitle,
+  TextPreset.yellow => t.presetYellow,
+  TextPreset.neon => t.presetNeon,
+  TextPreset.clean => t.presetClean,
+  TextPreset.label => t.presetLabel,
+};
+
+/// One-tap looks, in a single row that scrolls sideways so it costs one line of the panel.
+class TextPresetRow extends StatelessWidget {
+  const TextPresetRow({super.key, required this.c, required this.item});
+  final EditorController c;
+  final TextItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppL10n.of(context);
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: TextPreset.values.length,
+        separatorBuilder: (_, _) => const SizedBox(width: Space.xs),
+        itemBuilder: (_, i) {
+          final p = TextPreset.values[i];
+          return Semantics(
+            identifier: 'text_preset_${p.name}',
+            child: ActionChip(
+              visualDensity: VisualDensity.compact,
+              label: Text(textPresetLabel(t, p)),
+              onPressed: () => c.updateText(p.apply(item)),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
 class TextStyleControls extends StatelessWidget {
   const TextStyleControls({super.key, required this.c, required this.item});
   final EditorController c;

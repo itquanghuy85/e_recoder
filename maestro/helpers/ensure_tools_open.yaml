@@ -1,0 +1,13 @@
+appId: com.huluca.escreenrecorder
+name: Helper - make sure the editor's tool tabs are showing
+tags:
+  - helper
+---
+# The editor remembers "hide tools" between sessions: a flow that needs the tabs opens them first.
+- runFlow:
+    when:
+      notVisible:
+        id: "tool_cut"
+    commands:
+      - tapOn:
+          id: "tools_toggle"

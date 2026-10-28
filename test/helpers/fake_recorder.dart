@@ -162,6 +162,13 @@ class FakeRecorder implements NativeRecorder {
   }
 
   @override
+  Future<List<double>?> waveform(
+    String uri,
+    int durationMs,
+    int bucketMs,
+  ) async => null;
+
+  @override
   Future<double?> loudness(String uri, int startMs, int endMs) async {
     calls.add('loudness');
     return nextLoudness;

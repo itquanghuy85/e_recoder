@@ -20,6 +20,16 @@ class ZoomMathTest {
         assert(early > 1f && early < 2f)
     }
 
+    @Test fun rampSpeedIsAdjustable() {
+        val slow = ZoomClip(0.5f, 0.5f, 2f, 0, 6000, inMs = 2000, outMs = 100)
+        assertEquals(1.5f, ZoomMath.at(listOf(slow), 1000).first, eps)
+        assertEquals(1.5f, ZoomMath.at(listOf(slow), 5950).first, eps)
+        val instant = ZoomClip(0.5f, 0.5f, 2f, 0, 6000, inMs = 0, outMs = 0)
+        assertEquals(2f, ZoomMath.at(listOf(instant), 1).first, eps)
+        val tight = ZoomClip(0.5f, 0.5f, 2f, 0, 1000, inMs = 2000, outMs = 2000)
+        assertEquals(2f, ZoomMath.at(listOf(tight), 500).first, eps)
+    }
+
     @Test fun windowStaysInsideTheFrame() {
         val (_, cx, cy) = ZoomMath.at(listOf(z), 3000)
         assertEquals(0.75f, cx, eps)

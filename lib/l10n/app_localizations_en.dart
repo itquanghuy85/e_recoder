@@ -346,6 +346,19 @@ class AppL10nEn extends AppL10n {
   String get markerHold => 'Keep the marker after placing';
 
   @override
+  String get markerHoldShort => 'Short';
+
+  @override
+  String get markerHoldLong => 'Long';
+
+  @override
+  String get markerHoldHint =>
+      'Counted from when you finish placing it. When the time is up the marker fades and disappears, even if you are still in marking mode or have moved to another page.';
+
+  @override
+  String get previewToggleBackdrop => 'Switch preview light/dark';
+
+  @override
   String holdSeconds(String s) {
     return '$s s';
   }
@@ -356,6 +369,15 @@ class AppL10nEn extends AppL10n {
   @override
   String get markerAutoExitHint =>
       'After placing a marker the floating bar goes back to normal so you can tap the real target.';
+
+  @override
+  String markerExitDelay(String s) {
+    return 'Wait $s s before you can tap';
+  }
+
+  @override
+  String get markerExitDelayHint =>
+      'Time between placing a marker and being able to tap the real target. Shorter is faster, but viewers need a moment to see the marker.';
 
   @override
   String get markerBarNote =>
@@ -651,11 +673,39 @@ class AppL10nEn extends AppL10n {
   String get textSize => 'Text size';
 
   @override
-  String get coverAdd => 'Add cover block';
+  String get coverAdd => 'Add region';
+
+  @override
+  String get coverStyleSolid => 'Solid';
+
+  @override
+  String get coverStyleBlur => 'Blur';
+
+  @override
+  String get coverStyleMosaic => 'Mosaic';
+
+  @override
+  String get coverStyleSpotlight => 'Spotlight';
+
+  @override
+  String get coverStrength => 'Strength';
+
+  @override
+  String get coverMove => 'Move';
+
+  @override
+  String get coverMoveHint =>
+      'The region glides from the start point to the end point over its whole duration. Pick a point, then drag on the video.';
+
+  @override
+  String get coverPointStart => 'Start point';
+
+  @override
+  String get coverPointEnd => 'End point';
 
   @override
   String get coverHint =>
-      'A solid block hides phone numbers, passwords… from viewers. Drag on the video to place it.';
+      'Hide phone numbers, passwords… with a solid block, a blur or a mosaic; or dim everything else to spotlight an area. Drag on the video to place it.';
 
   @override
   String get coverWidth => 'Width';
@@ -671,6 +721,22 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get zoomScale => 'Zoom level';
+
+  @override
+  String get zoomIn => 'Zoom in';
+
+  @override
+  String get zoomOut => 'Zoom out';
+
+  @override
+  String get zoomHold => 'Hold';
+
+  @override
+  String get zoomTimingHint =>
+      'Zoom in / Zoom out is how long the zoom takes to reach full level and to return; shorter is faster. Hold is how long it stays zoomed after the marker has faded.';
+
+  @override
+  String get zoomAutoTuning => 'Fine-tune automatic zoom';
 
   @override
   String get zoomDragHint =>
@@ -829,6 +895,47 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get frameForward => 'Forward one frame';
+
+  @override
+  String get enterFullscreen => 'Full-screen preview';
+
+  @override
+  String get exitFullscreen => 'Exit full screen';
+
+  @override
+  String get toolsHide => 'Hide tools';
+
+  @override
+  String get toolsShow => 'Show tools';
+
+  @override
+  String get presetClassic => 'Classic';
+
+  @override
+  String get presetSubtitle => 'Subtitle';
+
+  @override
+  String get presetYellow => 'Yellow';
+
+  @override
+  String get presetNeon => 'Neon';
+
+  @override
+  String get presetClean => 'Clean';
+
+  @override
+  String get presetLabel => 'Label';
+
+  @override
+  String get subtitlesImport => 'Import subtitles (.srt)';
+
+  @override
+  String subtitlesImported(int n) {
+    return 'Added $n subtitle lines.';
+  }
+
+  @override
+  String get subtitlesNone => 'No subtitle lines could be read from this file.';
 
   @override
   String get timelineFit => 'Fit';

@@ -130,6 +130,7 @@ class StartRequest {
     required this.floatingBar,
     this.markerHoldMs = 2500,
     this.markerAutoExit = true,
+    this.markerExitDelayMs = 900,
     this.markerColor = 0xFFFF3B30,
     this.markerThickness = 5,
     this.markerTool = 'finger',
@@ -144,6 +145,7 @@ class StartRequest {
 
   final int markerHoldMs;
   final bool markerAutoExit;
+  final int markerExitDelayMs;
   final int markerColor;
   final double markerThickness;
   final String markerTool;
@@ -170,6 +172,7 @@ class StartRequest {
     'floatingBar': floatingBar,
     'markerHoldMs': markerHoldMs,
     'markerAutoExit': markerAutoExit,
+    'markerExitDelayMs': markerExitDelayMs,
     'markerColor': markerColor,
     'markerThickness': markerThickness,
     'markerTool': markerTool,
@@ -428,6 +431,20 @@ class NativeRecorder {
       'endMs': endMs,
     });
     return v?.toDouble();
+  }
+
+  /// Peak level (0..1) of every [bucketMs] slice of a video's sound, null when it has none.
+  Future<List<double>?> waveform(
+    String uri,
+    int durationMs,
+    int bucketMs,
+  ) async {
+    final v = await _method.invokeListMethod<num>('waveform', {
+      'uri': uri,
+      'durationMs': durationMs,
+      'bucketMs': bucketMs,
+    });
+    return v?.map((e) => e.toDouble()).toList();
   }
 
   /// Saves PNG bytes into Pictures/E Screen Recorder.

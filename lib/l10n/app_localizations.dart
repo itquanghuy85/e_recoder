@@ -721,6 +721,30 @@ abstract class AppL10n {
   /// **'Giữ dấu sau khi đặt xong'**
   String get markerHold;
 
+  /// No description provided for @markerHoldShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngắn'**
+  String get markerHoldShort;
+
+  /// No description provided for @markerHoldLong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dài'**
+  String get markerHoldLong;
+
+  /// No description provided for @markerHoldHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tính từ lúc đặt xong. Hết thời gian dấu mờ dần rồi biến mất, kể cả khi bạn vẫn ở chế độ đánh dấu hoặc đã chuyển sang trang khác.'**
+  String get markerHoldHint;
+
+  /// No description provided for @previewToggleBackdrop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi nền xem thử sáng/tối'**
+  String get previewToggleBackdrop;
+
   /// No description provided for @holdSeconds.
   ///
   /// In vi, this message translates to:
@@ -738,6 +762,18 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Đặt dấu xong, thanh nổi trở về bình thường để bạn bấm thật vào đích.'**
   String get markerAutoExitHint;
+
+  /// No description provided for @markerExitDelay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ {s} giây rồi mới cho bấm'**
+  String markerExitDelay(String s);
+
+  /// No description provided for @markerExitDelayHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian từ lúc đặt dấu đến lúc bạn bấm thật được. Càng ngắn càng nhanh, nhưng dấu cần đủ lâu để người xem kịp nhìn.'**
+  String get markerExitDelayHint;
 
   /// No description provided for @markerBarNote.
   ///
@@ -1270,13 +1306,67 @@ abstract class AppL10n {
   /// No description provided for @coverAdd.
   ///
   /// In vi, this message translates to:
-  /// **'Thêm khối che'**
+  /// **'Thêm vùng'**
   String get coverAdd;
+
+  /// No description provided for @coverStyleSolid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khối đặc'**
+  String get coverStyleSolid;
+
+  /// No description provided for @coverStyleBlur.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm mờ'**
+  String get coverStyleBlur;
+
+  /// No description provided for @coverStyleMosaic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mosaic'**
+  String get coverStyleMosaic;
+
+  /// No description provided for @coverStyleSpotlight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiêu điểm'**
+  String get coverStyleSpotlight;
+
+  /// No description provided for @coverStrength.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cường độ'**
+  String get coverStrength;
+
+  /// No description provided for @coverMove.
+  ///
+  /// In vi, this message translates to:
+  /// **'Di chuyển'**
+  String get coverMove;
+
+  /// No description provided for @coverMoveHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vùng trượt mượt từ điểm đầu tới điểm cuối trong suốt thời gian của nó. Chọn điểm rồi kéo trên video.'**
+  String get coverMoveHint;
+
+  /// No description provided for @coverPointStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm đầu'**
+  String get coverPointStart;
+
+  /// No description provided for @coverPointEnd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điểm cuối'**
+  String get coverPointEnd;
 
   /// No description provided for @coverHint.
   ///
   /// In vi, this message translates to:
-  /// **'Khối đặc che số điện thoại, mật khẩu… khỏi người xem. Kéo trên video để đặt vị trí.'**
+  /// **'Che số điện thoại, mật khẩu… bằng khối đặc, làm mờ hoặc mosaic; hoặc làm tối phần còn lại để nhấn mạnh một vùng (tiêu điểm). Kéo trên video để đặt vị trí.'**
   String get coverHint;
 
   /// No description provided for @coverWidth.
@@ -1308,6 +1398,36 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Mức phóng'**
   String get zoomScale;
+
+  /// No description provided for @zoomIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phóng vào'**
+  String get zoomIn;
+
+  /// No description provided for @zoomOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu lại'**
+  String get zoomOut;
+
+  /// No description provided for @zoomHold.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giữ thêm'**
+  String get zoomHold;
+
+  /// No description provided for @zoomTimingHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phóng vào/Thu lại là thời gian để phóng tới mức đầy đủ và để trở về; càng ngắn càng nhanh. Giữ thêm là thời gian vẫn phóng sau khi dấu đã mờ.'**
+  String get zoomTimingHint;
+
+  /// No description provided for @zoomAutoTuning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tinh chỉnh phóng tự động'**
+  String get zoomAutoTuning;
 
   /// No description provided for @zoomDragHint.
   ///
@@ -1590,6 +1710,84 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Tiến 1 khung hình'**
   String get frameForward;
+
+  /// No description provided for @enterFullscreen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem toàn màn hình'**
+  String get enterFullscreen;
+
+  /// No description provided for @exitFullscreen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thoát toàn màn hình'**
+  String get exitFullscreen;
+
+  /// No description provided for @toolsHide.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ẩn công cụ'**
+  String get toolsHide;
+
+  /// No description provided for @toolsShow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện công cụ'**
+  String get toolsShow;
+
+  /// No description provided for @presetClassic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cổ điển'**
+  String get presetClassic;
+
+  /// No description provided for @presetSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phụ đề'**
+  String get presetSubtitle;
+
+  /// No description provided for @presetYellow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vàng'**
+  String get presetYellow;
+
+  /// No description provided for @presetNeon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Neon'**
+  String get presetNeon;
+
+  /// No description provided for @presetClean.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gọn'**
+  String get presetClean;
+
+  /// No description provided for @presetLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhãn'**
+  String get presetLabel;
+
+  /// No description provided for @subtitlesImport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập phụ đề (.srt)'**
+  String get subtitlesImport;
+
+  /// No description provided for @subtitlesImported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thêm {n} dòng phụ đề.'**
+  String subtitlesImported(int n);
+
+  /// No description provided for @subtitlesNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đọc được dòng phụ đề nào trong tệp này.'**
+  String get subtitlesNone;
 
   /// No description provided for @timelineFit.
   ///

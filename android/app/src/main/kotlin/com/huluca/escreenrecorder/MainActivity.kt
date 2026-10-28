@@ -88,6 +88,12 @@ class MainActivity : FlutterActivity() {
                     (call.argument<Number>("startMs")!!).toLong(), (call.argument<Number>("endMs")!!).toLong(),
                 )
             }
+            "waveform" -> async(result) {
+                EditorMedia.waveform(
+                    this, call.argument<String>("uri")!!,
+                    (call.argument<Number>("durationMs")!!).toLong(), (call.argument<Number>("bucketMs")!!).toLong(),
+                )
+            }
             "saveImage" -> async(result) {
                 EditorMedia.saveImage(this, call.argument<ByteArray>("png")!!, call.argument<String>("prefix") ?: "ESR_frame")
             }
@@ -196,6 +202,7 @@ class MainActivity : FlutterActivity() {
             "audio" -> arrayOf("audio/*")
             "image" -> arrayOf("image/*")
             "video" -> arrayOf("video/*")
+            "file" -> arrayOf("*/*")
             else -> arrayOf("image/*", "video/*")
         }
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {

@@ -181,6 +181,53 @@ void main() {
       expect(early, lessThan(2));
     });
 
+    test('ramp speed is adjustable and shrinks to fit a short clip', () {
+      const slow = ZoomItem(
+        id: 'z',
+        scale: 2,
+        startMs: 0,
+        endMs: 6000,
+        inMs: 2000,
+        outMs: 100,
+      );
+      expect(zoomAt([slow], 1000).scale, closeTo(1.5, 1e-9)); // halfway in
+      expect(zoomAt([slow], 5950).scale, closeTo(1.5, 1e-9)); // halfway out
+      const instant = ZoomItem(
+        id: 'z',
+        scale: 2,
+        startMs: 0,
+        endMs: 6000,
+        inMs: 0,
+        outMs: 0,
+      );
+      expect(zoomAt([instant], 1).scale, closeTo(2, 1e-9));
+      const tight = ZoomItem(
+        id: 'z',
+        scale: 2,
+        startMs: 0,
+        endMs: 1000,
+        inMs: 2000,
+        outMs: 2000,
+      );
+      expect(
+        zoomAt([tight], 500).scale,
+        closeTo(2, 1e-9),
+      ); // ramps meet at the middle
+    });
+
+    test('old projects without ramps still load with the default', () {
+      final z = ZoomItem.fromJson({
+        'id': 'z',
+        'fx': .5,
+        'fy': .5,
+        'scale': 2,
+        'startMs': 0,
+        'endMs': 1000,
+      });
+      expect(z.inMs, kZoomRampMs);
+      expect(ZoomItem.fromJson(z.copyWith(inMs: 900).toJson()).inMs, 900);
+    });
+
     test('the visible window never leaves the frame', () {
       final mid = zoomAt([z], 3000);
       expect(mid.cx, closeTo(0.75, 1e-9)); // 1 - 0.5/2

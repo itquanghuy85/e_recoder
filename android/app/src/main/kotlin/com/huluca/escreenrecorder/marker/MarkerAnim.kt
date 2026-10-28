@@ -10,6 +10,10 @@ import kotlin.math.pow
  */
 object MarkerAnim {
     const val CUE_MS = 500L
+
+    /** Range of the "keep the marker" setting (mirror of MarkerTiming.minHoldMs / maxHoldMs). */
+    const val MIN_HOLD_MS = 500L
+    const val MAX_HOLD_MS = 10_000L
     const val POP_MS = 140L
     const val PRESS_MS = 260L
     const val FADE_MS = 300L

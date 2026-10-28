@@ -30,6 +30,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  shaders:
+    - shaders/mosaic.frag
   fonts:
     - family: Barlow
       fonts:

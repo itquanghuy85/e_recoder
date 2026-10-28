@@ -4,6 +4,10 @@ import 'dart:math' as math;
 /// the same test vectors (test/marker_timing_test.dart and MarkerAnimTest.kt) — change them together.
 abstract final class MarkerTiming {
   static const int cueMs = 500;
+
+  /// Range of the "keep the marker" setting. Mirror of MarkerAnim.MIN_HOLD_MS / MAX_HOLD_MS.
+  static const int minHoldMs = 500;
+  static const int maxHoldMs = 10000;
   static const int popMs = 140;
   static const int pressMs = 260;
   static const int fadeMs = 300;

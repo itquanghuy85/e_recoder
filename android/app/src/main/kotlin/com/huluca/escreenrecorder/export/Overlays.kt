@@ -148,8 +148,6 @@ class TimedBitmapOverlay(
 
 /** Pure zoom maths (also unit tested): mirror of lib/features/editor/editor_math.dart. */
 object ZoomMath {
-    const val RAMP_MS = 350f
-
     private fun smooth(x: Float): Float {
         val t = x.coerceIn(0f, 1f)
         return t * t * (3 - 2 * t)
@@ -162,8 +160,13 @@ object ZoomMath {
         var fy = 0.5f
         for (z in zooms) {
             if (tMs < z.startMs || tMs > z.endMs) continue
-            val inP = smooth((tMs - z.startMs) / RAMP_MS)
-            val outP = smooth((z.endMs - tMs) / RAMP_MS)
+            val len = (z.endMs - z.startMs).toFloat()
+            val sum = (z.inMs + z.outMs).toFloat()
+            val fit = if (sum > len && sum > 0f) len / sum else 1f
+            val rampIn = z.inMs * fit
+            val rampOut = z.outMs * fit
+            val inP = if (rampIn <= 0f) 1f else smooth((tMs - z.startMs) / rampIn)
+            val outP = if (rampOut <= 0f) 1f else smooth((z.endMs - tMs) / rampOut)
             s = 1f + (z.scale - 1f) * min(inP, outP)
             fx = z.fx; fy = z.fy
         }

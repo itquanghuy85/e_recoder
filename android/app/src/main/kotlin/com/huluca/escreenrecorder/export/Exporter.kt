@@ -295,6 +295,10 @@ class Exporter(private val ctx: Context) {
             // Media3 turns counter-clockwise; the editor's rotation is clockwise.
             video.add(ScaleAndRotateTransformation.Builder().setRotationDegrees(-pic.rotation.toFloat()).build())
         }
+        // Blocks, blur, mosaic and spotlight act on the video itself, so they go under every overlay.
+        for (c in job.covers) {
+            if (c.endMs > winStart && c.startMs < winEnd) video.add(RegionEffect(c, clock))
+        }
         val picture = pictureOverlays(job, winStart, winEnd, clock)
         if (picture.isNotEmpty()) video.add(OverlayEffect(ImmutableList.copyOf(picture)))
         val zooms = job.zooms.filter { it.endMs > winStart && it.startMs < winEnd }
@@ -358,12 +362,7 @@ class Exporter(private val ctx: Context) {
         val list = ArrayList<TextureOverlay>()
         val fw = job.frameW
         val fh = job.frameH
-        // Covers go below markers/text so the pointer stays visible on top of a hidden block.
-        for (c in job.covers) {
-            if (c.endMs <= winStart || c.startMs >= winEnd) continue
-            val r = OverlayRenderers.renderCover(c, fw, fh)
-            list.add(TimedBitmapOverlay(r.bitmap, fw, fh, (c.x0 + c.x1) / 2, (c.y0 + c.y1) / 2, c.startMs, c.endMs, clock, 120))
-        }
+        // Covers are a GL pass under the overlays (see pictureEffects), so the pointer stays visible on top.
         for (m in job.markers) {
             val end = m.cueStartMs + com.huluca.escreenrecorder.marker.MarkerAnim.CUE_MS + m.holdMs +
                 com.huluca.escreenrecorder.marker.MarkerAnim.FADE_MS

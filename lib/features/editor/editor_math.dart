@@ -1,7 +1,6 @@
 import 'edit_project.dart';
 
-/// Mirror of ZoomTransformation.kt (same ramp, same clamp). Keep both in step.
-const int kZoomRampMs = 350;
+/// Mirror of ZoomTransformation.kt (same ramps, same clamp). Keep both in step.
 
 double _smooth(double x) {
   final t = x.clamp(0.0, 1.0);
@@ -16,8 +15,14 @@ double _smooth(double x) {
   var fy = 0.5;
   for (final z in zooms) {
     if (t < z.startMs || t > z.endMs) continue;
-    final inP = _smooth((t - z.startMs) / kZoomRampMs);
-    final outP = _smooth((z.endMs - t) / kZoomRampMs);
+    // Both ramps must fit in the clip: if they do not, they shrink together.
+    final len = z.endMs - z.startMs;
+    final fit = z.inMs + z.outMs > len && z.inMs + z.outMs > 0
+        ? len / (z.inMs + z.outMs)
+        : 1.0;
+    final rampIn = z.inMs * fit, rampOut = z.outMs * fit;
+    final inP = rampIn <= 0 ? 1.0 : _smooth((t - z.startMs) / rampIn);
+    final outP = rampOut <= 0 ? 1.0 : _smooth((z.endMs - t) / rampOut);
     s = 1 + (z.scale - 1) * (inP < outP ? inP : outP);
     fx = z.fx;
     fy = z.fy;
@@ -30,4 +35,28 @@ double _smooth(double x) {
     cx: fx.clamp(half, 1 - half).toDouble(),
     cy: fy.clamp(half, 1 - half).toDouble(),
   );
+}
+
+/// Mirror of RegionMath in RegionFx.kt: how blur, mosaic and spotlight scale with their strength.
+/// Keep both in step (same test vectors in editor_controller_test.dart and RegionMathTest.kt).
+abstract final class RegionMath {
+  static const int fadeMs = 120;
+
+  /// Mosaic cell size, as a fraction of the frame width.
+  static double mosaicBlockFrac(double s) => 0.02 + 0.06 * s.clamp(0.0, 1.0);
+
+  /// Blur radius, as a fraction of the frame width.
+  static double blurRadiusFrac(double s) => 0.015 + 0.03 * s.clamp(0.0, 1.0);
+
+  /// How dark everything outside a spotlight gets (0..1).
+  static double spotlightDim(double s) => 0.35 + 0.5 * s.clamp(0.0, 1.0);
+
+  /// 0 outside the clip, easing to 1 over [fadeMs] at both ends.
+  static double mix(int t, int startMs, int endMs) {
+    if (t < startMs || t > endMs) return 0;
+    final a =
+        ((t - startMs) < (endMs - t) ? (t - startMs) : (endMs - t)) / fadeMs;
+    final x = a.clamp(0.0, 1.0);
+    return x * x * (3 - 2 * x);
+  }
 }

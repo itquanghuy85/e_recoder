@@ -48,6 +48,11 @@ tags:
     id: "profile_card"
 - tapOn:
     id: "rec_reset"
+# On short screens the close button sits below the fold.
+- scrollUntilVisible:
+    element: "Đóng"
+    direction: DOWN
+    timeout: 15000
 - tapOn: "Đóng"
 # Marker mode is persisted too: always start from the small dot in the bottom-left corner.
 - runFlow:

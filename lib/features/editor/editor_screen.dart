@@ -11,11 +11,14 @@ import '../../core/native_recorder.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
+import '../../app/settings_store.dart';
 import '../marker/marker_settings.dart';
 import '../record/recorder_controller.dart';
+import 'auto_director.dart' show DirectorOptions;
 import 'edit_project.dart';
 import 'editor_controller.dart';
 import 'editor_extra_players.dart';
+import 'editor_fullscreen.dart';
 import 'editor_playback.dart';
 import 'editor_pro_tools.dart' show ensureMicrophone;
 import 'project_template.dart';
@@ -43,6 +46,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   bool _wasPlaying = false;
   bool _failed = false;
   EditorTool _tool = EditorTool.cut;
+  bool _toolsHidden = false;
   bool _seeking = false;
   int _lastSeekSource = -1;
   final _timelineKey = GlobalKey<EditorTimelineState>();
@@ -54,6 +58,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) ScaffoldMessenger.of(context).clearSnackBars();
     });
+    try {
+      _toolsHidden = ref
+          .read(settingsStoreProvider)
+          .getBool('editor.toolsHidden', false);
+    } catch (_) {}
     _init();
   }
 
@@ -80,7 +89,14 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         native: ref.read(nativeRecorderProvider),
         store: store,
       );
+      final mk = ref.read(markerSettingsProvider);
+      c.directorOptions = DirectorOptions(
+        zoomScale: mk.zoomScale,
+        zoomRampMs: mk.zoomRampMs,
+        zoomHoldMs: mk.zoomHoldMs,
+      );
       c.addListener(_onController);
+      c.loadWaveform();
       setState(() {
         _v = v;
         _c = c;
@@ -415,12 +431,38 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 child: Container(
                   color: cs.surfaceContainerLowest,
                   padding: const EdgeInsets.symmetric(vertical: Space.sm),
-                  child: EditorStage(
-                    controller: c,
-                    video: v,
-                    pipVideos: _extras?.pips ?? const {},
-                    repaint: _extras,
-                    captureKey: _stageKey,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: EditorStage(
+                          controller: c,
+                          video: v,
+                          pipVideos: _extras?.pips ?? const {},
+                          repaint: _extras,
+                          captureKey: _stageKey,
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: Space.sm,
+                        child: Semantics(
+                          identifier: 'editor_fullscreen',
+                          child: IconButton.filledTonal(
+                            visualDensity: VisualDensity.compact,
+                            tooltip: t.enterFullscreen,
+                            onPressed: () => showEditorFullscreen(
+                              context,
+                              controller: c,
+                              video: v,
+                              pipVideos: _extras?.pips ?? const {},
+                              repaint: _extras,
+                              onToggle: _togglePlay,
+                            ),
+                            icon: const Icon(Icons.fullscreen),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -446,6 +488,13 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 newMarkerThickness: mk.thickness,
                 video: v,
                 onRecordVoice: _recordVoice,
+                collapsed: _toolsHidden,
+                onToggleCollapsed: () {
+                  setState(() => _toolsHidden = !_toolsHidden);
+                  ref
+                      .read(settingsStoreProvider)
+                      .setBool('editor.toolsHidden', _toolsHidden);
+                },
               ),
             ],
           ),

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:math' as math;
-import 'dart:ui' show Color;
+import 'dart:ui' show Color, Rect;
 
 import '../marker/marker_spec.dart';
 import '../marker/marker_timing.dart';
@@ -64,6 +64,62 @@ class MarkerItem {
 enum TextFont { barlow, sans, condensed, serif, mono, cursive }
 
 enum TextAlignment { left, center, right }
+
+/// One-tap looks for a caption. Only styling changes: text, timing and position stay.
+enum TextPreset { classic, subtitle, yellow, neon, clean, label }
+
+extension TextPresetLook on TextPreset {
+  TextItem apply(TextItem t) => switch (this) {
+    TextPreset.classic => t.copyWith(
+      color: const Color(0xFFFFFFFF),
+      outline: true,
+      box: null,
+      shadow: false,
+      bold: true,
+      sizeU: 22,
+    ),
+    TextPreset.subtitle => t.copyWith(
+      color: const Color(0xFFFFFFFF),
+      outline: false,
+      box: const Color(0xB3000000),
+      shadow: false,
+      bold: true,
+      sizeU: 18,
+    ),
+    TextPreset.yellow => t.copyWith(
+      color: const Color(0xFFFFD60A),
+      outline: true,
+      box: null,
+      shadow: true,
+      bold: true,
+      sizeU: 22,
+    ),
+    TextPreset.neon => t.copyWith(
+      color: const Color(0xFF2DE2FF),
+      outline: false,
+      box: null,
+      shadow: true,
+      bold: true,
+      sizeU: 24,
+    ),
+    TextPreset.clean => t.copyWith(
+      color: const Color(0xFFFFFFFF),
+      outline: false,
+      box: null,
+      shadow: true,
+      bold: false,
+      sizeU: 20,
+    ),
+    TextPreset.label => t.copyWith(
+      color: const Color(0xFF111111),
+      outline: false,
+      box: const Color(0xE6FFFFFF),
+      shadow: false,
+      bold: true,
+      sizeU: 18,
+    ),
+  };
+}
 
 class TextItem {
   const TextItem({
@@ -200,6 +256,10 @@ class TextItem {
 }
 
 /// Opaque block that hides sensitive content (a real blur is not available in the export engine).
+/// What a rectangle on the picture does: hide it with a block, blur it, pixelate it, or dim everything
+/// else so the rectangle stands out (spotlight).
+enum CoverStyle { solid, blur, mosaic, spotlight }
+
 class CoverItem {
   const CoverItem({
     required this.id,
@@ -210,12 +270,40 @@ class CoverItem {
     required this.startMs,
     required this.endMs,
     this.color = const Color(0xFF0E1116),
+    this.style = CoverStyle.solid,
+    this.strength = 0.5,
+    this.end,
   });
   final String id;
   final double x0, y0, x1, y1;
   final int startMs;
   final int endMs;
   final Color color;
+  final CoverStyle style;
+
+  /// 0..1: how strong the blur, mosaic or dimming is (unused by [CoverStyle.solid]).
+  final double strength;
+
+  /// Where the rectangle ends up, or null to stay put. It glides there, eased, over the whole clip.
+  final Rect? end;
+
+  Rect get startRect => Rect.fromLTRB(x0, y0, x1, y1);
+
+  /// The rectangle at source time [t]. Mirror of RegionMath.rectAt in RegionFx.kt.
+  Rect rectAt(int t) {
+    final e = end;
+    if (e == null) return startRect;
+    final len = math.max(1, endMs - startMs);
+    final k = _smoothStep((t - startMs) / len);
+    return Rect.lerp(startRect, e, k)!;
+  }
+
+  /// The start or end rectangle (what the panel and dragging edit).
+  Rect editRect(bool atEnd) => atEnd && end != null ? end! : startRect;
+
+  CoverItem withRect(Rect r, {required bool atEnd}) => atEnd && end != null
+      ? copyWith(end: r)
+      : copyWith(x0: r.left, y0: r.top, x1: r.right, y1: r.bottom);
 
   CoverItem copyWith({
     double? x0,
@@ -225,6 +313,9 @@ class CoverItem {
     int? startMs,
     int? endMs,
     Color? color,
+    CoverStyle? style,
+    double? strength,
+    Object? end = _keepEnd,
   }) => CoverItem(
     id: id,
     x0: x0 ?? this.x0,
@@ -234,6 +325,9 @@ class CoverItem {
     startMs: startMs ?? this.startMs,
     endMs: endMs ?? this.endMs,
     color: color ?? this.color,
+    style: style ?? this.style,
+    strength: strength ?? this.strength,
+    end: identical(end, _keepEnd) ? this.end : end as Rect?,
   );
 
   Map<String, Object> toNative() => {
@@ -244,6 +338,14 @@ class CoverItem {
     'startMs': startMs,
     'endMs': endMs,
     'color': color.toARGB32(),
+    'style': style.name,
+    'strength': strength,
+    if (end != null) ...{
+      'ex0': end!.left,
+      'ey0': end!.top,
+      'ex1': end!.right,
+      'ey1': end!.bottom,
+    },
   };
 
   Map<String, Object> toJson() => {'id': id, ...toNative()};
@@ -256,8 +358,31 @@ class CoverItem {
     startMs: j['startMs'] as int,
     endMs: j['endMs'] as int,
     color: Color(j['color'] as int),
+    style: CoverStyle.values.firstWhere(
+      (s) => s.name == j['style'],
+      orElse: () => CoverStyle.solid,
+    ),
+    strength: ((j['strength'] as num?) ?? 0.5).toDouble().clamp(0.0, 1.0),
+    end: j['ex0'] == null
+        ? null
+        : Rect.fromLTRB(
+            (j['ex0'] as num).toDouble(),
+            (j['ey0'] as num).toDouble(),
+            (j['ex1'] as num).toDouble(),
+            (j['ey1'] as num).toDouble(),
+          ),
   );
 }
+
+const Object _keepEnd = Object();
+
+double _smoothStep(double x) {
+  final t = x.clamp(0.0, 1.0);
+  return t * t * (3 - 2 * t);
+}
+
+/// Default time a zoom takes to reach full scale and to come back. Mirror of ZoomMath.RAMP_MS.
+const int kZoomRampMs = 350;
 
 class ZoomItem {
   const ZoomItem({
@@ -267,6 +392,8 @@ class ZoomItem {
     this.scale = 2,
     required this.startMs,
     required this.endMs,
+    this.inMs = kZoomRampMs,
+    this.outMs = kZoomRampMs,
   });
   final String id;
   final double fx, fy;
@@ -274,12 +401,18 @@ class ZoomItem {
   final int startMs;
   final int endMs;
 
+  /// How long the zoom takes to reach full scale / to come back (shorter = faster).
+  final int inMs;
+  final int outMs;
+
   ZoomItem copyWith({
     double? fx,
     double? fy,
     double? scale,
     int? startMs,
     int? endMs,
+    int? inMs,
+    int? outMs,
   }) => ZoomItem(
     id: id,
     fx: fx ?? this.fx,
@@ -287,6 +420,8 @@ class ZoomItem {
     scale: scale ?? this.scale,
     startMs: startMs ?? this.startMs,
     endMs: endMs ?? this.endMs,
+    inMs: inMs ?? this.inMs,
+    outMs: outMs ?? this.outMs,
   );
 
   Map<String, Object> toNative() => {
@@ -295,6 +430,8 @@ class ZoomItem {
     'scale': scale,
     'startMs': startMs,
     'endMs': endMs,
+    'inMs': inMs,
+    'outMs': outMs,
   };
   Map<String, Object> toJson() => {'id': id, ...toNative()};
   factory ZoomItem.fromJson(Map<String, dynamic> j) => ZoomItem(
@@ -304,6 +441,8 @@ class ZoomItem {
     scale: (j['scale'] as num).toDouble(),
     startMs: j['startMs'] as int,
     endMs: j['endMs'] as int,
+    inMs: (j['inMs'] as int?) ?? kZoomRampMs,
+    outMs: (j['outMs'] as int?) ?? kZoomRampMs,
   );
 }
 

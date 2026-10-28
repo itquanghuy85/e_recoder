@@ -133,17 +133,24 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     expect(fake.calls, contains('renderMarker:arrow'));
 
-    await tester.scrollUntilVisible(
-      find.text('4 giây'),
-      200,
-      scrollable: scroller,
+    // The effect time is a seconds slider from 0,5 s to 10 s; it shows its value and is kept.
+    final holdSlider = find.descendant(
+      of: find.byKey(const ValueKey('marker_hold_slider')),
+      matching: find.byType(Slider),
     );
-    await tester.tap(find.text('4 giây'));
+    await tester.scrollUntilVisible(holdSlider, 200, scrollable: scroller);
+    expect(find.text('2,5 giây'), findsWidgets);
+    expect(find.textContaining('0,5 s'), findsOneWidget);
+    expect(find.textContaining('10 s'), findsOneWidget);
+    await tester.drag(holdSlider, const Offset(2000, 0)); // far right = longest
     await tester.pump();
-    final chip = tester.widget<ChoiceChip>(
-      find.widgetWithText(ChoiceChip, '4 giây'),
-    );
-    expect(chip.selected, isTrue);
+    expect(find.text('10 giây'), findsWidgets);
+    await tester.drag(
+      holdSlider,
+      const Offset(-4000, 0),
+    ); // far left = shortest
+    await tester.pump();
+    expect(find.text('0,5 giây'), findsWidgets);
   });
 
   testWidgets('saved event shows a snackbar with a View action', (

@@ -28,11 +28,23 @@ data class SegmentSpec(
 /** A marker on the timeline: the cue ring starts at [cueStartMs], the "take" is cueStartMs + 500. */
 data class MarkerClip(val spec: MarkerSpec, val cueStartMs: Long, val holdMs: Long)
 
-/** Rectangle (fractions of the frame) that is covered for a time range, to hide sensitive info. */
-data class CoverClip(val x0: Float, val y0: Float, val x1: Float, val y1: Float, val startMs: Long, val endMs: Long, val color: Int)
+/** Rectangle (fractions of the frame) for a time range: a block, blur, mosaic or spotlight that may glide to [end]. */
+data class CoverClip(
+    val x0: Float, val y0: Float, val x1: Float, val y1: Float, val startMs: Long, val endMs: Long, val color: Int,
+    /** "solid" (a block), "blur", "mosaic" or "spotlight" (everything outside the rectangle is dimmed). */
+    val style: String = "solid",
+    /** 0..1: how strong the blur / mosaic / dimming is. */
+    val strength: Float = 0.5f,
+    /** Where the rectangle ends up (null = it stays put): it glides there over the whole clip. */
+    val end: FloatArray? = null,
+)
 
 /** Zoom into a focus point (fractions) by [scale] between [startMs] and [endMs], with eased in/out. */
-data class ZoomClip(val fx: Float, val fy: Float, val scale: Float, val startMs: Long, val endMs: Long)
+data class ZoomClip(
+    val fx: Float, val fy: Float, val scale: Float, val startMs: Long, val endMs: Long,
+    /** Time to reach full scale / to come back; shrunk together if they do not fit in the clip. */
+    val inMs: Long = 350, val outMs: Long = 350,
+)
 
 /** How an overlay moves while shown (mirror of Motion in overlay_motion.dart). */
 data class MotionSpec(
@@ -238,10 +250,17 @@ data class ExportJob(
                 },
                 texts = list("texts").map { parseText(it) },
                 covers = list("covers").map {
-                    CoverClip(F(it, "x0"), F(it, "y0"), F(it, "x1"), F(it, "y1"), L(it, "startMs"), L(it, "endMs"), I(it, "color"))
+                    CoverClip(
+                        F(it, "x0"), F(it, "y0"), F(it, "x1"), F(it, "y1"), L(it, "startMs"), L(it, "endMs"), I(it, "color"),
+                        it["style"] as? String ?: "solid", (it["strength"] as? Number)?.toFloat() ?: 0.5f,
+                        if (it["ex0"] is Number) floatArrayOf(F(it, "ex0"), F(it, "ey0"), F(it, "ex1"), F(it, "ey1")) else null,
+                    )
                 },
                 zooms = list("zooms").map {
-                    ZoomClip(F(it, "fx"), F(it, "fy"), F(it, "scale"), L(it, "startMs"), L(it, "endMs"))
+                    ZoomClip(
+                        F(it, "fx"), F(it, "fy"), F(it, "scale"), L(it, "startMs"), L(it, "endMs"),
+                        (it["inMs"] as? Number)?.toLong() ?: 350L, (it["outMs"] as? Number)?.toLong() ?: 350L,
+                    )
                 },
                 images = list("images").map {
                     ImageClip(

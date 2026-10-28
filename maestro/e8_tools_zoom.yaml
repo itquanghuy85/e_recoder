@@ -1,0 +1,79 @@
+appId: com.huluca.escreenrecorder
+name: E8 editor - hide/show tools, full-screen preview, zoom level and speed controls
+tags:
+  - p0
+  - module-editor
+---
+- runFlow: helpers/record_clip.yaml
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- runFlow: helpers/ensure_tools_open.yaml
+# Tools can be hidden to give the preview the room, and come back.
+- assertVisible:
+    id: "tool_zoom"
+- tapOn:
+    id: "tools_toggle"
+- assertNotVisible:
+    id: "tool_zoom"
+- takeScreenshot: artifacts/e8_tools_hidden
+- tapOn:
+    id: "tools_toggle"
+- assertVisible:
+    id: "tool_zoom"
+# Full-screen preview: play, then leave.
+- tapOn:
+    id: "editor_fullscreen"
+- assertVisible: "Thoát toàn màn hình"
+- takeScreenshot: artifacts/e8_fullscreen
+- tapOn: "Thoát toàn màn hình"
+- assertVisible:
+    id: "editor_play"
+# A zoom clip exposes level, length, zoom-in and zoom-out speed.
+- tapOn:
+    id: "tool_zoom"
+- tapOn:
+    id: "add_zoom"
+- assertVisible:
+    id: "zoom_in_ms"
+- assertVisible:
+    id: "zoom_out_ms"
+- takeScreenshot: artifacts/e8_zoom_panel
+# Automatic zoom exposes level, speed and hold.
+- tapOn:
+    id: "tool_auto"
+# The options sit below the checkboxes: drag inside the panel (not the whole screen).
+- swipe:
+    start: 50%, 88%
+    end: 50%, 52%
+    duration: 400
+- swipe:
+    start: 50%, 88%
+    end: 50%, 52%
+    duration: 400
+- swipe:
+    start: 50%, 88%
+    end: 50%, 52%
+    duration: 400
+- assertVisible:
+    id: "auto_zoom_ramp"
+- takeScreenshot: artifacts/e8_auto_panel
+# The zoom with custom speeds still exports.
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 240000

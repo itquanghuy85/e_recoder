@@ -10,6 +10,7 @@ import '../marker/marker_spec.dart';
 import '../marker/marker_timing.dart';
 import 'auto_director.dart';
 import 'edit_project.dart';
+import 'srt.dart';
 import 'export_presets.dart';
 import 'project_template.dart';
 import 'project_store.dart';
@@ -80,6 +81,31 @@ class EditorController extends ChangeNotifier {
   bool get canRedo => _redo.isNotEmpty;
 
   ExportState exportState = const ExportState();
+
+  // ---- waveform -------------------------------------------------------------------------------
+
+  /// Slice length of [waveform].
+  static const waveBucketMs = 50;
+
+  /// Peak level (0..1) of the source sound per [waveBucketMs], for the timeline. Null until it has
+  /// been read, and for a recording without sound.
+  List<double>? waveform;
+
+  /// Reads the waveform in the background; the timeline redraws when it arrives.
+  Future<void> loadWaveform() async {
+    try {
+      final w = await native.waveform(
+        _project.sourceUri,
+        _project.durationMs,
+        waveBucketMs,
+      );
+      if (_disposed) return;
+      waveform = w;
+      notifyListeners();
+    } catch (_) {
+      // No waveform is not an error: the timeline just stays plain.
+    }
+  }
 
   // ---- auto direct ----------------------------------------------------------------------------
 
@@ -451,6 +477,15 @@ class EditorController extends ChangeNotifier {
 
   void select(String? id) {
     selectedId = id;
+    coverEditEnd = false;
+    notifyListeners();
+  }
+
+  /// A region that moves has two rectangles; this says which one the panel and dragging edit.
+  bool coverEditEnd = false;
+
+  void setCoverEditEnd(bool v) {
+    coverEditEnd = v;
     notifyListeners();
   }
 
@@ -561,13 +596,47 @@ class EditorController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Adds one caption per cue (bottom of the frame, boxed), as ONE undoable step. Cues are in
+  /// source time and are clamped to the clip; returns how many were added.
+  int importSubtitles(List<SubtitleCue> cues) {
+    var p = _project;
+    var n = 0;
+    final stamp = DateTime.now().microsecondsSinceEpoch;
+    for (final cue in cues) {
+      final start = cue.startMs.clamp(0, p.durationMs);
+      final end = cue.endMs.clamp(0, p.durationMs);
+      if (end - start < 100) continue;
+      p = p.upsertText(
+        TextPreset.subtitle.apply(
+          TextItem(
+            id: 'sub_${stamp}_${n++}',
+            text: cue.text,
+            startMs: start,
+            endMs: end,
+            y: 0.86,
+          ),
+        ),
+      );
+    }
+    if (n > 0) {
+      _apply(p);
+      notifyListeners();
+    }
+    return n;
+  }
+
   void updateText(TextItem t, {bool record = true}) =>
       _apply(_project.upsertText(t), record: record);
 
-  void addCover() {
+  void addCover([CoverStyle style = CoverStyle.solid]) {
     final s = sourceMs;
+    // A spotlight needs a window you can see into; the others start as a strip over one line of text.
+    final spot = style == CoverStyle.spotlight;
     final item = CoverItem(
       id: _newId('c'),
+      style: style,
+      y0: spot ? 0.35 : 0.45,
+      y1: spot ? 0.65 : 0.55,
       startMs: s,
       endMs: (s + 3000).clamp(0, _project.durationMs),
     );

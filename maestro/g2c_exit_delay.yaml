@@ -1,0 +1,36 @@
+appId: com.huluca.escreenrecorder
+name: G2c marker settings - adjustable wait between placing a marker and tapping
+tags:
+  - p0
+  - module-marker
+---
+- runFlow: helpers/reset_rec_settings.yaml
+- tapOn:
+    text: "Cài đặt.*"
+- tapOn:
+    id: "settings_markers"
+- scrollUntilVisible:
+    element: "Tự thoát chế độ chỉ điểm.*"
+    direction: DOWN
+    timeout: 20000
+# The delay only applies when auto-exit is on: switch it on if an earlier run left it off.
+- runFlow:
+    when:
+      notVisible:
+        id: "marker_exit_delay"
+    commands:
+      - tapOn: "Tự thoát chế độ chỉ điểm.*"
+- scrollUntilVisible:
+    element:
+      id: "marker_exit_delay"
+    direction: DOWN
+    timeout: 20000
+- assertVisible: "Chờ .* giây rồi mới cho bấm"
+# Drag the slider to the left: the wait gets shorter (default is 0,9 s).
+- swipe:
+    from:
+      id: "marker_exit_delay"
+    direction: LEFT
+    duration: 600
+- takeScreenshot: artifacts/g2c_exit_delay
+- assertVisible: "Chờ 0,[0-4] giây rồi mới cho bấm"

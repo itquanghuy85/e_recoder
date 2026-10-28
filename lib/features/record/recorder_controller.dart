@@ -99,7 +99,14 @@ class RecorderController extends Notifier<RecorderState> {
       );
       final draft = AutoDirector.direct(
         AutoDirector.draft(base, e.marks),
-        DirectorOptions(zoom: mk.autoZoom, number: mk.autoNumber, idle: false),
+        DirectorOptions(
+          zoom: mk.autoZoom,
+          number: mk.autoNumber,
+          idle: false,
+          zoomScale: mk.zoomScale,
+          zoomRampMs: mk.zoomRampMs,
+          zoomHoldMs: mk.zoomHoldMs,
+        ),
       );
       await ref.read(projectStoreProvider).save(draft);
     } catch (_) {
@@ -147,6 +154,7 @@ class RecorderController extends Notifier<RecorderState> {
         floatingBar: floatingBar,
         markerHoldMs: mk.holdMs,
         markerAutoExit: mk.autoExit,
+        markerExitDelayMs: mk.exitDelayMs,
         markerColor: mk.color,
         markerThickness: mk.thickness,
         markerTool: mk.tool.wire,

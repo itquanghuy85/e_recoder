@@ -59,11 +59,15 @@ class MarkerLayer(
     var color: Int = cfg.markerColor
         set(v) { field = v; listener.onToolChanged() }
     var thickness: Float = cfg.markerThickness
-    private val holdMs = cfg.markerHoldMs
+    private val holdMs = cfg.markerHoldMs.coerceIn(MarkerAnim.MIN_HOLD_MS, MarkerAnim.MAX_HOLD_MS)
+    private val exitDelayMs = cfg.markerExitDelayMs
     private val autoExit = cfg.markerAutoExit || !drawLive
     private var nextNumber = 1
 
     private val exitRunnable = Runnable { setAnnotating(false) }
+
+    /** Redraws once every marker has had its time, so an idle overlay never keeps a stale frame. */
+    private val sweepRunnable = Runnable { if (attached) view.invalidate() }
 
     fun show() {
         if (attached) return
@@ -92,6 +96,7 @@ class MarkerLayer(
     fun hide() {
         if (!attached) return
         main.removeCallbacks(exitRunnable)
+        main.removeCallbacks(sweepRunnable)
         try { wm.removeView(view) } catch (_: Exception) {}
         attached = false
         markers.clear()
@@ -105,12 +110,21 @@ class MarkerLayer(
         else lp.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
         wm.updateViewLayout(view, lp)
         if (!on) {
-            // Start the hold timer: from now the markers stay for holdMs, then fade.
+            // Safety net: a marker whose touch never reported its release still gets its time now.
             val now = SystemClock.uptimeMillis()
-            markers.forEach { if (it.releasedAt < 0) it.releasedAt = now }
+            markers.forEach { if (it.releasedAt < 0) release(it, now) }
         }
         listener.onAnnotateChanged(on)
         view.invalidate()
+    }
+
+    /**
+     * Starts a marker's hold timer: it stays [holdMs] from now, then fades out and goes, whatever the
+     * person does next (stay in point mode, switch page or app). The sweep guarantees a last redraw.
+     */
+    private fun release(m: Live, now: Long) {
+        m.releasedAt = now
+        main.postDelayed(sweepRunnable, holdMs + MarkerAnim.FADE_MS + 100)
     }
 
     fun undo() {
@@ -201,12 +215,13 @@ class MarkerLayer(
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     val a = active
                     if (a != null && !dragged) finishTap(a)
+                    if (a != null && a.releasedAt < 0) release(a, SystemClock.uptimeMillis())
                     if (a != null && e.actionMasked == MotionEvent.ACTION_UP) onPlaced?.invoke(a.spec, a.placedClockMs)
                     if (a != null && !drawLive) markers.remove(a)
                     active = null
                     listener.onCountChanged(markers.count { it.undoneAt < 0 })
                     if (autoExit && (tool != MarkerType.PEN || !drawLive) && e.actionMasked == MotionEvent.ACTION_UP) {
-                        main.postDelayed(exitRunnable, if (drawLive) 900 else 150)
+                        main.postDelayed(exitRunnable, if (drawLive) exitDelayMs else 150)
                     }
                 }
             }

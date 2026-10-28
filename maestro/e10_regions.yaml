@@ -1,0 +1,69 @@
+appId: com.huluca.escreenrecorder
+name: E10 editor - blur, mosaic and spotlight regions at three moments, then export
+tags:
+  - p0
+  - module-editor
+---
+- runFlow: helpers/record_clip.yaml
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_cover"
+# 0-3 s: blur
+- tapOn:
+    id: "add_cover_blur"
+- assertVisible:
+    id: "cover_strength"
+- takeScreenshot: artifacts/e10_blur_panel
+- tapOn:
+    id: "tool_cover"
+# 3-6 s: mosaic
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "add_cover_mosaic"
+- assertVisible:
+    id: "cover_strength"
+- takeScreenshot: artifacts/e10_mosaic_preview
+- tapOn:
+    id: "tool_cover"
+# 6-9 s: spotlight
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "seek_fwd"
+- tapOn:
+    id: "add_cover_spotlight"
+- takeScreenshot: artifacts/e10_spotlight_preview
+# The kind of an existing region can be changed afterwards.
+- tapOn:
+    id: "cover_style_blur"
+- tapOn:
+    id: "cover_style_spotlight"
+- assertVisible: "Dòng thời gian: .* 3 khối che.*"
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000

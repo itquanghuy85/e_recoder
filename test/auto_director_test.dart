@@ -83,6 +83,22 @@ void main() {
       expect(p.zooms[0].endMs, lessThan(p.zooms[1].startMs));
     });
 
+    test('level, speed and hold come from the options', () {
+      final p = AutoDirector.autoZoom(
+        AutoDirector.draft(_base(), [_mark(2000, x: 0.3, y: 0.4)]),
+        const DirectorOptions(
+          zoomScale: 2.5,
+          zoomRampMs: 800,
+          zoomHoldMs: 1500,
+        ),
+      );
+      final z = p.zooms.single;
+      expect(z.scale, 2.5);
+      expect(z.inMs, 800);
+      expect(z.outMs, 800);
+      expect(z.endMs, p.markers.single.endMs + 1500);
+    });
+
     test('markers close in time share one zoom centred between them', () {
       final p = AutoDirector.autoZoom(
         AutoDirector.draft(_base(), [

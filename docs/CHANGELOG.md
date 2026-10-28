@@ -1,5 +1,32 @@
 # Changelog
 
+## [2026-10-28] Cài đặt dấu: xem thử dính đầu trang, thời gian hiệu ứng 0,5–10 s; đợt 3 trình dựng (một phần)
+- **Cài đặt → Dấu đánh dấu**: khung "Xem thử" nhỏ gọn hơn (≈250 dp thay vì tới 380) và **dính ở đầu trang**: cuộn xuống chỉnh thì thu thành dải ≈108 dp quanh dấu, cuộn lên trở lại như cũ; nút đổi sáng/tối luôn ở góc khung (và vẫn có nút "Nền sáng/Nền tối" ở đầu trang). Khung được dựng một lần ở kích thước cố định, chỉ cửa sổ nhìn thay đổi nên không giật.
+- **Thời gian hiệu ứng dấu** là thanh trượt **0,5–10 s** (bước 0,5 s, hiện số giây, mốc "Ngắn · 0,5 s"/"Dài · 10 s"), lưu lại (`marker.hold`, giá trị cũ ngoài dải được kéo về dải). Tính **từ lúc nhả tay đặt xong** (trước đây tính từ lúc thoát chế độ đánh dấu nên dấu có thể dính vô hạn khi tắt "tự thoát"); hết giờ thì mờ dần rồi biến mất, kể cả khi vẫn ở chế độ đánh dấu hay đã chuyển trang/app; có lần vẽ lại cuối để lớp phủ không giữ khung cũ. Xem thử, quay trực tiếp, chỉnh sửa và xuất dùng chung `markerHoldMs` (kẹp 0,5–10 s ở cả Dart và Kotlin).
+- Đo trên Oppo CPH2203 từ video quay (`scripts/qa/marker_lifetime.py`): hold 0,5 s → ngón tay ≈0,8 s, mũi tên ≈1,0 s; hold 10 s → dấu ngón tay ≈10,5 s, đi theo sang màn hình chính rồi tự hết; tắt "tự thoát" (vẫn ở chế độ đánh dấu) hold 0,5 s → ≈1,0 s.
+- Maestro mới: `g2d_marker_preview_sticky`, `g2e_hold_short`, `g2e_hold_long`, `g2e_hold_stay`; helper `set_marker_hold_min/max`. Test Dart 199.
+- **Đợt 3 (một phần)**: vùng che **di chuyển** (điểm đầu/điểm cuối, trượt mượt trong suốt clip, mọi kiểu vùng; khối đặc nay cũng đi qua shader GL) — `e11_region_motion` PASS, khối đo được trượt từ 45 % xuống 70 % chiều cao trong 3 s. **Sóng âm trên timeline** (`EditorMedia.waveform`, vẽ mờ trong thanh đoạn video): đã viết và qua analyze/test nhưng **chưa nghiệm thu trên máy** (flow `e12_waveform` chưa chạy được vì ổ C: của máy dev đầy). Chưa làm: hiệu ứng giọng, giảm ồn, phụ đề tự động từ giọng nói.
+
+## [2026-10-28] Đợt 2 trình dựng kiểu CapCut: làm mờ, mosaic, tiêu điểm
+- Tab **Che** nay có 4 kiểu vùng: **khối đặc**, **làm mờ**, **mosaic**, **tiêu điểm** (làm tối phần còn lại để nhấn mạnh một vùng) + thanh cường độ. Đổi kiểu của vùng đã đặt được, một bước hoàn tác. Dự án cũ mở như khối đặc.
+- Bản xuất: một lượt GL riêng (`RegionFx.kt`, `RegionEffect`) chạy trên chính video, đặt TRƯỚC mọi lớp phủ nên dấu chỉ điểm vẫn đọc được; góc bo, mép mềm 1 px, mờ vào/ra 120 ms. Mosaic ô 2–8% bề rộng khung, làm mờ bán kính 1,5–4,5%, tiêu điểm tối 35–85%.
+- Xem trước: làm mờ bằng BackdropFilter, mosaic bằng shader thật (`shaders/mosaic.frag`, cần Impeller; nơi không hỗ trợ thì làm mờ mạnh + lưới mờ để vẫn che được), tiêu điểm vẽ lớp tối có lỗ. Công thức tham số dùng chung Dart/Kotlin (`RegionMath`, cùng vector test). Khác biệt biết trước: xem trước không làm mờ dần vào/ra cho làm mờ/mosaic.
+- Test: Dart 194, JUnit `RegionMathTest`; Maestro `e10_regions` PASS trên Oppo CPH2203. Đã xem khung hình video xuất: chữ bị làm mờ / chia ô / vùng tiêu điểm sáng giữa nền tối đúng vị trí; xem trước trên máy khớp.
+- QA: trạng thái "ẩn công cụ" được nhớ nên flow mới dùng `helpers/ensure_tools_open`.
+
+## [2026-10-28] Đợt 1 trình dựng kiểu CapCut: phụ đề SRT và kiểu chữ dựng sẵn
+- **Nhập phụ đề .srt** (tab Chữ): mỗi dòng thành một chữ có hộp nền ở đáy khung, một bước hoàn tác. `lib/features/editor/srt.dart` đọc được BOM, CRLF, dấu chấm thay dấu phẩy, thiếu số thứ tự, thẻ `<i>` và `{n8}`; dòng ngoài độ dài video bị cắt/bỏ. Giờ phụ đề tính theo thời gian video gốc.
+- **6 kiểu chữ dựng sẵn** (Cổ điển, Phụ đề, Vàng, Neon, Gọn, Nhãn) ngay dưới ô nhập chữ, một hàng cuộn ngang; chỉ đổi giao diện.
+- Test: Dart 186 (`subtitles_test`), Maestro `e9_subtitles` PASS trên Oppo CPH2203 (Android 13): nhập SRT qua bộ chọn hệ thống, áp kiểu, xuất 480p; khung hình xuất có phụ đề "Xin chao" đúng vị trí.
+- Ghi chú QA: `scripts/qa/push_test_media.ps1` đẩy thêm `esr_subs.srt`; bộ chọn Oppo không liệt kê file này ở "Gần đây" nên flow mở thư mục "Tải xuống"; `reset_rec_settings` cuộn tới nút "Đóng" trên màn hình ngắn; trên Oppo chạy flow không dùng `-Cold`.
+
+## [2026-10-28] Chỉnh phóng to, chờ sau khi đánh dấu, ẩn công cụ, xem toàn màn hình
+- **Chờ sau khi đánh dấu**: trước đây cố định 900 ms rồi mới bấm được. Nay có thanh trượt 0–3 s trong Cài đặt dấu (`marker.exitDelay`, mặc định 0,9 s; chỉ hiện khi bật "Tự thoát chế độ chỉ điểm"). Đi qua `RecConfig.markerExitDelayMs` tới `MarkerLayer`.
+- **Phóng to**: mỗi clip phóng có thêm tốc độ phóng vào / thu lại (`ZoomItem.inMs/outMs`, 0–2 s, dự án cũ dùng 350 ms). Phóng tự động có mức phóng (1,2–4×), tốc độ và thời gian giữ thêm sau khi dấu mờ; chỉnh được ở bảng "Tự động" và trong Cài đặt dấu (chế độ sạch). Công thức Dart và Kotlin (`ZoomMath`) khớp nhau, có test.
+- **Ẩn thanh công cụ** trong trình sửa (nhớ lựa chọn) và **xem toàn màn hình** có xoay ngang, chụm để phóng, thanh tua. Nút "Tự động chạy" đưa lên đầu bảng vì trên màn hình cao nó bị che.
+- Test: Dart 180, JUnit `ZoomMathTest` thêm ramp; Maestro mới `e8_tools_zoom`, `g2c_exit_delay`. S25 Ultra: `e8_tools_zoom`, `g2c_exit_delay`, `g7_auto_direct`, `g3_editor`, `e1_edit_core`, `g5_dot_mode` PASS.
+- Chưa kiểm tay: cảm giác thực tế của thời gian chờ ngắn (0–0,3 s) khi quay thật, và chụm phóng trong chế độ toàn màn hình (Maestro không giả lập đa chạm).
+
 ## [2026-10-27] E1–E7 — Trình dựng video chuyên nghiệp
 - **E1** dòng thời gian: chọn nhiều, tách/xoá/nhân đôi, kéo đổi thứ tự, nam châm, đóng băng khung, đoạn trống. **E2** tốc độ hằng/ramp 24 bậc/chạy ngược (≤30 s)/tắt tiếng >2×. **E3** chuyển cảnh (mờ đen/trắng, trượt 4 hướng, phóng). **E4** âm lượng + fade từng đoạn, nhạc từ file, thu giọng, hạ nhạc khi có giọng, chuẩn hoá âm lượng. **E5** xoay/cắt/tỉ lệ/màu. **E6** ảnh, hình vẽ, chữ nâng cao, chuyển động vào/ra, hình-trong-hình. **E7** mẫu xuất, ước lượng dung lượng, GIF, lưu khung hình, xuất nền (ExportService foreground + thông báo + Huỷ), mẫu dự án.
 - Xem trước và xuất dùng cùng công thức (golden test Dart↔Kotlin). Dự án JSON v2, tương thích dự án cũ. Quyền mới: FOREGROUND_SERVICE_DATA_SYNC, FOREGROUND_SERVICE_MEDIA_PROCESSING (không INTERNET).

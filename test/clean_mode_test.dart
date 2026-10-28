@@ -63,6 +63,22 @@ void main() {
       expect(s.autoNumber, isTrue);
     });
 
+    test('the effect time is kept, limited to 0,5 .. 10 s, and reaches recording', () async {
+      final (c, fake, _) = await _make({'marker.hold': 7500});
+      expect(c.read(markerSettingsProvider).holdMs, 7500);
+      await c
+          .read(markerSettingsProvider.notifier)
+          .update(const MarkerSettings(holdMs: 500));
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getInt('marker.hold'), 500);
+      // A value from an old or hand-edited store is pulled back into the range.
+      final (low, _, _) = await _make({'marker.hold': 50});
+      expect(low.read(markerSettingsProvider).holdMs, 500);
+      final (high, _, _) = await _make({'marker.hold': 99000});
+      expect(high.read(markerSettingsProvider).holdMs, 10000);
+      expect(fake, isNotNull);
+    });
+
     test('mode, corner and shake survive a restart', () async {
       final (c, _, _) = await _make();
       await c

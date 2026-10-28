@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import '../marker/marker_inspector.dart';
 import '../marker/marker_spec.dart';
 import 'editor_controller.dart';
 import 'editor_pro_tools.dart';
+import 'srt.dart';
 import 'edit_project.dart';
 
 enum EditorTool {
@@ -65,8 +67,13 @@ class EditorTools extends StatelessWidget {
     required this.newMarkerThickness,
     required this.video,
     this.onRecordVoice,
+    this.collapsed = false,
+    this.onToggleCollapsed,
   });
 
+  /// When true only a slim handle is shown, so the preview gets the room.
+  final bool collapsed;
+  final VoidCallback? onToggleCollapsed;
   final VideoPlayerController video;
 
   /// Starts a voice-over (microphone, recording and playback are the screen's business).
@@ -84,113 +91,150 @@ class EditorTools extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Every tool is one tap away: two rows, no hidden sideways scrolling.
-        for (final row in [
-          EditorTool.values.take(6).toList(),
-          EditorTool.values.skip(6).toList(),
-        ])
-          SizedBox(
-            height: 50,
-            child: Row(
-              children: [
-                for (final e in row)
-                  Expanded(
-                    child: Semantics(
-                      identifier: 'tool_${e.name}',
-                      button: true,
-                      selected: tool == e,
-                      child: InkWell(
-                        onTap: () => onTool(e),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 46,
-                              height: 26,
-                              decoration: BoxDecoration(
-                                color: tool == e
-                                    ? cs.tertiaryContainer
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(13),
-                              ),
-                              child: Icon(
-                                toolIcon(e),
-                                size: 20,
-                                color: tool == e
-                                    ? cs.onTertiaryContainer
-                                    : cs.onSurfaceVariant,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 2,
-                              ),
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  toolLabel(t, e),
-                                  maxLines: 1,
-                                  style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(
-                                        fontSize: 10,
-                                        color: tool == e
-                                            ? cs.onSurface
-                                            : cs.onSurfaceVariant,
-                                      ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+        Semantics(
+          identifier: 'tools_toggle',
+          button: true,
+          label: collapsed ? t.toolsShow : t.toolsHide,
+          child: InkWell(
+            onTap: onToggleCollapsed,
+            child: SizedBox(
+              height: 32,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(toolIcon(tool), size: 16, color: cs.onSurfaceVariant),
+                  const SizedBox(width: Space.sm),
+                  Text(
+                    collapsed
+                        ? '${toolLabel(t, tool)} · ${t.toolsShow}'
+                        : t.toolsHide,
+                    style: Theme.of(context).textTheme.labelMedium
+                        ?.copyWith(color: cs.onSurfaceVariant),
                   ),
-                // keep the last row's tabs the same width as the first row's
-                for (var i = row.length; i < 6; i++) const Spacer(),
-              ],
-            ),
-          ),
-        const Divider(),
-        ConstrainedBox(
-          constraints: BoxConstraints(
-            // About a quarter of the screen: tall phones show more of a long panel at once.
-            maxHeight: (MediaQuery.sizeOf(context).height * 0.27).clamp(
-              200.0,
-              300.0,
-            ),
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              Space.lg,
-              Space.md,
-              Space.lg,
-              Space.md,
-            ),
-            child: ListenableBuilder(
-              listenable: controller,
-              builder: (context, _) => switch (tool) {
-                EditorTool.cut => _CutPanel(c: controller),
-                EditorTool.speed => _SpeedPanel(c: controller),
-                EditorTool.transition => _TransitionPanel(c: controller),
-                EditorTool.audio => _AudioPanel(
-                  c: controller,
-                  onRecordVoice: onRecordVoice,
-                ),
-                EditorTool.picture => PicturePanel(c: controller, video: video),
-                EditorTool.overlay => OverlayPanel(c: controller),
-                EditorTool.marker => _MarkerPanel(
-                  c: controller,
-                  color: newMarkerColor,
-                  thickness: newMarkerThickness,
-                ),
-                EditorTool.text => _TextPanel(c: controller),
-                EditorTool.cover => _CoverPanel(c: controller),
-                EditorTool.zoom => _ZoomPanel(c: controller),
-                EditorTool.auto => _AutoPanel(c: controller),
-              },
+                  Icon(
+                    collapsed ? Icons.expand_less : Icons.expand_more,
+                    size: 20,
+                    color: cs.onSurfaceVariant,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
+        if (!collapsed) ...[
+          // Every tool is one tap away: two rows, no hidden sideways scrolling.
+          for (final row in [
+            EditorTool.values.take(6).toList(),
+            EditorTool.values.skip(6).toList(),
+          ])
+            SizedBox(
+              height: 50,
+              child: Row(
+                children: [
+                  for (final e in row)
+                    Expanded(
+                      child: Semantics(
+                        identifier: 'tool_${e.name}',
+                        button: true,
+                        selected: tool == e,
+                        child: InkWell(
+                          onTap: () => onTool(e),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 46,
+                                height: 26,
+                                decoration: BoxDecoration(
+                                  color: tool == e
+                                      ? cs.tertiaryContainer
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                                child: Icon(
+                                  toolIcon(e),
+                                  size: 20,
+                                  color: tool == e
+                                      ? cs.onTertiaryContainer
+                                      : cs.onSurfaceVariant,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    toolLabel(t, e),
+                                    maxLines: 1,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          fontSize: 10,
+                                          color: tool == e
+                                              ? cs.onSurface
+                                              : cs.onSurfaceVariant,
+                                        ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  // keep the last row's tabs the same width as the first row's
+                  for (var i = row.length; i < 6; i++) const Spacer(),
+                ],
+              ),
+            ),
+          const Divider(),
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              // About a quarter of the screen: tall phones show more of a long panel at once.
+              maxHeight: (MediaQuery.sizeOf(context).height * 0.27).clamp(
+                200.0,
+                300.0,
+              ),
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(
+                Space.lg,
+                Space.md,
+                Space.lg,
+                Space.md,
+              ),
+              child: ListenableBuilder(
+                listenable: controller,
+                builder: (context, _) => switch (tool) {
+                  EditorTool.cut => _CutPanel(c: controller),
+                  EditorTool.speed => _SpeedPanel(c: controller),
+                  EditorTool.transition => _TransitionPanel(c: controller),
+                  EditorTool.audio => _AudioPanel(
+                    c: controller,
+                    onRecordVoice: onRecordVoice,
+                  ),
+                  EditorTool.picture => PicturePanel(
+                    c: controller,
+                    video: video,
+                  ),
+                  EditorTool.overlay => OverlayPanel(c: controller),
+                  EditorTool.marker => _MarkerPanel(
+                    c: controller,
+                    color: newMarkerColor,
+                    thickness: newMarkerThickness,
+                  ),
+                  EditorTool.text => _TextPanel(c: controller),
+                  EditorTool.cover => _CoverPanel(c: controller),
+                  EditorTool.zoom => _ZoomPanel(c: controller),
+                  EditorTool.auto => _AutoPanel(c: controller),
+                },
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -236,6 +280,9 @@ Widget editorSlider({
 
 String editorSecs(double ms) =>
     '${(ms / 1000).toStringAsFixed(1).replaceAll('.', ',')}s';
+
+String editorSecs2(double ms) =>
+    '${(ms / 1000).toStringAsFixed(2).replaceAll('.', ',')}s';
 
 /// Title row of an inspector with the delete action always in reach (the panel scrolls).
 Widget inspectorHeader(BuildContext context, EditorController c, String title) {
@@ -837,6 +884,15 @@ class _TextPanelState extends State<_TextPanel> {
               label: Text(t.textAdd),
             ),
           ),
+          const SizedBox(height: Space.sm),
+          Semantics(
+            identifier: 'import_srt',
+            child: OutlinedButton.icon(
+              onPressed: () => importSubtitleFile(context, c),
+              icon: const Icon(Icons.subtitles_outlined),
+              label: Text(t.subtitlesImport),
+            ),
+          ),
           const SizedBox(height: Space.md),
           Text(
             t.textHint,
@@ -869,7 +925,9 @@ class _TextPanelState extends State<_TextPanel> {
             onEditingComplete: c.flush,
           ),
         ),
-        const SizedBox(height: Space.md),
+        const SizedBox(height: Space.sm),
+        TextPresetRow(c: c, item: sel),
+        const SizedBox(height: Space.sm),
         Text(t.markerColor, style: tt.titleSmall),
         MarkerColorRow(
           selected: sel.color,
@@ -905,6 +963,39 @@ class _TextPanelState extends State<_TextPanel> {
   }
 }
 
+/// Picks a .srt file and turns every cue into a caption (one undo step).
+Future<void> importSubtitleFile(
+  BuildContext context,
+  EditorController c,
+) async {
+  final t = AppL10n.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  final picked = await c.native.pickMedia('file');
+  if (picked == null) return;
+  var n = 0;
+  try {
+    final text = await File(picked.path).readAsString();
+    n = c.importSubtitles(parseSrt(text));
+  } catch (_) {}
+  messenger.showSnackBar(
+    SnackBar(content: Text(n > 0 ? t.subtitlesImported(n) : t.subtitlesNone)),
+  );
+}
+
+IconData coverStyleIcon(CoverStyle s) => switch (s) {
+  CoverStyle.solid => Icons.crop_square,
+  CoverStyle.blur => Icons.blur_on,
+  CoverStyle.mosaic => Icons.grid_view,
+  CoverStyle.spotlight => Icons.center_focus_strong_outlined,
+};
+
+String coverStyleLabel(AppL10n t, CoverStyle s) => switch (s) {
+  CoverStyle.solid => t.coverStyleSolid,
+  CoverStyle.blur => t.coverStyleBlur,
+  CoverStyle.mosaic => t.coverStyleMosaic,
+  CoverStyle.spotlight => t.coverStyleSpotlight,
+};
+
 // ---- cover ------------------------------------------------------------------------------------------
 
 class _CoverPanel extends StatelessWidget {
@@ -921,13 +1012,24 @@ class _CoverPanel extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Semantics(
-            identifier: 'add_cover',
-            child: FilledButton.tonalIcon(
-              onPressed: c.addCover,
-              icon: const Icon(Icons.add),
-              label: Text(t.coverAdd),
-            ),
+          Text(t.coverAdd, style: tt.titleSmall),
+          const SizedBox(height: Space.xs),
+          Wrap(
+            spacing: Space.sm,
+            runSpacing: Space.xs,
+            children: [
+              for (final s in CoverStyle.values)
+                Semantics(
+                  identifier: s == CoverStyle.solid
+                      ? 'add_cover'
+                      : 'add_cover_${s.name}',
+                  child: ActionChip(
+                    avatar: Icon(coverStyleIcon(s), size: 18),
+                    label: Text(coverStyleLabel(t, s)),
+                    onPressed: () => c.addCover(s),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: Space.md),
           Text(
@@ -938,12 +1040,97 @@ class _CoverPanel extends StatelessWidget {
       );
     }
     final len = (sel.endMs - sel.startMs).toDouble();
-    final w = sel.x1 - sel.x0;
-    final h = sel.y1 - sel.y0;
+    final atEnd = c.coverEditEnd && sel.end != null;
+    final rect = sel.editRect(atEnd);
+    final w = rect.width;
+    final h = rect.height;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         inspectorHeader(context, c, t.toolCover),
+        SizedBox(
+          height: 40,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: CoverStyle.values.length,
+            separatorBuilder: (_, _) => const SizedBox(width: Space.xs),
+            itemBuilder: (_, i) {
+              final s = CoverStyle.values[i];
+              return Semantics(
+                identifier: 'cover_style_${s.name}',
+                child: ChoiceChip(
+                  visualDensity: VisualDensity.compact,
+                  avatar: Icon(coverStyleIcon(s), size: 16),
+                  label: Text(coverStyleLabel(t, s)),
+                  selected: sel.style == s,
+                  onSelected: (_) => c.updateCover(sel.copyWith(style: s)),
+                ),
+              );
+            },
+          ),
+        ),
+        Semantics(
+          identifier: 'cover_move',
+          child: SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            title: Text(
+              t.coverMove,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            value: sel.end != null,
+            onChanged: (on) {
+              c.setCoverEditEnd(on);
+              c.updateCover(
+                sel.copyWith(
+                  // Start the end point a little lower so the glide is visible straight away.
+                  end: on
+                      ? sel.startRect.shift(
+                          Offset(0, math.min(0.15, 1 - sel.y1)),
+                        )
+                      : null,
+                ),
+              );
+            },
+          ),
+        ),
+        if (sel.end != null)
+          Wrap(
+            spacing: Space.xs,
+            children: [
+              Semantics(
+                identifier: 'cover_edit_start',
+                child: ChoiceChip(
+                  visualDensity: VisualDensity.compact,
+                  label: Text(t.coverPointStart),
+                  selected: !c.coverEditEnd,
+                  onSelected: (_) => c.setCoverEditEnd(false),
+                ),
+              ),
+              Semantics(
+                identifier: 'cover_edit_end',
+                child: ChoiceChip(
+                  visualDensity: VisualDensity.compact,
+                  label: Text(t.coverPointEnd),
+                  selected: c.coverEditEnd,
+                  onSelected: (_) => c.setCoverEditEnd(true),
+                ),
+              ),
+            ],
+          ),
+        if (sel.style != CoverStyle.solid)
+          editorSlider(
+            context: context,
+            c: c,
+            id: 'cover_strength',
+            label: t.coverStrength,
+            value: sel.strength,
+            min: 0,
+            max: 1,
+            onChanged: (v) =>
+                c.updateCover(sel.copyWith(strength: v), record: false),
+            fmt: (v) => '${(v * 100).round()}%',
+          ),
         editorSlider(
           context: context,
           c: c,
@@ -952,8 +1139,14 @@ class _CoverPanel extends StatelessWidget {
           min: 0.05,
           max: 1,
           onChanged: (v) {
-            final x0 = sel.x0.clamp(0.0, 1.0 - v);
-            c.updateCover(sel.copyWith(x0: x0, x1: x0 + v), record: false);
+            final x0 = rect.left.clamp(0.0, 1.0 - v);
+            c.updateCover(
+              sel.withRect(
+                Rect.fromLTWH(x0, rect.top, v, rect.height),
+                atEnd: atEnd,
+              ),
+              record: false,
+            );
           },
           fmt: (v) => '${(v * 100).round()}%',
         ),
@@ -965,8 +1158,14 @@ class _CoverPanel extends StatelessWidget {
           min: 0.02,
           max: 1,
           onChanged: (v) {
-            final y0 = sel.y0.clamp(0.0, 1.0 - v);
-            c.updateCover(sel.copyWith(y0: y0, y1: y0 + v), record: false);
+            final y0 = rect.top.clamp(0.0, 1.0 - v);
+            c.updateCover(
+              sel.withRect(
+                Rect.fromLTWH(rect.left, y0, rect.width, v),
+                atEnd: atEnd,
+              ),
+              record: false,
+            );
           },
           fmt: (v) => '${(v * 100).round()}%',
         ),
@@ -983,6 +1182,16 @@ class _CoverPanel extends StatelessWidget {
           ),
           fmt: editorSecs,
         ),
+        if (sel.end != null)
+          Padding(
+            padding: const EdgeInsets.only(top: Space.xs),
+            child: Text(
+              t.coverMoveHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -1048,6 +1257,30 @@ class _ZoomPanel extends StatelessWidget {
           ),
           fmt: editorSecs,
         ),
+        editorSlider(
+          context: context,
+          c: c,
+          id: 'zoom_in_ms',
+          label: t.zoomIn,
+          value: sel.inMs.toDouble(),
+          min: 0,
+          max: 2000,
+          onChanged: (v) =>
+              c.updateZoom(sel.copyWith(inMs: v.round()), record: false),
+          fmt: editorSecs2,
+        ),
+        editorSlider(
+          context: context,
+          c: c,
+          id: 'zoom_out_ms',
+          label: t.zoomOut,
+          value: sel.outMs.toDouble(),
+          min: 0,
+          max: 2000,
+          onChanged: (v) =>
+              c.updateZoom(sel.copyWith(outMs: v.round()), record: false),
+          fmt: editorSecs2,
+        ),
         const SizedBox(height: Space.sm),
         Text(
           t.zoomDragHint,
@@ -1102,6 +1335,21 @@ class _AutoPanel extends StatelessWidget {
             ),
           ),
         ],
+        const SizedBox(height: Space.sm),
+        Semantics(
+          identifier: 'auto_run',
+          child: FilledButton.icon(
+            onPressed: c.directing ? null : c.directAuto,
+            icon: c.directing
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.auto_awesome),
+            label: Text(c.directing ? t.autoRunning : t.autoRun),
+          ),
+        ),
         option(
           'auto_zoom',
           t.autoZoomOpt,
@@ -1128,21 +1376,48 @@ class _AutoPanel extends StatelessWidget {
             o.copyWith(stepLabel: v ? t.stepLabelPrefix : null),
           ),
         ),
-        const SizedBox(height: Space.sm),
-        Semantics(
-          identifier: 'auto_run',
-          child: FilledButton.icon(
-            onPressed: c.directing ? null : c.directAuto,
-            icon: c.directing
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.auto_awesome),
-            label: Text(c.directing ? t.autoRunning : t.autoRun),
+        if (o.zoom) ...[
+          Text(t.zoomAutoTuning, style: tt.labelLarge),
+          editorSlider(
+            context: context,
+            c: c,
+            id: 'auto_zoom_scale',
+            label: t.zoomScale,
+            value: o.zoomScale,
+            min: 1.2,
+            max: 4,
+            onChanged: (v) => c.setDirectorOptions(o.copyWith(zoomScale: v)),
+            fmt: (v) => '${v.toStringAsFixed(1).replaceAll('.', ',')}×',
           ),
-        ),
+          editorSlider(
+            context: context,
+            c: c,
+            id: 'auto_zoom_ramp',
+            label: t.zoomIn,
+            value: o.zoomRampMs.toDouble(),
+            min: 100,
+            max: 2000,
+            onChanged: (v) =>
+                c.setDirectorOptions(o.copyWith(zoomRampMs: v.round())),
+            fmt: editorSecs2,
+          ),
+          editorSlider(
+            context: context,
+            c: c,
+            id: 'auto_zoom_hold',
+            label: t.zoomHold,
+            value: o.zoomHoldMs.toDouble(),
+            min: 0,
+            max: 5000,
+            onChanged: (v) =>
+                c.setDirectorOptions(o.copyWith(zoomHoldMs: v.round())),
+            fmt: editorSecs,
+          ),
+          Text(
+            t.zoomTimingHint,
+            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ],
       ],
     );
   }
