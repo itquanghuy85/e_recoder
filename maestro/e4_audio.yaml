@@ -8,6 +8,8 @@ tags:
 - runFlow: helpers/open_edit.yaml
 - tapOn:
     id: "tool_audio"
+# The panel is short now (the preview gets the room): the music button is below the volume sliders.
+- runFlow: helpers/scroll_panel.yaml
 - runFlow: helpers/scroll_panel.yaml
 - tapOn:
     id: "audio_add_music"
@@ -30,7 +32,11 @@ tags:
     timeout: 10000
 - takeScreenshot: artifacts/e4_music
 # "Record voice" sits under "add music": drag the panel (not the whole screen) a little more.
-- runFlow: helpers/scroll_panel.yaml
+# A track is selected now and its own controls fill the panel: tap the empty timeline (left of the
+# clip) to deselect, then the add buttons are back under the segment controls.
+- tapOn:
+    point: 12%, 50%
+- runFlow: helpers/scroll_panel_half.yaml
 - tapOn:
     id: "audio_voice"
 - runFlow:

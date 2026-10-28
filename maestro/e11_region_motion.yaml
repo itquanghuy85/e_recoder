@@ -24,6 +24,7 @@ tags:
     id: "add_cover"
 - tapOn:
     id: "cover_move"
+- runFlow: helpers/scroll_panel.yaml
 - assertVisible:
     id: "cover_edit_end"
 - assertVisible:

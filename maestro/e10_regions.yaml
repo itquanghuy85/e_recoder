@@ -22,6 +22,7 @@ tags:
 # 0-3 s: blur
 - tapOn:
     id: "add_cover_blur"
+- runFlow: helpers/scroll_panel.yaml
 - assertVisible:
     id: "cover_strength"
 - takeScreenshot: artifacts/e10_blur_panel
@@ -36,6 +37,7 @@ tags:
     id: "seek_fwd"
 - tapOn:
     id: "add_cover_mosaic"
+- runFlow: helpers/scroll_panel.yaml
 - assertVisible:
     id: "cover_strength"
 - takeScreenshot: artifacts/e10_mosaic_preview

@@ -44,6 +44,8 @@ Giao diện dựng là Flutter dùng chung; **bộ xuất** (Media3 trên Androi
 | Zoom hai ngón khung xem trước (chỉ để xem), sóng âm trên timeline | ✅ | 🕓 | Oppo CPH2203 (`integration_test/editor_zoom_test.dart`; `e12_waveform`) |
 | Hiệu ứng giọng (trầm, cao, sóc chuột, robot, echo, vang) và giảm ồn cho giọng lồng tiếng | ✅ | 🕓 | Oppo CPH2203 đo bằng `scripts/qa/voice_fx_check.sh` + `voice_fx_editor_check.sh` |
 | Phụ đề tự động từ lời nói, chạy trên máy | ⚠️ Android 13+ | 🕓 | Oppo CPH2203, tiếng Việt thật (`scripts/qa/auto_captions_check.sh`). Dùng bộ nhận dạng của Android (chế độ chỉ chạy trên máy); Android dưới 13 báo "chưa hỗ trợ"; tiếng Anh cần hệ thống tải gói ngôn ngữ một lần. iOS dùng `SFSpeechRecognizer` với `requiresOnDeviceRecognition` |
+| Chọn video từ máy (không sao chép), mở thẳng editor | ✅ | 🕓 | Oppo CPH2203; iOS dùng `PHPickerViewController` |
+| Khung chỉnh overlay (tay nắm, núm xoay, vạch hút), xoay tự do −45°…45° | ✅ | 🕓 | Oppo CPH2203; bộ xuất dùng `ScaleAndRotateTransformation` |
 
 ## 3. Tình trạng iOS và vì sao
 

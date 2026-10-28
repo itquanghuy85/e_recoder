@@ -1,0 +1,9 @@
+appId: com.huluca.escreenrecorder
+name: Helper - scroll the editor's tool panel down half a step
+tags:
+  - helper
+---
+- swipe:
+    start: 50%, 90%
+    end: 50%, 83%
+    duration: 350
