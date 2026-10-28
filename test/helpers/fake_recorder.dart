@@ -162,6 +162,37 @@ class FakeRecorder implements NativeRecorder {
   }
 
   @override
+  Future<({bool available, Map<String, String> languages})> sttSupport(
+    List<String> langs,
+  ) async =>
+      (available: true, languages: {for (final l in langs) l: 'installed'});
+
+  SttStatus sttNext = const SttStatus(
+    state: 'done',
+    done: 0,
+    total: 0,
+    error: '',
+    pieces: [],
+  );
+
+  @override
+  Future<void> sttStart(String uri, String lang) async =>
+      calls.add('sttStart:$lang');
+
+  /// Statuses returned one per poll before [sttNext] takes over.
+  final sttQueue = <SttStatus>[];
+
+  @override
+  Future<SttStatus> sttStatus() async =>
+      sttQueue.isEmpty ? sttNext : sttQueue.removeAt(0);
+
+  @override
+  Future<void> sttCancel() async => calls.add('sttCancel');
+
+  @override
+  Future<void> sttDownload(String lang) async => calls.add('sttDownload:$lang');
+
+  @override
   Future<String> processVoice(String path, String fx, String denoise) async {
     calls.add('processVoice:$fx:$denoise');
     if (voiceFxFails) throw StateError('boom');

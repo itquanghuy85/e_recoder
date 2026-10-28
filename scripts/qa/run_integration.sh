@@ -5,8 +5,17 @@
 #   scripts/qa/run_integration.sh SERIAL integration_test/editor_zoom_test.dart [OUT_DIR]
 set -uo pipefail
 S=${1:?serial}; TEST=${2:?test file}; OUT=${3:-build/it_shots}
+
+# The phone must stay awake and unlocked while the test runs (a sleeping screen stops the frames).
+awake() {
+  adb -s "$S" shell input keyevent KEYCODE_WAKEUP
+  adb -s "$S" shell wm dismiss-keyguard >/dev/null 2>&1
+  adb -s "$S" shell svc power stayon usb >/dev/null 2>&1
+}
+
 HERE=$(cd "$(dirname "$0")" && pwd)
 mkdir -p "$OUT"; LOG="$OUT/run.log"; : > "$LOG"
+awake
 adb -s "$S" shell am force-stop com.huluca.escreenrecorder
 flutter test "$TEST" -d "$S" > "$LOG" 2>&1 &
 PID=$!

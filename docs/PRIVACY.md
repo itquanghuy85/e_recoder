@@ -2,7 +2,7 @@
 
 > Bản đăng công khai nằm ở `site/vi/privacy.html` (và `site/en/privacy.html`), sinh bởi `tool/gen_site.py`. Sửa nội dung ở đó; file này chỉ là bản tóm tắt trong repo.
 
-Cập nhật: 2026-10-27
+Cập nhật: 2026-10-28
 
 **Tóm tắt:** video của bạn ở lại trên máy của bạn. Ứng dụng không có tài khoản, không quảng cáo và không thu thập dữ liệu.
 
@@ -10,6 +10,8 @@ Cập nhật: 2026-10-27
 - Nội dung màn hình và âm thanh bạn chọn quay (sau khi bạn đồng ý trong hộp thoại của hệ thống). Dữ liệu này được ghi thành tệp video trên thiết bị, trong thư mục `Movies/E Screen Recorder` (GIF: `Pictures/E Screen Recorder`).
 - Dự án chỉnh sửa (vị trí cắt, dấu, chữ…) lưu trong cơ sở dữ liệu cục bộ của ứng dụng.
 - Cài đặt (độ phân giải, giao diện…) lưu cục bộ.
+- **Phụ đề tự động** (khi bạn bấm nút): lời nói trong video được nhận dạng **ngay trên điện thoại** bằng bộ nhận dạng giọng nói của Android, ở chế độ chỉ chạy trên máy (`createOnDeviceSpeechRecognizer`): âm thanh không được gửi đi và ứng dụng **không có quyền INTERNET**. Chỉ phần chữ kết quả được lưu vào dự án. Lần đầu dùng một ngôn ngữ chưa có sẵn, Android có thể tự tải gói ngôn ngữ (việc của hệ thống Android, không phải của ứng dụng; ứng dụng chỉ hiển thị nút "Tải gói ngôn ngữ" và nói rõ điều đó). Ứng dụng không cài mô hình nào riêng và không tăng dung lượng cài đặt vì tính năng này.
+- **Hiệu ứng giọng và giảm ồn** cho giọng lồng tiếng: xử lý trên máy; bản đã xử lý nằm trong thư mục riêng của ứng dụng, bản gốc được giữ để khôi phục.
 
 ## Ứng dụng không làm gì
 - Không tải video, âm thanh, ảnh màn hình hay dự án lên máy chủ nào.

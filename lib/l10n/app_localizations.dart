@@ -775,6 +775,126 @@ abstract class AppL10n {
   /// **'Thời gian từ lúc đặt dấu đến lúc bạn bấm thật được. Càng ngắn càng nhanh, nhưng dấu cần đủ lâu để người xem kịp nhìn.'**
   String get markerExitDelayHint;
 
+  /// No description provided for @captionsAutoTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo phụ đề tự động'**
+  String get captionsAutoTitle;
+
+  /// No description provided for @captionsPrivacy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhận dạng giọng nói ngay trên điện thoại bằng bộ nhận dạng của Android. Âm thanh không rời khỏi máy.'**
+  String get captionsPrivacy;
+
+  /// No description provided for @captionsUnavailable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điện thoại này chưa hỗ trợ nhận dạng giọng nói trên máy (cần Android 13 trở lên).'**
+  String get captionsUnavailable;
+
+  /// No description provided for @captionsLanguage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngôn ngữ trong video'**
+  String get captionsLanguage;
+
+  /// No description provided for @langVietnamese.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiếng Việt'**
+  String get langVietnamese;
+
+  /// No description provided for @langEnglish.
+  ///
+  /// In vi, this message translates to:
+  /// **'English'**
+  String get langEnglish;
+
+  /// No description provided for @captionsLangReady.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có trên máy, dùng được ngay.'**
+  String get captionsLangReady;
+
+  /// No description provided for @captionsLangDownload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cần tải gói ngôn ngữ. Android tự tải một lần, có thể dùng mạng; sau đó chạy hoàn toàn trên máy.'**
+  String get captionsLangDownload;
+
+  /// No description provided for @captionsLangUnsupported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điện thoại chưa hỗ trợ ngôn ngữ này.'**
+  String get captionsLangUnsupported;
+
+  /// No description provided for @captionsDownload.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tải gói ngôn ngữ'**
+  String get captionsDownload;
+
+  /// No description provided for @captionsDownloading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải…'**
+  String get captionsDownloading;
+
+  /// No description provided for @captionsStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu tạo phụ đề'**
+  String get captionsStart;
+
+  /// No description provided for @captionsPreparing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tách âm thanh…'**
+  String get captionsPreparing;
+
+  /// No description provided for @captionsProgress.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang nghe đoạn {done}/{total}'**
+  String captionsProgress(int done, int total);
+
+  /// No description provided for @captionsCreated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo {n} dòng phụ đề. Sửa hoặc xoá từng dòng trong tab Chữ.'**
+  String captionsCreated(int n);
+
+  /// No description provided for @captionsCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã dừng, chưa thêm phụ đề nào.'**
+  String get captionsCancelled;
+
+  /// No description provided for @captionsNoAudio.
+  ///
+  /// In vi, this message translates to:
+  /// **'Video này không có âm thanh.'**
+  String get captionsNoAudio;
+
+  /// No description provided for @captionsNoSpeech.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không nghe thấy lời nói nào trong video.'**
+  String get captionsNoSpeech;
+
+  /// No description provided for @captionsFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tạo được phụ đề. Thử lại hoặc chọn ngôn ngữ khác.'**
+  String get captionsFailed;
+
+  /// No description provided for @captionsReplaceNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo lại sẽ thay các phụ đề tự động trước đó; phụ đề bạn tự thêm hoặc nhập từ SRT được giữ nguyên.'**
+  String get captionsReplaceNote;
+
   /// No description provided for @voiceFxTitle.
   ///
   /// In vi, this message translates to:

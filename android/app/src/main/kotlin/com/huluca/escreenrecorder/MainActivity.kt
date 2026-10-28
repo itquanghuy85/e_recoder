@@ -108,6 +108,43 @@ class MainActivity : FlutterActivity() {
                 }
                 out.absolutePath
             }
+            "sttStart" -> {
+                if (android.os.Build.VERSION.SDK_INT < 33) {
+                    result.error("stt_unavailable", "needs Android 13", null)
+                } else {
+                    com.huluca.escreenrecorder.stt.SttJob.start(
+                        this, call.argument<String>("uri")!!, call.argument<String>("lang") ?: "vi-VN",
+                    )
+                    result.success(null)
+                }
+            }
+            "sttStatus" -> {
+                if (android.os.Build.VERSION.SDK_INT < 33) {
+                    result.success(mapOf("state" to "idle", "done" to 0, "total" to 0, "error" to "", "pieces" to emptyList<Any>()))
+                } else {
+                    result.success(com.huluca.escreenrecorder.stt.SttJob.status())
+                }
+            }
+            "sttCancel" -> {
+                if (android.os.Build.VERSION.SDK_INT >= 33) com.huluca.escreenrecorder.stt.SttJob.cancel()
+                result.success(null)
+            }
+            "sttDownload" -> {
+                if (android.os.Build.VERSION.SDK_INT >= 33) {
+                    com.huluca.escreenrecorder.stt.SpeechToText(this).download(call.argument<String>("lang") ?: "vi-VN")
+                }
+                result.success(null)
+            }
+            "sttSupport" -> {
+                val langs = call.argument<List<String>>("langs") ?: listOf("vi-VN", "en-US")
+                if (android.os.Build.VERSION.SDK_INT < 33) {
+                    result.success(mapOf("available" to false, "languages" to langs.associateWith { "unsupported" }))
+                } else {
+                    val stt = com.huluca.escreenrecorder.stt.SpeechToText(this)
+                    val ok = stt.available()
+                    stt.support(langs) { map -> result.success(mapOf("available" to ok, "languages" to map)) }
+                }
+            }
             "waveform" -> async(result) {
                 EditorMedia.waveform(
                     this, call.argument<String>("uri")!!,

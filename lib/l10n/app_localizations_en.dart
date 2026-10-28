@@ -380,6 +380,76 @@ class AppL10nEn extends AppL10n {
       'Time between placing a marker and being able to tap the real target. Shorter is faster, but viewers need a moment to see the marker.';
 
   @override
+  String get captionsAutoTitle => 'Create captions automatically';
+
+  @override
+  String get captionsPrivacy =>
+      'Speech is recognised on this phone by Android\'s own recogniser. The audio never leaves the device.';
+
+  @override
+  String get captionsUnavailable =>
+      'This phone cannot recognise speech on the device (needs Android 13 or newer).';
+
+  @override
+  String get captionsLanguage => 'Language spoken in the video';
+
+  @override
+  String get langVietnamese => 'Tiếng Việt';
+
+  @override
+  String get langEnglish => 'English';
+
+  @override
+  String get captionsLangReady => 'Ready on this phone.';
+
+  @override
+  String get captionsLangDownload =>
+      'A language pack is needed. Android downloads it once (it may use the network); after that it runs entirely on the device.';
+
+  @override
+  String get captionsLangUnsupported =>
+      'This phone does not support this language.';
+
+  @override
+  String get captionsDownload => 'Download language pack';
+
+  @override
+  String get captionsDownloading => 'Downloading…';
+
+  @override
+  String get captionsStart => 'Start creating captions';
+
+  @override
+  String get captionsPreparing => 'Extracting the sound…';
+
+  @override
+  String captionsProgress(int done, int total) {
+    return 'Listening to phrase $done/$total';
+  }
+
+  @override
+  String captionsCreated(int n) {
+    return 'Created $n captions. Edit or delete each one in the Text tab.';
+  }
+
+  @override
+  String get captionsCancelled => 'Stopped, no captions were added.';
+
+  @override
+  String get captionsNoAudio => 'This video has no sound.';
+
+  @override
+  String get captionsNoSpeech => 'No speech was heard in the video.';
+
+  @override
+  String get captionsFailed =>
+      'Captions could not be created. Try again or pick another language.';
+
+  @override
+  String get captionsReplaceNote =>
+      'Creating again replaces the earlier automatic captions; captions you added or imported from SRT are kept.';
+
+  @override
   String get voiceFxTitle => 'Voice effect';
 
   @override

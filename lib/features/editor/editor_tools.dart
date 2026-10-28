@@ -10,6 +10,7 @@ import '../marker/marker_inspector.dart';
 import '../marker/marker_spec.dart';
 import 'editor_controller.dart';
 import 'editor_pro_tools.dart';
+import 'auto_caption_sheet.dart';
 import 'srt.dart';
 import 'edit_project.dart';
 
@@ -891,6 +892,15 @@ class _TextPanelState extends State<_TextPanel> {
               onPressed: () => importSubtitleFile(context, c),
               icon: const Icon(Icons.subtitles_outlined),
               label: Text(t.subtitlesImport),
+            ),
+          ),
+          const SizedBox(height: Space.sm),
+          Semantics(
+            identifier: 'auto_captions',
+            child: OutlinedButton.icon(
+              onPressed: () => showAutoCaptions(context, c),
+              icon: const Icon(Icons.auto_awesome),
+              label: Text(t.captionsAutoTitle),
             ),
           ),
           const SizedBox(height: Space.md),

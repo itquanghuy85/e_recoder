@@ -4,4 +4,23 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
+    <application>
+        <!-- DEBUG BUILDS ONLY (this file is the debug source set): makes a speech sample with the
+             phone's own text-to-speech voice, so speech-to-text can be tested with real speech.
+             scripts/qa/auto_captions_check.sh uses it. -->
+        <receiver
+            android:name=".DebugTts"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.huluca.escreenrecorder.DEBUG_TTS" />
+            </intent-filter>
+        </receiver>
+    </application>
 </manifest>

@@ -4,6 +4,14 @@
 # A 1000 Hz voice-over with "Deep" (x0.78) must come out of the export near 780 Hz.
 set -uo pipefail
 S=${1:?serial}
+
+# The phone must stay awake and unlocked while the test runs (a sleeping screen stops the frames).
+awake() {
+  adb -s "$S" shell input keyevent KEYCODE_WAKEUP
+  adb -s "$S" shell wm dismiss-keyguard >/dev/null 2>&1
+  adb -s "$S" shell svc power stayon usb >/dev/null 2>&1
+}
+
 FF=${FFMPEG:-/c/ffmpeg/bin/ffmpeg.exe}
 HERE=$(cd "$(dirname "$0")" && pwd)
 W=$(cygpath -m "$(pwd)")/build/vfxe
@@ -12,7 +20,7 @@ mkdir -p "$W"
   -f lavfi -i "sine=frequency=440:duration=8" -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest "$W/it_clip.mp4"
 "$FF" -y -loglevel error -f lavfi -i "sine=frequency=1000:duration=6" -c:a aac "$W/it_voice.m4a"
 
-adb -s "$S" shell input keyevent KEYCODE_WAKEUP
+awake
 LOG="$W/run.log"; : > "$LOG"
 flutter test integration_test/voice_fx_editor_test.dart -d "$S" > "$LOG" 2>&1 &
 PID=$!

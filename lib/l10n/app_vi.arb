@@ -178,6 +178,43 @@
     }
   },
   "markerExitDelayHint": "Thời gian từ lúc đặt dấu đến lúc bạn bấm thật được. Càng ngắn càng nhanh, nhưng dấu cần đủ lâu để người xem kịp nhìn.",
+  "captionsAutoTitle": "Tạo phụ đề tự động",
+  "captionsPrivacy": "Nhận dạng giọng nói ngay trên điện thoại bằng bộ nhận dạng của Android. Âm thanh không rời khỏi máy.",
+  "captionsUnavailable": "Điện thoại này chưa hỗ trợ nhận dạng giọng nói trên máy (cần Android 13 trở lên).",
+  "captionsLanguage": "Ngôn ngữ trong video",
+  "langVietnamese": "Tiếng Việt",
+  "langEnglish": "English",
+  "captionsLangReady": "Đã có trên máy, dùng được ngay.",
+  "captionsLangDownload": "Cần tải gói ngôn ngữ. Android tự tải một lần, có thể dùng mạng; sau đó chạy hoàn toàn trên máy.",
+  "captionsLangUnsupported": "Điện thoại chưa hỗ trợ ngôn ngữ này.",
+  "captionsDownload": "Tải gói ngôn ngữ",
+  "captionsDownloading": "Đang tải…",
+  "captionsStart": "Bắt đầu tạo phụ đề",
+  "captionsPreparing": "Đang tách âm thanh…",
+  "captionsProgress": "Đang nghe đoạn {done}/{total}",
+  "@captionsProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "captionsCreated": "Đã tạo {n} dòng phụ đề. Sửa hoặc xoá từng dòng trong tab Chữ.",
+  "@captionsCreated": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "captionsCancelled": "Đã dừng, chưa thêm phụ đề nào.",
+  "captionsNoAudio": "Video này không có âm thanh.",
+  "captionsNoSpeech": "Không nghe thấy lời nói nào trong video.",
+  "captionsFailed": "Không tạo được phụ đề. Thử lại hoặc chọn ngôn ngữ khác.",
+  "captionsReplaceNote": "Tạo lại sẽ thay các phụ đề tự động trước đó; phụ đề bạn tự thêm hoặc nhập từ SRT được giữ nguyên.",
   "voiceFxTitle": "Hiệu ứng giọng",
   "fxNone": "Gốc",
   "fxDeep": "Trầm",

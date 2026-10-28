@@ -10,6 +10,7 @@ import '../marker/marker_spec.dart';
 import '../marker/marker_timing.dart';
 import 'auto_director.dart';
 import 'edit_project.dart';
+import 'captions_from_speech.dart';
 import 'srt.dart';
 import 'export_presets.dart';
 import 'project_template.dart';
@@ -598,8 +599,17 @@ class EditorController extends ChangeNotifier {
 
   /// Adds one caption per cue (bottom of the frame, boxed), as ONE undoable step. Cues are in
   /// source time and are clamped to the clip; returns how many were added.
-  int importSubtitles(List<SubtitleCue> cues) {
+  int importSubtitles(
+    List<SubtitleCue> cues, {
+    String idPrefix = 'sub',
+    bool replaceSamePrefix = false,
+  }) {
     var p = _project;
+    if (replaceSamePrefix) {
+      p = p.copyWith(
+        texts: p.texts.where((t) => !t.id.startsWith('${idPrefix}_')).toList(),
+      );
+    }
     var n = 0;
     final stamp = DateTime.now().microsecondsSinceEpoch;
     for (final cue in cues) {
@@ -609,7 +619,7 @@ class EditorController extends ChangeNotifier {
       p = p.upsertText(
         TextPreset.subtitle.apply(
           TextItem(
-            id: 'sub_${stamp}_${n++}',
+            id: '${idPrefix}_${stamp}_${n++}',
             text: cue.text,
             startMs: start,
             endMs: end,
@@ -624,6 +634,60 @@ class EditorController extends ChangeNotifier {
     }
     return n;
   }
+
+  // ---- automatic captions (speech to text, on the device) --------------------------------------
+
+  bool sttBusy = false;
+  SttStatus? sttProgress;
+
+  /// Why the last run made no captions: null (cancelled or fine), 'no_audio', 'no_speech', or a
+  /// system message.
+  String? sttError;
+
+  /// How often the running job is asked for progress (tests make it 0).
+  Duration sttPoll = const Duration(milliseconds: 400);
+
+  /// Listens to the sound of the video (on the phone), cuts it into phrases and puts captions on the
+  /// timeline as ONE undoable step, replacing the captions of an earlier automatic run. Returns how
+  /// many captions were made (0 when cancelled or nothing was heard; see [sttError]).
+  Future<int> generateCaptions(String lang) async {
+    if (sttBusy) return 0;
+    sttBusy = true;
+    sttError = null;
+    sttProgress = null;
+    notifyListeners();
+    try {
+      await native.sttStart(_project.sourceUri, lang);
+      while (true) {
+        await Future<void>.delayed(sttPoll);
+        if (_disposed) return 0;
+        final s = await native.sttStatus();
+        sttProgress = s;
+        notifyListeners();
+        if (s.finished) break;
+      }
+      final s = sttProgress!;
+      if (s.state == 'cancelled') return 0;
+      if (s.state == 'error') {
+        sttError = s.error.isEmpty ? 'error' : s.error;
+        return 0;
+      }
+      final cues = layoutCaptions(s.pieces);
+      if (cues.isEmpty) {
+        sttError = 'no_speech';
+        return 0;
+      }
+      return importSubtitles(cues, idPrefix: 'auto', replaceSamePrefix: true);
+    } catch (e) {
+      sttError = 'error';
+      return 0;
+    } finally {
+      sttBusy = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
+  Future<void> cancelCaptions() => native.sttCancel();
 
   void updateText(TextItem t, {bool record = true}) =>
       _apply(_project.upsertText(t), record: record);

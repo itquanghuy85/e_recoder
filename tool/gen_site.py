@@ -90,6 +90,8 @@ T = {
 <table><thead><tr><th>Dữ liệu</th><th>Dùng để</th><th>Lưu ở đâu</th></tr></thead><tbody>
 <tr><td>Hình ảnh màn hình bạn chọn quay (sau khi bạn đồng ý trong hộp thoại của Android)</td><td>Tạo tệp video</td><td>Thư mục <code>Movies/E Screen Recorder</code> trên thiết bị</td></tr>
 <tr><td>Âm thanh micro hoặc âm thanh trong máy (chỉ khi bạn bật)</td><td>Ghi tiếng vào video</td><td>Nằm trong tệp video</td></tr>
+<tr><td>Lời nói trong video, khi bạn bấm <em>Tạo phụ đề tự động</em></td><td>Biến lời nói thành chữ để làm phụ đề</td><td>Nhận dạng ngay trên điện thoại bằng bộ nhận dạng giọng nói của Android (chế độ chỉ chạy trên máy); âm thanh không được gửi đi. Chỉ chữ kết quả được lưu vào dự án chỉnh sửa.</td></tr>
+<tr><td>Giọng lồng tiếng, khi bạn chọn hiệu ứng giọng hoặc giảm ồn</td><td>Đổi giọng, giảm tiếng ồn nền</td><td>Xử lý trên máy; bản đã xử lý lưu trong thư mục riêng của ứng dụng, bản gốc được giữ để khôi phục.</td></tr>
 <tr><td>Dự án chỉnh sửa: vị trí cắt, dấu, chữ, khối che</td><td>Cho bạn sửa tiếp lần sau</td><td>Cơ sở dữ liệu cục bộ của ứng dụng</td></tr>
 <tr><td>Cài đặt: độ phân giải, giao diện, kiểu dấu</td><td>Nhớ lựa chọn của bạn</td><td>Bộ nhớ cục bộ của ứng dụng</td></tr>
 <tr><td>Ảnh GIF bạn xuất</td><td>Chia sẻ ảnh động</td><td>Thư mục <code>Pictures/E Screen Recorder</code></td></tr>
@@ -223,6 +225,8 @@ T = {
 <table><thead><tr><th>Data</th><th>Used for</th><th>Stored</th></tr></thead><tbody>
 <tr><td>What is on screen when you choose to record (after you agree in Android's dialog)</td><td>Creating the video file</td><td><code>Movies/E Screen Recorder</code> on the device</td></tr>
 <tr><td>Microphone or device audio (only if you turn it on)</td><td>Adding sound to the video</td><td>Inside the video file</td></tr>
+<tr><td>Speech in a video, when you tap <em>Create captions automatically</em></td><td>Turning speech into text for captions</td><td>Recognised on the phone by Android's own speech recogniser (on-device only mode); the audio is not sent anywhere. Only the resulting text is saved in the edit project.</td></tr>
+<tr><td>A voice-over, when you choose a voice effect or noise reduction</td><td>Changing the voice, reducing background noise</td><td>Processed on the phone; the processed copy is kept in the app's private folder and the original is kept so you can go back.</td></tr>
 <tr><td>Edit projects: cuts, markers, text, covers</td><td>Letting you continue editing later</td><td>The app's local database</td></tr>
 <tr><td>Settings: resolution, theme, marker style</td><td>Remembering your choices</td><td>The app's local storage</td></tr>
 <tr><td>GIFs you export</td><td>Sharing animated images</td><td><code>Pictures/E Screen Recorder</code></td></tr>

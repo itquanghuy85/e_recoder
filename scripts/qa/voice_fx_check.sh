@@ -6,6 +6,14 @@
 # 3. pulls every result and prints: length, level, pitch of the tone, noise in the pauses
 set -uo pipefail
 S=${1:?serial}
+
+# The phone must stay awake and unlocked while the test runs (a sleeping screen stops the frames).
+awake() {
+  adb -s "$S" shell input keyevent KEYCODE_WAKEUP
+  adb -s "$S" shell wm dismiss-keyguard >/dev/null 2>&1
+  adb -s "$S" shell svc power stayon usb >/dev/null 2>&1
+}
+
 FF=${FFMPEG:-/c/ffmpeg/bin/ffmpeg.exe}
 HERE=$(cd "$(dirname "$0")" && pwd)
 W=$(cygpath -m "$(pwd)")/build/vfx
@@ -17,7 +25,7 @@ mkdir -p "$W/out"
 powershell -NoProfile -Command "Add-Type -AssemblyName System.Speech; \$s = New-Object System.Speech.Synthesis.SpeechSynthesizer; \$s.SetOutputToWaveFile('$W/speech.wav'); \$s.Speak('This is a short test of the voice effects. The quick brown fox jumps over the lazy dog. One, two, three, four, five.'); \$s.Dispose()"
 "$FF" -y -loglevel error -i "$W/speech.wav" -c:a aac -ar 44100 -ac 1 "$W/it_speech.m4a"
 
-adb -s "$S" shell input keyevent KEYCODE_WAKEUP
+awake
 LOG="$W/run.log"; : > "$LOG"
 flutter test integration_test/voice_fx_device_test.dart -d "$S" > "$LOG" 2>&1 &
 PID=$!

@@ -433,6 +433,37 @@ class NativeRecorder {
     return v?.toDouble();
   }
 
+  /// Whether this phone can turn speech into text on the device, and for which languages
+  /// ("installed", "downloadable" or "unsupported" per language tag such as "vi-VN").
+  Future<({bool available, Map<String, String> languages})> sttSupport(
+    List<String> langs,
+  ) async {
+    final m = (await _method.invokeMapMethod<String, Object?>('sttSupport', {
+      'langs': langs,
+    }))!;
+    return (
+      available: m['available'] as bool,
+      languages: (m['languages'] as Map).map(
+        (k, v) => MapEntry(k as String, v as String),
+      ),
+    );
+  }
+
+  /// Starts turning the speech in [uri] (a video) into text, on the device, in language [lang].
+  /// Follow it with [sttStatus]; stop it with [sttCancel].
+  Future<void> sttStart(String uri, String lang) =>
+      _method.invokeMethod<void>('sttStart', {'uri': uri, 'lang': lang});
+
+  Future<SttStatus> sttStatus() async => SttStatus.fromMap(
+    (await _method.invokeMapMethod<String, Object?>('sttStatus'))!,
+  );
+
+  Future<void> sttCancel() => _method.invokeMethod<void>('sttCancel');
+
+  /// Asks Android to download the on-device language pack of [lang] (done by the system).
+  Future<void> sttDownload(String lang) =>
+      _method.invokeMethod<void>('sttDownload', {'lang': lang});
+
   /// Applies a voice effect and/or noise reduction to a voice file once and returns the new file
   /// (an m4a of the same length). [fx]: none|deep|high|chipmunk|robot|echo|reverb;
   /// [denoise]: off|light|strong. Asking again for the same combination returns the same file.
@@ -505,5 +536,49 @@ class PickedMedia {
     durationMs: ((m['durationMs'] as num?) ?? 0).toInt(),
     width: ((m['width'] as num?) ?? 0).toInt(),
     height: ((m['height'] as num?) ?? 0).toInt(),
+  );
+}
+
+/// One recognised phrase: [text] was said between [startMs] and [endMs] of the video.
+class SttPiece {
+  const SttPiece(this.startMs, this.endMs, this.text);
+  final int startMs;
+  final int endMs;
+  final String text;
+}
+
+/// Where the speech-to-text job is. [state]: idle, preparing, running, done, error, cancelled.
+/// [error] when it failed: no_audio, no_speech, or a system message.
+class SttStatus {
+  const SttStatus({
+    required this.state,
+    required this.done,
+    required this.total,
+    required this.error,
+    required this.pieces,
+  });
+
+  final String state;
+  final int done;
+  final int total;
+  final String error;
+  final List<SttPiece> pieces;
+
+  bool get finished =>
+      state == 'done' || state == 'error' || state == 'cancelled';
+
+  factory SttStatus.fromMap(Map<String, Object?> m) => SttStatus(
+    state: m['state'] as String,
+    done: (m['done'] as num).toInt(),
+    total: (m['total'] as num).toInt(),
+    error: m['error'] as String? ?? '',
+    pieces: [
+      for (final p in (m['pieces'] as List? ?? const []))
+        SttPiece(
+          ((p as Map)['startMs'] as num).toInt(),
+          (p['endMs'] as num).toInt(),
+          p['text'] as String,
+        ),
+    ],
   );
 }

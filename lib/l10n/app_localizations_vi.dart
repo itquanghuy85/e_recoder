@@ -380,6 +380,75 @@ class AppL10nVi extends AppL10n {
       'Thời gian từ lúc đặt dấu đến lúc bạn bấm thật được. Càng ngắn càng nhanh, nhưng dấu cần đủ lâu để người xem kịp nhìn.';
 
   @override
+  String get captionsAutoTitle => 'Tạo phụ đề tự động';
+
+  @override
+  String get captionsPrivacy =>
+      'Nhận dạng giọng nói ngay trên điện thoại bằng bộ nhận dạng của Android. Âm thanh không rời khỏi máy.';
+
+  @override
+  String get captionsUnavailable =>
+      'Điện thoại này chưa hỗ trợ nhận dạng giọng nói trên máy (cần Android 13 trở lên).';
+
+  @override
+  String get captionsLanguage => 'Ngôn ngữ trong video';
+
+  @override
+  String get langVietnamese => 'Tiếng Việt';
+
+  @override
+  String get langEnglish => 'English';
+
+  @override
+  String get captionsLangReady => 'Đã có trên máy, dùng được ngay.';
+
+  @override
+  String get captionsLangDownload =>
+      'Cần tải gói ngôn ngữ. Android tự tải một lần, có thể dùng mạng; sau đó chạy hoàn toàn trên máy.';
+
+  @override
+  String get captionsLangUnsupported => 'Điện thoại chưa hỗ trợ ngôn ngữ này.';
+
+  @override
+  String get captionsDownload => 'Tải gói ngôn ngữ';
+
+  @override
+  String get captionsDownloading => 'Đang tải…';
+
+  @override
+  String get captionsStart => 'Bắt đầu tạo phụ đề';
+
+  @override
+  String get captionsPreparing => 'Đang tách âm thanh…';
+
+  @override
+  String captionsProgress(int done, int total) {
+    return 'Đang nghe đoạn $done/$total';
+  }
+
+  @override
+  String captionsCreated(int n) {
+    return 'Đã tạo $n dòng phụ đề. Sửa hoặc xoá từng dòng trong tab Chữ.';
+  }
+
+  @override
+  String get captionsCancelled => 'Đã dừng, chưa thêm phụ đề nào.';
+
+  @override
+  String get captionsNoAudio => 'Video này không có âm thanh.';
+
+  @override
+  String get captionsNoSpeech => 'Không nghe thấy lời nói nào trong video.';
+
+  @override
+  String get captionsFailed =>
+      'Không tạo được phụ đề. Thử lại hoặc chọn ngôn ngữ khác.';
+
+  @override
+  String get captionsReplaceNote =>
+      'Tạo lại sẽ thay các phụ đề tự động trước đó; phụ đề bạn tự thêm hoặc nhập từ SRT được giữ nguyên.';
+
+  @override
   String get voiceFxTitle => 'Hiệu ứng giọng';
 
   @override

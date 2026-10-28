@@ -286,77 +286,10 @@ object VoiceFx {
     }
 
     private fun decode(path: String): Pcm {
-        val ex = MediaExtractor()
-        var codec: MediaCodec? = null
-        try {
-            ex.setDataSource(path)
-            val track = (0 until ex.trackCount).firstOrNull {
-                ex.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true
-            } ?: throw IllegalStateException("no sound in $path")
-            val format = ex.getTrackFormat(track)
-            if (format.containsKey(MediaFormat.KEY_DURATION) && format.getLong(MediaFormat.KEY_DURATION) > MAX_MS * 1000) {
-                throw IllegalStateException("too long")
-            }
-            ex.selectTrack(track)
-            codec = MediaCodec.createDecoderByType(format.getString(MediaFormat.KEY_MIME)!!)
-            codec.configure(format, null, null, 0)
-            codec.start()
-            var rate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-            var channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
-            var buf = ShortArray(rate * channels * 5)
-            var n = 0
-            val info = MediaCodec.BufferInfo()
-            var eos = false
-            var done = false
-            while (!done) {
-                // Feed every input buffer that is free, then take out everything that is ready;
-                // only wait (briefly) when nothing moved. One frame per wait would take seconds.
-                var fed = false
-                while (!eos) {
-                    val i = codec.dequeueInputBuffer(0)
-                    if (i < 0) break
-                    val ib = codec.getInputBuffer(i)!!
-                    val size = ex.readSampleData(ib, 0)
-                    if (size < 0) {
-                        codec.queueInputBuffer(i, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                        eos = true
-                    } else {
-                        codec.queueInputBuffer(i, 0, size, ex.sampleTime, 0)
-                        ex.advance()
-                    }
-                    fed = true
-                }
-                var drained = false
-                var o = codec.dequeueOutputBuffer(info, if (fed) 0 else 4_000)
-                while (o != MediaCodec.INFO_TRY_AGAIN_LATER) {
-                    drained = true
-                    if (o == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                        val f = codec.outputFormat
-                        rate = f.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-                        channels = f.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
-                    } else if (o >= 0) {
-                        val ob = codec.getOutputBuffer(o)!!
-                        ob.position(info.offset)
-                        ob.limit(info.offset + info.size)
-                        val sb = ob.order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()
-                        while (sb.hasRemaining()) {
-                            if (n == buf.size) buf = buf.copyOf(buf.size * 2)
-                            buf[n++] = sb.get()
-                        }
-                        codec.releaseOutputBuffer(o, false)
-                        if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) { done = true; break }
-                    }
-                    o = codec.dequeueOutputBuffer(info, 0)
-                }
-                if (!fed && !drained && eos) Thread.sleep(1)
-            }
-            val frames = n / channels
-            return Pcm(rate, channels, buf.copyOf(frames * channels))
-        } finally {
-            try { codec?.stop() } catch (_: Exception) {}
-            codec?.release()
-            ex.release()
-        }
+        // One second more than allowed: a longer file is refused, never silently cut short.
+        val d = AudioDecode.decode(MAX_MS + 1000) { it.setDataSource(path) }
+        if (d.frames.toLong() * 1000 / d.rate > MAX_MS) throw IllegalStateException("too long")
+        return Pcm(d.rate, d.channels, d.data)
     }
 
     private fun encodeAac(out: File, rate: Int, channels: Int, pcm: ShortArray) {
