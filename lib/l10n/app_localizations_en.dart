@@ -191,6 +191,12 @@ class AppL10nEn extends AppL10n {
   String get errSave => 'Could not save the video to the device.';
 
   @override
+  String get pickVideoFromDevice => 'Choose a video from the phone';
+
+  @override
+  String get pickVideoFailed => 'This video could not be opened.';
+
+  @override
   String get libraryTitle => 'Library';
 
   @override
@@ -1146,6 +1152,12 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get picRotate => 'Rotate 90°';
+
+  @override
+  String get picTilt => 'Free rotation';
+
+  @override
+  String get picTiltReset => 'Straighten';
 
   @override
   String get picCrop => 'Crop';

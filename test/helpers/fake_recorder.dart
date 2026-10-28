@@ -131,6 +131,13 @@ class FakeRecorder implements NativeRecorder {
     return (png: _png, w: 100, h: 60);
   }
 
+  MediaEntry? pickedVideo;
+  @override
+  Future<MediaEntry?> pickVideoToEdit() async {
+    calls.add('pickVideoToEdit');
+    return pickedVideo;
+  }
+
   @override
   Future<PickedMedia?> pickMedia(String kind) async {
     calls.add('pickMedia:$kind');

@@ -38,8 +38,45 @@ object EditorMedia {
         return info(ctx, out.absolutePath) + mapOf("path" to out.absolutePath, "name" to name)
     }
 
+    /**
+     * A picked video where it lives: {uri, name, size, durationMs, width, height}. The size is the size the
+     * picture is SHOWN at (a phone video stored landscape with a 90/270 turn flag is portrait here).
+     */
+    fun describeVideo(ctx: Context, uri: Uri): Map<String, Any?> {
+        val mmr = MediaMetadataRetriever()
+        try {
+            mmr.setDataSource(ctx, uri)
+            if (mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO) != "yes") {
+                throw IllegalArgumentException("not a video")
+            }
+            val dur = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+            var w = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 0
+            var h = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 0
+            val rot = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)?.toIntOrNull() ?: 0
+            if (rot == 90 || rot == 270) { val t = w; w = h; h = t }
+            var size = 0L
+            ctx.contentResolver.query(uri, arrayOf(OpenableColumns.SIZE), null, null, null)?.use { c ->
+                if (c.moveToFirst() && !c.isNull(0)) size = c.getLong(0)
+            }
+            return mapOf(
+                "uri" to uri.toString(), "name" to displayName(ctx, uri), "size" to size,
+                "durationMs" to dur, "width" to w, "height" to h,
+            )
+        } finally {
+            try { mmr.release() } catch (_: Exception) {}
+        }
+    }
+
+    /** Displayed (rotation-corrected) size of a local video, null when it cannot be read. */
+    fun displaySize(path: String): Pair<Int, Int>? {
+        val m = info(ctx = null, path = path)
+        val w = (m["width"] as? Int) ?: 0
+        val h = (m["height"] as? Int) ?: 0
+        return if (w > 0 && h > 0) Pair(w, h) else null
+    }
+
     /** {kind: audio|video|image, durationMs, width, height} for a local file. */
-    fun info(ctx: Context, path: String): Map<String, Any?> {
+    fun info(ctx: Context?, path: String): Map<String, Any?> {
         val mime = android.webkit.MimeTypeMap.getSingleton()
             .getMimeTypeFromExtension(path.substringAfterLast('.', "").lowercase()) ?: ""
         val mmr = MediaMetadataRetriever()
@@ -47,8 +84,11 @@ object EditorMedia {
             mmr.setDataSource(path)
             val hasVideo = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_VIDEO) == "yes"
             val dur = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
-            val w = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 0
-            val h = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 0
+            var w = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 0
+            var h = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 0
+            // The size the picture is SHOWN at: a phone video stored landscape with a 90/270 flag is portrait.
+            val rot = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)?.toIntOrNull() ?: 0
+            if (rot == 90 || rot == 270) { val t = w; w = h; h = t }
             val kind = when {
                 hasVideo -> "video"
                 mime.startsWith("image") -> "image"

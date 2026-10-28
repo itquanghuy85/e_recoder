@@ -114,6 +114,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(msg)));
 
+  /// One video from the phone, opened straight in the editor: not copied, the gallery is not scanned.
+  Future<void> _pickFromPhone() async {
+    final t = AppL10n.of(context);
+    try {
+      final e = await ref.read(nativeRecorderProvider).pickVideoToEdit();
+      if (e == null || !mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => EditorScreen(entry: e)),
+      );
+    } catch (_) {
+      if (mounted) _toast(t.pickVideoFailed);
+    }
+  }
+
   void _open(MediaEntry e) => Navigator.of(context)
       .push(MaterialPageRoute<void>(builder: (_) => PlayerScreen(entry: e)));
 
@@ -126,6 +140,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(Space.lg, Space.sm, Space.lg, 0),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Semantics(
+              identifier: 'library_pick_video',
+              child: OutlinedButton.icon(
+                onPressed: _pickFromPhone,
+                icon: const Icon(Icons.video_file_outlined),
+                label: Text(t.pickVideoFromDevice),
+              ),
+            ),
+          ),
+        ),
         Expanded(
           child: RefreshIndicator(
             onRefresh: () async => ref.refresh(mediaListProvider.future),

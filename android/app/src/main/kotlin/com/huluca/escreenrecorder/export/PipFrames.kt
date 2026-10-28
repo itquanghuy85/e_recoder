@@ -10,6 +10,7 @@ import androidx.media3.common.OverlaySettings
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.BitmapOverlay
 import androidx.media3.effect.StaticOverlaySettings
+import com.huluca.escreenrecorder.EditorMedia
 import java.io.File
 
 /**
@@ -42,8 +43,11 @@ class PipFrames(private val ctx: Context) {
         outDir.deleteRecursively()
         outDir.mkdirs()
         val intra = File(outDir, "intra.mp4")
+        // The size it is SHOWN at: projects saved before the rotation fix hold the raw stored size, and a
+        // portrait video squeezed into a landscape box came out with black bars around it.
+        val shown = EditorMedia.displaySize(pip.path)
         intraCopy.make(
-            "file://" + pip.path, pip.trimStartMs, pip.trimStartMs + pip.playMs, pip.pxW, pip.pxH,
+            "file://" + pip.path, pip.trimStartMs, pip.trimStartMs + pip.playMs, shown?.first ?: pip.pxW, shown?.second ?: pip.pxH,
             MAX_SHORT_SIDE, FPS, intra,
             progress = { p -> progress(p * 0.6f) },
             done = { err ->

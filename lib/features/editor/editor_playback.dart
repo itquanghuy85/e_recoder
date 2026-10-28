@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show ValueNotifier;
 import 'package:video_player/video_player.dart';
 
 import 'edit_project.dart';
@@ -78,9 +79,46 @@ class PlaybackDriver {
   EditProject get _p => c.project;
   bool get running => _timer != null;
 
-  Future<void> toggle() => c.playing ? pause() : play();
+  Future<void> toggle() => _locked(() => c.playing ? _pause() : _play());
 
-  Future<void> play() async {
+  Future<void> play() => _locked(_play);
+
+  Future<void> pause() => _locked(_pause);
+
+  /// True while a play/pause is being carried out (the button shows it instead of looking dead).
+  final busy = ValueNotifier<bool>(false);
+  Future<void> _gate = Future.value();
+  int _queued = 0;
+  bool _disposed = false;
+
+  /// Play and pause run one after the other: a tap that arrives while the previous one is still
+  /// seeking would otherwise leave the player running under a paused screen (or the other way round).
+  /// Taps beyond one waiting are dropped (a toggle fired ten times in a row stays one waiting).
+  Future<void> _locked(Future<void> Function() f) {
+    if (_queued >= 2) return _gate;
+    _queued++;
+    busy.value = true;
+    final run = _gate.then((_) async {
+      try {
+        await f();
+      } catch (_) {
+        // Whatever the player said, the screen must not stay in "playing" with nothing running.
+        _timer?.cancel();
+        _timer = null;
+        c.setPlaying(false);
+        try {
+          await player.pause();
+        } catch (_) {}
+      } finally {
+        _queued--;
+        if (_queued == 0 && !_disposed) busy.value = false;
+      }
+    });
+    _gate = run;
+    return run;
+  }
+
+  Future<void> _play() async {
     if (c.playing) return;
     if (c.outMs >= _p.outDurationMs - 50) c.seekOut(0);
     c.setPlaying(true);
@@ -90,7 +128,7 @@ class PlaybackDriver {
     _timer = Timer.periodic(tickEvery, (_) => tick());
   }
 
-  Future<void> pause() async {
+  Future<void> _pause() async {
     _timer?.cancel();
     _timer = null;
     c.setPlaying(false);
@@ -196,11 +234,12 @@ class PlaybackDriver {
   }
 
   Future<void> _finish() async {
-    await pause();
+    await _pause();
     c.seekOut(_p.outDurationMs);
   }
 
   Future<void> dispose() async {
+    _disposed = true;
     _timer?.cancel();
     _timer = null;
   }

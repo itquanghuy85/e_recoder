@@ -427,6 +427,18 @@ abstract class AppL10n {
   /// **'Không lưu được video vào bộ nhớ máy.'**
   String get errSave;
 
+  /// No description provided for @pickVideoFromDevice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn video từ máy'**
+  String get pickVideoFromDevice;
+
+  /// No description provided for @pickVideoFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không mở được video này.'**
+  String get pickVideoFailed;
+
   /// No description provided for @libraryTitle.
   ///
   /// In vi, this message translates to:
@@ -2178,6 +2190,18 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Xoay 90°'**
   String get picRotate;
+
+  /// No description provided for @picTilt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoay tự do'**
+  String get picTilt;
+
+  /// No description provided for @picTiltReset.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm thẳng'**
+  String get picTiltReset;
 
   /// No description provided for @picCrop.
   ///

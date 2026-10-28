@@ -398,6 +398,14 @@ class NativeRecorder {
     return m == null ? null : PickedMedia.fromMap(m);
   }
 
+  /// Opens the system picker for one video and returns it where it is (not copied, the gallery is
+  /// not scanned). Null when the user cancels.
+  Future<MediaEntry?> pickVideoToEdit() async {
+    final m = await _method.invokeMapMethod<String, Object?>('pickVideoToEdit');
+    if (m == null) return null;
+    return MediaEntry.fromMap({...m, 'dateAdded': DateTime.now().millisecondsSinceEpoch ~/ 1000});
+  }
+
   Future<PickedMedia> mediaInfo(String path) async {
     final m = (await _method.invokeMapMethod<String, Object?>('mediaInfo', {
       'path': path,

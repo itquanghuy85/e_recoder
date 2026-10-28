@@ -58,6 +58,23 @@ EditProject _base() => EditProject.fresh(
   return (c: c, port: port, d: d, clock: clock);
 }
 
+class _Throwing implements PlayerPort {
+  _Throwing(this.inner);
+  final _Port inner;
+  @override
+  Future<void> seekTo(int ms) async => throw StateError('player gone');
+  @override
+  Future<void> play() => inner.play();
+  @override
+  Future<void> pause() => inner.pause();
+  @override
+  Future<int?> positionMs() => inner.positionMs();
+  @override
+  Future<void> setSpeed(double s) => inner.setSpeed(s);
+  @override
+  Future<void> setVolume(double v) => inner.setVolume(v);
+}
+
 class _Clock {
   int t = 0;
 }
@@ -143,5 +160,30 @@ void main() {
     await r.d.tick();
     expect(r.c.playing, isFalse);
     expect(r.c.outMs, 10000);
+  });
+
+  test('play/pause tapped ten times in a row always ends in step with the player', () async {
+    final r = _rig(_base());
+    // taps arrive faster than the player answers
+    final taps = [for (var i = 0; i < 10; i++) r.d.toggle()];
+    await Future.wait(taps);
+    expect(r.c.playing, r.port.playing, reason: 'screen and player agree');
+    await r.d.pause();
+    expect(r.c.playing, isFalse);
+    expect(r.port.playing, isFalse);
+    expect(r.d.busy.value, isFalse, reason: 'the button is never left busy');
+    await r.d.play();
+    expect(r.c.playing, isTrue);
+    expect(r.port.playing, isTrue);
+  });
+
+  test('a player that throws does not leave the button stuck on "playing"', () async {
+    final r = _rig(_base());
+    final bad = _Port();
+    final c = r.c;
+    final d = PlaybackDriver(controller: c, player: _Throwing(bad), nowMs: () => 0);
+    await d.play();
+    expect(c.playing, isFalse);
+    expect(d.busy.value, isFalse);
   });
 }

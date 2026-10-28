@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -467,6 +468,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               ),
               _Transport(
                 controller: c,
+                busy: _driver?.busy,
                 onToggle: _togglePlay,
                 onZoomOut: () => _timelineKey.currentState?.zoomBy(1 / 1.5),
                 onZoomIn: () => _timelineKey.currentState?.zoomBy(1.5),
@@ -503,16 +505,20 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   }
 }
 
+final ValueNotifier<bool> _never = ValueNotifier<bool>(false);
+
 class _Transport extends StatelessWidget {
   const _Transport({
     required this.controller,
     required this.onToggle,
+    required this.busy,
     required this.onZoomOut,
     required this.onZoomIn,
     required this.onFit,
   });
   final EditorController controller;
   final VoidCallback onToggle;
+  final ValueListenable<bool>? busy;
   final VoidCallback onZoomOut;
   final VoidCallback onZoomIn;
   final VoidCallback onFit;
@@ -539,7 +545,19 @@ class _Transport extends StatelessWidget {
                     foregroundColor: cs.onTertiary,
                   ),
                   onPressed: onToggle,
-                  icon: Icon(c.playing ? Icons.pause : Icons.play_arrow),
+                  icon: ValueListenableBuilder<bool>(
+                    valueListenable: busy ?? _never,
+                    builder: (_, working, _) => working
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.4,
+                              color: cs.onTertiary,
+                            ),
+                          )
+                        : Icon(c.playing ? Icons.pause : Icons.play_arrow),
+                  ),
                 ),
               ),
               const SizedBox(width: Space.sm),

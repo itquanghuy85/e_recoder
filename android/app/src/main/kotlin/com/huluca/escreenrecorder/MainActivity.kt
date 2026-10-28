@@ -73,6 +73,7 @@ class MainActivity : FlutterActivity() {
             "renderCover" -> async(result) { renderCover(call) }
             "renderShape" -> async(result) { renderShape(call) }
             "pickMedia" -> pickMedia(call, result)
+            "pickVideoToEdit" -> pickVideoToEdit(result)
             "mediaInfo" -> async(result) { EditorMedia.info(this, call.argument<String>("path")!!) }
             "startVoice" -> {
                 try {
@@ -271,6 +272,19 @@ class MainActivity : FlutterActivity() {
         startActivityForResult(intent, REQ_PICK)
     }
 
+    private var pendingEditPick: MethodChannel.Result? = null
+
+    /** Opens the system picker for ONE video and returns it where it is (no copy, no gallery scan). */
+    private fun pickVideoToEdit(result: MethodChannel.Result) {
+        if (pendingEditPick != null) { result.success(null); return }
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "video/*"
+        }
+        pendingEditPick = result
+        startActivityForResult(intent, REQ_PICK_EDIT)
+    }
+
     /** Hands the job to [ExportService], which keeps going when the app is left. */
     private fun startExport(call: MethodCall, result: MethodChannel.Result) {
         val job = try {
@@ -339,6 +353,24 @@ class MainActivity : FlutterActivity() {
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQ_PICK_EDIT) {
+            val r = pendingEditPick
+            pendingEditPick = null
+            val uri = data?.data
+            if (resultCode != RESULT_OK || uri == null) { r?.success(null); return }
+            try {
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (_: Exception) {}
+            io.execute {
+                try {
+                    val info = EditorMedia.describeVideo(this, uri)
+                    main.post { r?.success(info) }
+                } catch (e: Exception) {
+                    main.post { r?.error("pick_failed", e.message, null) }
+                }
+            }
+            return
+        }
         if (requestCode == REQ_PICK) {
             val r = pendingPick
             pendingPick = null
@@ -375,5 +407,6 @@ class MainActivity : FlutterActivity() {
     companion object {
         const val REQ_PROJECTION = 4242
         const val REQ_PICK = 4243
+        const val REQ_PICK_EDIT = 4244
     }
 }

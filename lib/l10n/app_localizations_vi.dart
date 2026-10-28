@@ -191,6 +191,12 @@ class AppL10nVi extends AppL10n {
   String get errSave => 'Không lưu được video vào bộ nhớ máy.';
 
   @override
+  String get pickVideoFromDevice => 'Chọn video từ máy';
+
+  @override
+  String get pickVideoFailed => 'Không mở được video này.';
+
+  @override
   String get libraryTitle => 'Thư viện';
 
   @override
@@ -1142,6 +1148,12 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get picRotate => 'Xoay 90°';
+
+  @override
+  String get picTilt => 'Xoay tự do';
+
+  @override
+  String get picTiltReset => 'Làm thẳng';
 
   @override
   String get picCrop => 'Cắt khung';
