@@ -88,6 +88,26 @@ class MainActivity : FlutterActivity() {
                     (call.argument<Number>("startMs")!!).toLong(), (call.argument<Number>("endMs")!!).toLong(),
                 )
             }
+            "processVoice" -> async(result) {
+                val src = call.argument<String>("path")!!
+                val fx = call.argument<String>("fx") ?: "none"
+                val dn = call.argument<String>("denoise") ?: "off"
+                val f = java.io.File(src)
+                // One processed file per (voice, effect, noise level): asking again is instant.
+                val key = "${f.name.hashCode().toUInt()}_${f.length()}_${f.lastModified()}_${fx}_$dn"
+                val out = java.io.File(java.io.File(filesDir, "voice_fx"), "vfx_$key.m4a")
+                if (!out.exists() || out.length() == 0L) {
+                    val tmp = java.io.File(out.parentFile, "tmp_${System.nanoTime()}.m4a")
+                    try {
+                        out.parentFile?.mkdirs()
+                        com.huluca.escreenrecorder.export.VoiceFx.process(src, tmp, fx, dn)
+                        tmp.renameTo(out)
+                    } finally {
+                        if (tmp.exists()) tmp.delete()
+                    }
+                }
+                out.absolutePath
+            }
             "waveform" -> async(result) {
                 EditorMedia.waveform(
                     this, call.argument<String>("uri")!!,

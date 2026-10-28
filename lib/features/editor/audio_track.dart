@@ -2,6 +2,12 @@
 /// timeline ([startOutMs]) and are mixed with the video's own sound by the exporter.
 enum AudioKind { music, voice }
 
+/// What a voice-over sounds like. [none] keeps the original. Mirror of VoiceFxMath in VoiceFx.kt.
+enum VoiceFx { none, deep, high, chipmunk, robot, echo, reverb }
+
+/// How much background noise is taken out of a voice-over.
+enum Denoise { off, light, strong }
+
 class AudioTrack {
   const AudioTrack({
     required this.id,
@@ -16,6 +22,9 @@ class AudioTrack {
     this.fadeOutMs = 0,
     this.loop = false,
     this.duck = true,
+    this.fx = VoiceFx.none,
+    this.denoise = Denoise.off,
+    this.fxPath,
   });
 
   final String id;
@@ -40,6 +49,18 @@ class AudioTrack {
 
   /// Music only: get quieter while a voice-over is speaking.
   final bool duck;
+
+  /// Voice-over only: effect and noise reduction. They are applied ONCE to the file ([fxPath]);
+  /// the preview and the export both play that file, so they always sound the same, and [path]
+  /// stays the untouched original to go back to.
+  final VoiceFx fx;
+  final Denoise denoise;
+  final String? fxPath;
+
+  bool get hasVoiceWork => fx != VoiceFx.none || denoise != Denoise.off;
+
+  /// The file that is played and exported.
+  String get playPath => hasVoiceWork && fxPath != null ? fxPath! : path;
 
   /// How long this track plays in a video [outMs] long (never past the end of the video).
   int playMs(int outMs) {
@@ -99,6 +120,9 @@ class AudioTrack {
     bool? loop,
     bool? duck,
     String? name,
+    VoiceFx? fx,
+    Denoise? denoise,
+    Object? fxPath = _keep,
   }) => AudioTrack(
     id: id,
     kind: kind,
@@ -112,7 +136,12 @@ class AudioTrack {
     fadeOutMs: fadeOutMs ?? this.fadeOutMs,
     loop: loop ?? this.loop,
     duck: duck ?? this.duck,
+    fx: fx ?? this.fx,
+    denoise: denoise ?? this.denoise,
+    fxPath: identical(fxPath, _keep) ? this.fxPath : fxPath as String?,
   );
+
+  static const Object _keep = Object();
 
   Map<String, Object> toJson() => {
     'id': id,
@@ -127,6 +156,9 @@ class AudioTrack {
     'fadeOutMs': fadeOutMs,
     'loop': loop,
     'duck': duck,
+    if (fx != VoiceFx.none) 'fx': fx.name,
+    if (denoise != Denoise.off) 'denoise': denoise.name,
+    'fxPath': ?fxPath,
   };
 
   factory AudioTrack.fromJson(Map<String, dynamic> j) => AudioTrack(
@@ -145,5 +177,14 @@ class AudioTrack {
     fadeOutMs: (j['fadeOutMs'] as num?)?.toInt() ?? 0,
     loop: j['loop'] as bool? ?? false,
     duck: j['duck'] as bool? ?? true,
+    fx: VoiceFx.values.firstWhere(
+      (e) => e.name == j['fx'],
+      orElse: () => VoiceFx.none,
+    ),
+    denoise: Denoise.values.firstWhere(
+      (e) => e.name == j['denoise'],
+      orElse: () => Denoise.off,
+    ),
+    fxPath: j['fxPath'] as String?,
   );
 }

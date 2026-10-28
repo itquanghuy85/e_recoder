@@ -1133,6 +1133,7 @@ class AudioTracksSection extends StatelessWidget {
             c,
             sel.kind == AudioKind.music ? t.audioMusicName : t.audioVoiceName,
           ),
+          if (sel.kind == AudioKind.voice) VoiceFxControls(c: c, track: sel),
           editorSlider(
             context: context,
             c: c,
@@ -1228,3 +1229,116 @@ Widget fileThumb(String path, {double size = 40}) => ClipRRect(
     errorBuilder: (_, _, _) => SizedBox(width: size, height: size),
   ),
 );
+
+String voiceFxLabel(AppL10n t, VoiceFx f) => switch (f) {
+  VoiceFx.none => t.fxNone,
+  VoiceFx.deep => t.fxDeep,
+  VoiceFx.high => t.fxHigh,
+  VoiceFx.chipmunk => t.fxChipmunk,
+  VoiceFx.robot => t.fxRobot,
+  VoiceFx.echo => t.fxEcho,
+  VoiceFx.reverb => t.fxReverb,
+};
+
+String denoiseLabel(AppL10n t, Denoise d) => switch (d) {
+  Denoise.off => t.denoiseOff,
+  Denoise.light => t.denoiseLight,
+  Denoise.strong => t.denoiseStrong,
+};
+
+/// Voice effect and noise reduction of the selected voice-over. Choosing one processes the file once
+/// (a few seconds for a long take); "Original" + "Off" brings the untouched recording back.
+class VoiceFxControls extends StatelessWidget {
+  const VoiceFxControls({super.key, required this.c, required this.track});
+  final EditorController c;
+  final AudioTrack track;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppL10n.of(context);
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final busy = c.voiceBusy.contains(track.id);
+    Widget row(List<Widget> chips) => SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: chips.length,
+        separatorBuilder: (_, _) => const SizedBox(width: Space.xs),
+        itemBuilder: (_, i) => chips[i],
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: Text(t.voiceFxTitle, style: tt.titleSmall)),
+            if (busy) ...[
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              const SizedBox(width: Space.sm),
+              Semantics(
+                identifier: 'voice_fx_busy',
+                liveRegion: true,
+                child: Text(
+                  t.voiceFxBusy,
+                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                ),
+              ),
+            ],
+          ],
+        ),
+        row([
+          for (final f in VoiceFx.values)
+            Semantics(
+              identifier: 'voice_fx_${f.name}',
+              child: ChoiceChip(
+                visualDensity: VisualDensity.compact,
+                label: Text(voiceFxLabel(t, f)),
+                selected: track.fx == f,
+                onSelected: busy ? null : (_) => c.setVoiceFx(track.id, fx: f),
+              ),
+            ),
+        ]),
+        const SizedBox(height: Space.xs),
+        Text(t.denoiseTitle, style: tt.titleSmall),
+        row([
+          for (final d in Denoise.values)
+            Semantics(
+              identifier: 'voice_dn_${d.name}',
+              child: ChoiceChip(
+                visualDensity: VisualDensity.compact,
+                label: Text(denoiseLabel(t, d)),
+                selected: track.denoise == d,
+                onSelected: busy
+                    ? null
+                    : (_) => c.setVoiceFx(track.id, denoise: d),
+              ),
+            ),
+        ]),
+        if (c.voiceFxFailed)
+          Padding(
+            padding: const EdgeInsets.only(top: Space.xs),
+            child: Semantics(
+              identifier: 'voice_fx_error',
+              child: Text(
+                t.voiceFxError,
+                style: tt.bodySmall?.copyWith(color: cs.error),
+              ),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(top: Space.xs, bottom: Space.xs),
+          child: Text(
+            t.voiceFxHint,
+            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ),
+      ],
+    );
+  }
+}

@@ -433,6 +433,16 @@ class NativeRecorder {
     return v?.toDouble();
   }
 
+  /// Applies a voice effect and/or noise reduction to a voice file once and returns the new file
+  /// (an m4a of the same length). [fx]: none|deep|high|chipmunk|robot|echo|reverb;
+  /// [denoise]: off|light|strong. Asking again for the same combination returns the same file.
+  Future<String> processVoice(String path, String fx, String denoise) async =>
+      (await _method.invokeMethod<String>('processVoice', {
+        'path': path,
+        'fx': fx,
+        'denoise': denoise,
+      }))!;
+
   /// Peak level (0..1) of every [bucketMs] slice of a video's sound, null when it has none.
   Future<List<double>?> waveform(
     String uri,

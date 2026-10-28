@@ -380,6 +380,52 @@ class AppL10nEn extends AppL10n {
       'Time between placing a marker and being able to tap the real target. Shorter is faster, but viewers need a moment to see the marker.';
 
   @override
+  String get voiceFxTitle => 'Voice effect';
+
+  @override
+  String get fxNone => 'Original';
+
+  @override
+  String get fxDeep => 'Deep';
+
+  @override
+  String get fxHigh => 'High';
+
+  @override
+  String get fxChipmunk => 'Chipmunk';
+
+  @override
+  String get fxRobot => 'Robot';
+
+  @override
+  String get fxEcho => 'Echo';
+
+  @override
+  String get fxReverb => 'Reverb';
+
+  @override
+  String get denoiseTitle => 'Noise reduction';
+
+  @override
+  String get denoiseOff => 'Off';
+
+  @override
+  String get denoiseLight => 'Light';
+
+  @override
+  String get denoiseStrong => 'Strong';
+
+  @override
+  String get voiceFxBusy => 'Processing voice…';
+
+  @override
+  String get voiceFxError => 'This voice file could not be processed.';
+
+  @override
+  String get voiceFxHint =>
+      'Applied once to the voice file, so the preview and the exported video sound the same. Choose Original + Off to go back to the untouched recording. Background music is not touched.';
+
+  @override
   String get markerBarNote =>
       'The floating bar and markers appear in the video.';
 

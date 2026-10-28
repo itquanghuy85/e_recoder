@@ -380,6 +380,52 @@ class AppL10nVi extends AppL10n {
       'Thời gian từ lúc đặt dấu đến lúc bạn bấm thật được. Càng ngắn càng nhanh, nhưng dấu cần đủ lâu để người xem kịp nhìn.';
 
   @override
+  String get voiceFxTitle => 'Hiệu ứng giọng';
+
+  @override
+  String get fxNone => 'Gốc';
+
+  @override
+  String get fxDeep => 'Trầm';
+
+  @override
+  String get fxHigh => 'Cao';
+
+  @override
+  String get fxChipmunk => 'Sóc chuột';
+
+  @override
+  String get fxRobot => 'Robot';
+
+  @override
+  String get fxEcho => 'Echo';
+
+  @override
+  String get fxReverb => 'Vang';
+
+  @override
+  String get denoiseTitle => 'Giảm ồn';
+
+  @override
+  String get denoiseOff => 'Tắt';
+
+  @override
+  String get denoiseLight => 'Nhẹ';
+
+  @override
+  String get denoiseStrong => 'Mạnh';
+
+  @override
+  String get voiceFxBusy => 'Đang xử lý giọng…';
+
+  @override
+  String get voiceFxError => 'Không xử lý được file giọng này.';
+
+  @override
+  String get voiceFxHint =>
+      'Áp dụng một lần lên file giọng nên xem trước và video xuất nghe giống nhau. Chọn Gốc + Tắt để quay về bản gốc. Không đụng tới nhạc nền.';
+
+  @override
   String get markerBarNote => 'Thanh nổi và dấu sẽ hiện trong video.';
 
   @override

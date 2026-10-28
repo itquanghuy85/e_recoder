@@ -775,6 +775,96 @@ abstract class AppL10n {
   /// **'Thời gian từ lúc đặt dấu đến lúc bạn bấm thật được. Càng ngắn càng nhanh, nhưng dấu cần đủ lâu để người xem kịp nhìn.'**
   String get markerExitDelayHint;
 
+  /// No description provided for @voiceFxTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiệu ứng giọng'**
+  String get voiceFxTitle;
+
+  /// No description provided for @fxNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gốc'**
+  String get fxNone;
+
+  /// No description provided for @fxDeep.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trầm'**
+  String get fxDeep;
+
+  /// No description provided for @fxHigh.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cao'**
+  String get fxHigh;
+
+  /// No description provided for @fxChipmunk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sóc chuột'**
+  String get fxChipmunk;
+
+  /// No description provided for @fxRobot.
+  ///
+  /// In vi, this message translates to:
+  /// **'Robot'**
+  String get fxRobot;
+
+  /// No description provided for @fxEcho.
+  ///
+  /// In vi, this message translates to:
+  /// **'Echo'**
+  String get fxEcho;
+
+  /// No description provided for @fxReverb.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vang'**
+  String get fxReverb;
+
+  /// No description provided for @denoiseTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm ồn'**
+  String get denoiseTitle;
+
+  /// No description provided for @denoiseOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt'**
+  String get denoiseOff;
+
+  /// No description provided for @denoiseLight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhẹ'**
+  String get denoiseLight;
+
+  /// No description provided for @denoiseStrong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mạnh'**
+  String get denoiseStrong;
+
+  /// No description provided for @voiceFxBusy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xử lý giọng…'**
+  String get voiceFxBusy;
+
+  /// No description provided for @voiceFxError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không xử lý được file giọng này.'**
+  String get voiceFxError;
+
+  /// No description provided for @voiceFxHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp dụng một lần lên file giọng nên xem trước và video xuất nghe giống nhau. Chọn Gốc + Tắt để quay về bản gốc. Không đụng tới nhạc nền.'**
+  String get voiceFxHint;
+
   /// No description provided for @markerBarNote.
   ///
   /// In vi, this message translates to:

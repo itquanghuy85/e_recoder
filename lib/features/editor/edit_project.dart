@@ -1147,7 +1147,7 @@ class EditProject {
         for (final a in audioTracks)
           if (a.playMs(total) > 0)
             {
-              'path': a.path,
+              'path': a.playPath,
               'music': a.kind == AudioKind.music,
               'startOutMs': a.startOutMs,
               'trimStartMs': a.trimStartMs,

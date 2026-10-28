@@ -848,6 +848,51 @@ class EditorController extends ChangeNotifier {
   void updateAudio(AudioTrack a, {bool record = true}) =>
       _apply(_project.upsertAudio(a), record: record);
 
+  /// Voice-over tracks that are being processed (the panel shows a spinner for them).
+  final Set<String> voiceBusy = {};
+
+  /// Set when the last voice processing failed (cleared by the next try).
+  bool voiceFxFailed = false;
+
+  /// Applies a voice effect and/or noise reduction to a voice-over, ONCE: the processed file replaces
+  /// the original in the preview and in the export, and the original stays to go back to. The whole
+  /// change is one undo step, made when the file is ready. Returns false when nothing was changed.
+  Future<bool> setVoiceFx(String id, {VoiceFx? fx, Denoise? denoise}) async {
+    final cur = _project.audioTracks.where((a) => a.id == id).firstOrNull;
+    if (cur == null || cur.kind != AudioKind.voice) return false;
+    final nextFx = fx ?? cur.fx;
+    final nextDn = denoise ?? cur.denoise;
+    if (nextFx == cur.fx && nextDn == cur.denoise) return true;
+    if (nextFx == VoiceFx.none && nextDn == Denoise.off) {
+      updateAudio(
+        cur.copyWith(fx: VoiceFx.none, denoise: Denoise.off, fxPath: null),
+      );
+      return true;
+    }
+    if (voiceBusy.contains(id)) return false;
+    voiceBusy.add(id);
+    voiceFxFailed = false;
+    notifyListeners();
+    try {
+      final file = await native.processVoice(
+        cur.path,
+        nextFx.name,
+        nextDn.name,
+      );
+      if (_disposed) return false;
+      final now = _project.audioTracks.where((a) => a.id == id).firstOrNull;
+      if (now == null) return false;
+      updateAudio(now.copyWith(fx: nextFx, denoise: nextDn, fxPath: file));
+      return true;
+    } catch (_) {
+      voiceFxFailed = true;
+      return false;
+    } finally {
+      voiceBusy.remove(id);
+      if (!_disposed) notifyListeners();
+    }
+  }
+
   bool recordingVoice = false;
   int _voiceStartOut = 0;
 

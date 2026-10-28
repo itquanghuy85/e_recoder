@@ -21,6 +21,9 @@ class ExtraPlayers extends ChangeNotifier {
   /// Picture-in-picture video players by item id (the stage draws them).
   final Map<String, VideoPlayerController> pips = {};
   final Map<String, VideoPlayerController> _audio = {};
+
+  /// The file each audio player was opened on: when a voice effect swaps it, the player is reopened.
+  final Map<String, String> _audioPath = {};
   final Set<String> _starting = {};
   final Map<String, int> _lastSeekAt = {};
   bool _disposed = false;
@@ -42,6 +45,7 @@ class ExtraPlayers extends ChangeNotifier {
       }
       await v.setLooping(false);
       into[id] = v;
+      if (identical(into, _audio)) _audioPath[id] = path;
       notifyListeners();
     } catch (_) {
       await v.dispose();
@@ -58,13 +62,20 @@ class ExtraPlayers extends ChangeNotifier {
     if (_disposed) return;
     final p = c.project;
     for (final a in p.audioTracks) {
-      _open(a.id, a.path, _audio);
+      final open = _audioPath[a.id];
+      if (open != null && open != a.playPath) {
+        // The track now plays another file (an effect was applied or removed).
+        unawaited(_audio.remove(a.id)?.dispose());
+        _audioPath.remove(a.id);
+      }
+      _open(a.id, a.playPath, _audio);
     }
     for (final pip in p.pips.where((e) => e.isVideo)) {
       _open(pip.id, pip.path, pips);
     }
     for (final k in _audio.keys.toList()) {
       if (!p.audioTracks.any((a) => a.id == k)) {
+        _audioPath.remove(k);
         unawaited(_audio.remove(k)?.dispose());
       }
     }

@@ -162,6 +162,15 @@ class FakeRecorder implements NativeRecorder {
   }
 
   @override
+  Future<String> processVoice(String path, String fx, String denoise) async {
+    calls.add('processVoice:$fx:$denoise');
+    if (voiceFxFails) throw StateError('boom');
+    return '$path.$fx.$denoise.m4a';
+  }
+
+  bool voiceFxFails = false;
+
+  @override
   Future<List<double>?> waveform(
     String uri,
     int durationMs,
