@@ -164,6 +164,8 @@ data class PictureSpec(
     val srcW: Int,
     val srcH: Int,
     val rotation: Int = 0,
+    /** Free turn on top of [rotation], degrees clockwise. */
+    val tilt: Float = 0f,
     val cropL: Float = 0f,
     val cropT: Float = 0f,
     val cropR: Float = 1f,
@@ -330,6 +332,7 @@ data class ExportJob(
                 srcW = (m["srcW"] as? Number)?.toInt() ?: frameW,
                 srcH = (m["srcH"] as? Number)?.toInt() ?: frameH,
                 rotation = (m["rotation"] as? Number)?.toInt() ?: 0,
+                tilt = (m["tilt"] as? Number)?.toFloat() ?: 0f,
                 cropL = crop?.getOrNull(0) ?: 0f, cropT = crop?.getOrNull(1) ?: 0f,
                 cropR = crop?.getOrNull(2) ?: 1f, cropB = crop?.getOrNull(3) ?: 1f,
                 aspect = (m["aspect"] as? Number)?.toFloat() ?: 0f,

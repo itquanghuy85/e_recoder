@@ -194,18 +194,18 @@ class EditorTools extends StatelessWidget {
           const Divider(),
           ConstrainedBox(
             constraints: BoxConstraints(
-              // About a quarter of the screen: tall phones show more of a long panel at once.
-              maxHeight: (MediaQuery.sizeOf(context).height * 0.27).clamp(
-                200.0,
-                300.0,
+              // A fifth of the screen: the preview above gets the rest (the panel scrolls).
+              maxHeight: (MediaQuery.sizeOf(context).height * 0.19).clamp(
+                140.0,
+                210.0,
               ),
             ),
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(
                 Space.lg,
-                Space.md,
+                Space.sm,
                 Space.lg,
-                Space.md,
+                Space.sm,
               ),
               child: ListenableBuilder(
                 listenable: controller,

@@ -1,5 +1,6 @@
 package com.huluca.escreenrecorder.export
 
+import kotlin.math.abs
 import android.content.Context
 import android.net.Uri
 import android.os.Handler
@@ -294,6 +295,24 @@ class Exporter(private val ctx: Context) {
         if (pic.rotation != 0) {
             // Media3 turns counter-clockwise; the editor's rotation is clockwise.
             video.add(ScaleAndRotateTransformation.Builder().setRotationDegrees(-pic.rotation.toFloat()).build())
+        }
+        if (abs(pic.tilt) >= 0.05f) {
+            // Free turn. The turned frame grows to the box around it (empty corners), so the middle part that
+            // the picture still covers completely is cut out again: the same rectangle the preview shows
+            // (picture enlarged by tiltZoom about its middle, cut to the frame).
+            val a = Math.toRadians(abs(pic.tilt).toDouble() % 180.0)
+            val pw = (if (pic.rotation % 180 == 0) pic.srcW else pic.srcH).toDouble()
+            val ph = (if (pic.rotation % 180 == 0) pic.srcH else pic.srcW).toDouble()
+            val f = if (a > Math.PI / 2) Math.PI - a else a
+            val k = maxOf(pw / ph, ph / pw)
+            val zoom = Math.cos(f) + k * Math.sin(f)
+            val boxW = pw * Math.cos(a).let { abs(it) } + ph * Math.sin(a)
+            val boxH = pw * Math.sin(a) + ph * Math.abs(Math.cos(a))
+            val fx = (pw / zoom / boxW).toFloat().coerceIn(0.01f, 1f)
+            val fy = (ph / zoom / boxH).toFloat().coerceIn(0.01f, 1f)
+            video.add(ScaleAndRotateTransformation.Builder().setRotationDegrees(-pic.tilt).build())
+            video.add(Crop(-fx, fx, -fy, fy))
+            video.add(Presentation.createForWidthAndHeight(pw.toInt() - pw.toInt() % 2, ph.toInt() - ph.toInt() % 2, Presentation.LAYOUT_SCALE_TO_FIT))
         }
         // Blocks, blur, mosaic and spotlight act on the video itself, so they go under every overlay.
         for (c in job.covers) {

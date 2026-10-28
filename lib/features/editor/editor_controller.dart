@@ -762,6 +762,10 @@ class EditorController extends ChangeNotifier {
   void rotate90() =>
       setLook(look.copyWith(rotation: (look.rotation + 90) % 360));
 
+  /// Free turn (degrees clockwise, -45..45) on top of the 90° steps.
+  void setTilt(double degrees, {bool record = true}) =>
+      setLook(look.copyWith(tilt: degrees.clamp(-45.0, 45.0)), record: record);
+
   /// Crop in fractions of the rotated picture; kept at least 10 % wide/high and inside the picture.
   void setCrop(Rect r, {bool record = true}) {
     const minSide = 0.1;

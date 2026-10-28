@@ -162,6 +162,7 @@ class ColorLook {
 class PictureLook {
   const PictureLook({
     this.rotation = 0,
+    this.tilt = 0,
     this.crop = const Rect.fromLTRB(0, 0, 1, 1),
     this.aspect = OutAspect.auto,
     this.fill = false,
@@ -170,6 +171,10 @@ class PictureLook {
 
   /// 0, 90, 180 or 270 degrees clockwise.
   final int rotation;
+
+  /// Free turn on top of [rotation], degrees clockwise in -45..45. The picture is enlarged just
+  /// enough that no empty corner shows ([tiltZoom]).
+  final double tilt;
   final Rect crop;
   final OutAspect aspect;
 
@@ -186,21 +191,33 @@ class PictureLook {
       crop.bottom < 0.9995;
 
   bool get isIdentity =>
-      rotation == 0 && !isCropped && aspect == OutAspect.auto && color.isNone;
+      rotation == 0 && tilt.abs() < 0.05 && !isCropped && aspect == OutAspect.auto && color.isNone;
 
   PictureLook copyWith({
     int? rotation,
+    double? tilt,
     Rect? crop,
     OutAspect? aspect,
     bool? fill,
     ColorLook? color,
   }) => PictureLook(
     rotation: rotation ?? this.rotation,
+    tilt: tilt ?? this.tilt,
     crop: crop ?? this.crop,
     aspect: aspect ?? this.aspect,
     fill: fill ?? this.fill,
     color: color ?? this.color,
   );
+
+  /// How much the turned picture must be enlarged to fill the frame again: the largest rectangle of
+  /// the picture's own shape that fits inside the turned picture, inverted. Same maths as the exporter.
+  double tiltZoom(int srcW, int srcH) {
+    final a = (tilt.abs() % 180) * math.pi / 180;
+    final f = a > math.pi / 2 ? math.pi - a : a;
+    final p = pictureSize(srcW, srcH);
+    final k = math.max(p.width / p.height, p.height / p.width);
+    return math.cos(f) + k * math.sin(f);
+  }
 
   /// Size of the picture after rotation, in pixels.
   Size pictureSize(int srcW, int srcH) => rotation % 180 == 0
@@ -252,6 +269,7 @@ class PictureLook {
 
   Map<String, Object> toJson() => {
     'rotation': rotation,
+    if (tilt != 0) 'tilt': tilt,
     'crop': [crop.left, crop.top, crop.right, crop.bottom],
     'aspect': aspect.name,
     'fill': fill,
@@ -263,6 +281,7 @@ class PictureLook {
     final c = (j['crop'] as List?)?.map((e) => (e as num).toDouble()).toList();
     return PictureLook(
       rotation: ((j['rotation'] as num?)?.toInt() ?? 0) % 360,
+      tilt: ((j['tilt'] as num?)?.toDouble() ?? 0).clamp(-45.0, 45.0),
       crop: c != null && c.length == 4
           ? Rect.fromLTRB(c[0], c[1], c[2], c[3])
           : const Rect.fromLTRB(0, 0, 1, 1),
@@ -279,10 +298,11 @@ class PictureLook {
   bool operator ==(Object other) =>
       other is PictureLook &&
       other.rotation == rotation &&
+      other.tilt == tilt &&
       other.crop == crop &&
       other.aspect == aspect &&
       other.fill == fill &&
       other.color == color;
   @override
-  int get hashCode => Object.hash(rotation, crop, aspect, fill, color);
+  int get hashCode => Object.hash(rotation, tilt, crop, aspect, fill, color);
 }

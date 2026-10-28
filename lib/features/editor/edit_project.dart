@@ -1180,6 +1180,7 @@ class EditProject {
         'srcW': frameW,
         'srcH': frameH,
         'rotation': look.rotation,
+        if (look.tilt != 0) 'tilt': look.tilt,
         'crop': [
           look.crop.left,
           look.crop.top,

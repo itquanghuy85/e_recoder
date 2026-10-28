@@ -123,6 +123,307 @@ class _EditorStageState extends State<EditorStage> {
 
   ViewZoom get _z => widget.viewZoom ? _view : const ViewZoom();
 
+  Offset? _downAt;
+  int _fingers = 0;
+
+  // handles of the selected overlay (resize, rotate) and the snap guides shown while dragging
+  _Handle _handle = _Handle.none;
+  int _hCorner = 0;
+  double _hDist0 = 1;
+  double _hBase = 1;
+  double _hBase2 = 1;
+  double _hRot0 = 0;
+  double _hAngle0 = 0;
+  Offset _hCenter = Offset.zero;
+  double _hHalfW = 0;
+  double _hHalfH = 0;
+  List<double> _guideX = const [];
+  List<double> _guideY = const [];
+
+  static const double _snapTol = 0.012;
+
+  /// Moves [v] (a centre, in frame fractions) so that its centre or an edge sits on 0 / 0.5 / 1 when it
+  /// is within the tolerance; returns the new value and records the line to draw.
+  double _snapAxis(double v, double half, List<double> guides) {
+    var best = v;
+    var bestD = _snapTol;
+    double? line;
+    void tryTarget(double edge, double target) {
+      final d = (edge - target).abs();
+      if (d < bestD) {
+        bestD = d;
+        best = v + (target - edge);
+        line = target;
+      }
+    }
+
+    tryTarget(v, 0.5);
+    tryTarget(v - half, 0);
+    tryTarget(v + half, 1);
+    tryTarget(v - half, 0.5);
+    tryTarget(v + half, 0.5);
+    if (line != null) guides.add(line!);
+    return best;
+  }
+
+  Rect _fromPicture(StageGeometry g, Rect pr) => Rect.fromLTRB(
+    g.fullLeft + pr.left * g.fullW,
+    g.fullTop + pr.top * g.fullH,
+    g.fullLeft + pr.right * g.fullW,
+    g.fullTop + pr.bottom * g.fullH,
+  );
+
+  /// The overlay's frame on the stage (stage pixels), or null when it has none.
+  _Frame? _frameOf(EditProject p, String id, StageGeometry g) {
+    final m = p.markers.where((e) => e.id == id).firstOrNull;
+    if (m != null) {
+      final sp = m.spec;
+      if (sp.type == MarkerType.circle || sp.type == MarkerType.rect) {
+        return _Frame(
+          _fromPicture(
+            g,
+            Rect.fromLTRB(
+              math.min(sp.x0, sp.x1),
+              math.min(sp.y0, sp.y1),
+              math.max(sp.x0, sp.x1),
+              math.max(sp.y0, sp.y1),
+            ),
+          ).inflate(6),
+          0,
+          kind: _FrameKind.rect,
+        );
+      }
+      if (sp.type == MarkerType.pen) return null;
+      final a = sp.anchor;
+      final side = 90 * g.kPicture * math.max(1, sp.scale);
+      return _Frame(
+        Rect.fromCenter(
+          center: Offset(g.fullLeft + a.x * g.fullW, g.fullTop + a.y * g.fullH),
+          width: side,
+          height: side,
+        ),
+        sp.rotation,
+        kind: _FrameKind.scaleRotate,
+      );
+    }
+    final tx = p.texts.where((e) => e.id == id).firstOrNull;
+    if (tx != null) {
+      return _Frame(
+        Rect.fromCenter(
+          center: Offset(tx.x * g.w, tx.y * g.h),
+          width: math.max(60, tx.text.length * tx.sizeU * 0.55 * g.kOutput),
+          height: tx.sizeU * 1.5 * g.kOutput,
+        ),
+        tx.rotation,
+        kind: _FrameKind.scaleRotate,
+      );
+    }
+    final im = p.images.where((e) => e.id == id).firstOrNull;
+    if (im != null) {
+      final cw = im.widthFrac * g.w;
+      return _Frame(
+        Rect.fromCenter(
+          center: Offset(im.x * g.w, im.y * g.h),
+          width: cw,
+          height: cw / im.aspect,
+        ),
+        im.rotation,
+        kind: _FrameKind.scaleRotate,
+      );
+    }
+    final sh = p.shapes.where((e) => e.id == id).firstOrNull;
+    if (sh != null) {
+      return _Frame(
+        Rect.fromCenter(
+          center: Offset(sh.x * g.w, sh.y * g.h),
+          width: sh.w * g.w,
+          height: sh.h * g.h,
+        ),
+        sh.rotation,
+        kind: _FrameKind.scaleRotate,
+      );
+    }
+    final pip = p.pips.where((e) => e.id == id).firstOrNull;
+    if (pip != null) {
+      final cw = pip.widthFrac * g.w;
+      return _Frame(
+        Rect.fromCenter(
+          center: Offset(pip.x * g.w, pip.y * g.h),
+          width: cw,
+          height: cw / pip.aspect,
+        ),
+        0,
+        kind: _FrameKind.scale,
+      );
+    }
+    final cv = p.covers.where((e) => e.id == id).firstOrNull;
+    if (cv != null) {
+      return _Frame(
+        _fromPicture(g, cv.editRect(c.coverEditEnd)),
+        0,
+        kind: _FrameKind.rect,
+      );
+    }
+    return null;
+  }
+
+  /// Handle under [at] (stage pixels, before the view zoom) for the selected overlay.
+  bool _grabHandle(Offset at) {
+    final g = _g;
+    final id = c.selectedId;
+    if (g == null || id == null) return false;
+    final f = _frameOf(c.project, id, g);
+    if (f == null) return false;
+    // Small frames keep most of their body for dragging: the handles' reach shrinks with the frame.
+    final reach = math.max(
+      10 / _z.scale,
+      math.min(24 / _z.scale, 0.4 * math.min(f.rect.width, f.rect.height)),
+    );
+    final corners = f.corners();
+    for (var i = 0; i < 4; i++) {
+      if ((corners[i] - at).distance <= reach) {
+        _handle = _Handle.corner;
+        _hCorner = i;
+        _hCenter = f.rect.center;
+        _hDist0 = math.max(8, (at - _hCenter).distance);
+        _hRot0 = f.rot;
+        return true;
+      }
+    }
+    if (f.kind == _FrameKind.scaleRotate) {
+      final r = f.rotateHandle(f.rotateAbove());
+      if ((r - at).distance <= reach) {
+        _handle = _Handle.rotate;
+        _hCenter = f.rect.center;
+        _hRot0 = f.rot;
+        _hAngle0 = math.atan2(at.dy - _hCenter.dy, at.dx - _hCenter.dx);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void _dragHandle(Offset at) {
+    final g = _g;
+    final id = c.selectedId;
+    if (g == null || id == null) return;
+    final p = c.project;
+    if (_handle == _Handle.rotate) {
+      final a = math.atan2(at.dy - _hCenter.dy, at.dx - _hCenter.dx);
+      var deg = _hRot0 + (a - _hAngle0) * 180 / math.pi;
+      // Click into place on the upright positions.
+      final near = (deg / 45).round() * 45.0;
+      if ((deg - near).abs() < 4) deg = near;
+      deg = ((deg + 180) % 360) - 180;
+      final m = p.markers.where((e) => e.id == id).firstOrNull;
+      if (m != null) {
+        c.updateMarker(
+          m.copyWith(spec: m.spec.copyWith(rotation: deg)),
+          record: false,
+        );
+      }
+      final t = p.texts.where((e) => e.id == id).firstOrNull;
+      if (t != null) c.updateText(t.copyWith(rotation: deg), record: false);
+      final im = p.images.where((e) => e.id == id).firstOrNull;
+      if (im != null) c.updateImage(im.copyWith(rotation: deg), record: false);
+      final sh = p.shapes.where((e) => e.id == id).firstOrNull;
+      if (sh != null) c.updateShape(sh.copyWith(rotation: deg), record: false);
+      return;
+    }
+    // corner: scale by the distance from the centre, or move the corner of a rectangle
+    final k = ((at - _hCenter).distance / _hDist0).clamp(0.1, 10.0);
+    final m = p.markers.where((e) => e.id == id).firstOrNull;
+    if (m != null) {
+      final sp = m.spec;
+      if (sp.type == MarkerType.circle || sp.type == MarkerType.rect) {
+        final px = ((at.dx - g.fullLeft) / g.fullW).clamp(0.0, 1.0);
+        final py = ((at.dy - g.fullTop) / g.fullH).clamp(0.0, 1.0);
+        final r = _moveCorner(
+          Rect.fromLTRB(
+            math.min(sp.x0, sp.x1),
+            math.min(sp.y0, sp.y1),
+            math.max(sp.x0, sp.x1),
+            math.max(sp.y0, sp.y1),
+          ),
+          _hCorner,
+          px,
+          py,
+        );
+        c.updateMarker(
+          m.copyWith(
+            spec: sp.copyWith(x0: r.left, y0: r.top, x1: r.right, y1: r.bottom),
+          ),
+          record: false,
+        );
+      } else {
+        c.updateMarker(
+          m.copyWith(spec: sp.copyWith(scale: (_hBase * k).clamp(0.4, 4.0))),
+          record: false,
+        );
+      }
+      return;
+    }
+    final t = p.texts.where((e) => e.id == id).firstOrNull;
+    if (t != null) {
+      c.updateText(
+        t.copyWith(sizeU: (_hBase * k).clamp(8.0, 80.0)),
+        record: false,
+      );
+      return;
+    }
+    final im = p.images.where((e) => e.id == id).firstOrNull;
+    if (im != null) {
+      c.updateImage(
+        im.copyWith(widthFrac: (_hBase * k).clamp(0.05, 1.5)),
+        record: false,
+      );
+      return;
+    }
+    final sh = p.shapes.where((e) => e.id == id).firstOrNull;
+    if (sh != null) {
+      c.updateShape(
+        sh.copyWith(
+          w: (_hBase * k).clamp(0.05, 1.5),
+          h: (_hBase2 * k).clamp(0.03, 1.5),
+        ),
+        record: false,
+      );
+      return;
+    }
+    final pp = p.pips.where((e) => e.id == id).firstOrNull;
+    if (pp != null) {
+      c.updatePip(
+        pp.copyWith(widthFrac: (_hBase * k).clamp(0.1, 0.9)),
+        record: false,
+      );
+      return;
+    }
+    final cv = p.covers.where((e) => e.id == id).firstOrNull;
+    if (cv != null) {
+      final px = ((at.dx - g.fullLeft) / g.fullW).clamp(0.0, 1.0);
+      final py = ((at.dy - g.fullTop) / g.fullH).clamp(0.0, 1.0);
+      final r = _moveCorner(cv.editRect(c.coverEditEnd), _hCorner, px, py);
+      c.updateCover(cv.withRect(r, atEnd: c.coverEditEnd), record: false);
+    }
+  }
+
+  /// [r] with its corner [i] (0 = top left, clockwise) moved to ([x], [y]), at least 3 % wide/high.
+  Rect _moveCorner(Rect r, int i, double x, double y) {
+    const minSide = 0.03;
+    var l = r.left, t = r.top, rr = r.right, b = r.bottom;
+    if (i == 0 || i == 3) {
+      l = math.min(x, rr - minSide);
+    } else {
+      rr = math.max(x, l + minSide);
+    }
+    if (i == 0 || i == 1) {
+      t = math.min(y, b - minSide);
+    } else {
+      b = math.max(y, t + minSide);
+    }
+    return Rect.fromLTRB(l, t, rr, b);
+  }
+
   void _resetView() {
     if (_view.isZoomed) setState(() => _view = const ViewZoom());
   }
@@ -139,6 +440,29 @@ class _EditorStageState extends State<EditorStage> {
     if (id == null) return;
     c.beginGesture();
     final p = c.project;
+    _handle = _Handle.none;
+    // The gesture is recognised after the finger has moved; the handle is looked for where it LANDED.
+    if (d.pointerCount == 1 &&
+        _grabHandle(_z.toContent(_downAt ?? d.localFocalPoint))) {
+      final tx = p.texts.where((e) => e.id == id).firstOrNull;
+      final im = p.images.where((e) => e.id == id).firstOrNull;
+      final sh = p.shapes.where((e) => e.id == id).firstOrNull;
+      final pp = p.pips.where((e) => e.id == id).firstOrNull;
+      final mk = p.markers.where((e) => e.id == id).firstOrNull;
+      _hBase =
+          tx?.sizeU ??
+          im?.widthFrac ??
+          sh?.w ??
+          pp?.widthFrac ??
+          mk?.spec.scale ??
+          1;
+      _hBase2 = sh?.h ?? 1;
+      return;
+    }
+    final g0 = _g;
+    final fr = g0 == null ? null : _frameOf(p, id, g0);
+    _hHalfW = fr == null || g0 == null ? 0 : fr.rect.width / 2 / g0.w;
+    _hHalfH = fr == null || g0 == null ? 0 : fr.rect.height / 2 / g0.h;
     _gMarker = p.markers.where((e) => e.id == id).firstOrNull;
     _gText = p.texts.where((e) => e.id == id).firstOrNull;
     _gCover = p.covers.where((e) => e.id == id).firstOrNull;
@@ -159,6 +483,10 @@ class _EditorStageState extends State<EditorStage> {
         box: Size(g.w, g.h),
       );
       if (next != _view) setState(() => _view = next);
+      return;
+    }
+    if (_handle != _Handle.none) {
+      _dragHandle(_z.toContent(d.localFocalPoint));
       return;
     }
     // Output-space deltas (text, images, shapes) and picture-space deltas (markers, covers, zoom).
@@ -186,10 +514,11 @@ class _EditorStageState extends State<EditorStage> {
     final t = _gText;
     if (t != null) {
       final cur = p.texts.firstWhere((e) => e.id == t.id);
+      final sn = _snapMove(cur.x + ox, cur.y + oy, two);
       c.updateText(
         cur.copyWith(
-          x: (cur.x + ox).clamp(0.0, 1.0),
-          y: (cur.y + oy).clamp(0.0, 1.0),
+          x: sn.dx,
+          y: sn.dy,
           sizeU: two ? (t.sizeU * d.scale).clamp(8.0, 80.0) : null,
           rotation: two ? t.rotation + d.rotation * 180 / math.pi : null,
         ),
@@ -200,10 +529,11 @@ class _EditorStageState extends State<EditorStage> {
     final im = _gImage;
     if (im != null) {
       final cur = p.images.firstWhere((e) => e.id == im.id);
+      final sn = _snapMove(cur.x + ox, cur.y + oy, two);
       c.updateImage(
         cur.copyWith(
-          x: (cur.x + ox).clamp(0.0, 1.0),
-          y: (cur.y + oy).clamp(0.0, 1.0),
+          x: sn.dx,
+          y: sn.dy,
           widthFrac: two ? (im.widthFrac * d.scale).clamp(0.05, 1.5) : null,
           rotation: two ? im.rotation + d.rotation * 180 / math.pi : null,
         ),
@@ -214,10 +544,11 @@ class _EditorStageState extends State<EditorStage> {
     final sh = _gShape;
     if (sh != null) {
       final cur = p.shapes.firstWhere((e) => e.id == sh.id);
+      final sn = _snapMove(cur.x + ox, cur.y + oy, two);
       c.updateShape(
         cur.copyWith(
-          x: (cur.x + ox).clamp(0.0, 1.0),
-          y: (cur.y + oy).clamp(0.0, 1.0),
+          x: sn.dx,
+          y: sn.dy,
           w: two ? (sh.w * d.scale).clamp(0.05, 1.5) : null,
           h: two ? (sh.h * d.scale).clamp(0.03, 1.5) : null,
           rotation: two ? sh.rotation + d.rotation * 180 / math.pi : null,
@@ -229,10 +560,11 @@ class _EditorStageState extends State<EditorStage> {
     final pp = _gPip;
     if (pp != null) {
       final cur = p.pips.firstWhere((e) => e.id == pp.id);
+      final sn = _snapMove(cur.x + ox, cur.y + oy, two);
       c.updatePip(
         cur.copyWith(
-          x: (cur.x + ox).clamp(0.0, 1.0),
-          y: (cur.y + oy).clamp(0.0, 1.0),
+          x: sn.dx,
+          y: sn.dy,
           widthFrac: two ? (pp.widthFrac * d.scale).clamp(0.1, 0.9) : null,
         ),
         record: false,
@@ -267,6 +599,28 @@ class _EditorStageState extends State<EditorStage> {
     }
   }
 
+  /// A dragged centre, snapped to the middle and the edges of the frame (not while pinching).
+  Offset _snapMove(double x, double y, bool pinching) {
+    final gx = <double>[];
+    final gy = <double>[];
+    final nx = pinching
+        ? x.clamp(0.0, 1.0)
+        : _snapAxis(x.clamp(0.0, 1.0), _hHalfW, gx).clamp(0.0, 1.0);
+    final ny = pinching
+        ? y.clamp(0.0, 1.0)
+        : _snapAxis(y.clamp(0.0, 1.0), _hHalfH, gy).clamp(0.0, 1.0);
+    if (!_sameLines(gx, _guideX) || !_sameLines(gy, _guideY)) {
+      setState(() {
+        _guideX = gx;
+        _guideY = gy;
+      });
+    }
+    return Offset(nx, ny);
+  }
+
+  bool _sameLines(List<double> a, List<double> b) =>
+      a.length == b.length && (a.isEmpty || a.first == b.first);
+
   MarkerSpec _translate(MarkerSpec s, double dx, double dy) {
     if (s.type == MarkerType.pen) {
       final pts = [
@@ -287,6 +641,13 @@ class _EditorStageState extends State<EditorStage> {
 
   void _end(ScaleEndDetails d) {
     _viewMode = false;
+    _handle = _Handle.none;
+    if (_guideX.isNotEmpty || _guideY.isNotEmpty) {
+      setState(() {
+        _guideX = const [];
+        _guideY = const [];
+      });
+    }
     _gMarker = _gText = null;
     _gCover = null;
     _gZoom = null;
@@ -300,6 +661,11 @@ class _EditorStageState extends State<EditorStage> {
   void _tap(TapUpDetails d) {
     final g = _g;
     if (g == null || g.w <= 0) return;
+    // A tap on a handle of the selected overlay keeps it selected.
+    if (c.selectedId != null && _grabHandle(_z.toContent(d.localPosition))) {
+      _handle = _Handle.none;
+      return;
+    }
     // A quick second tap near the first puts a zoomed view back to fit.
     final now = DateTime.now();
     final last = _lastTapAt;
@@ -386,20 +752,28 @@ class _EditorStageState extends State<EditorStage> {
                 _g = g;
                 final z = _z;
                 // The capture boundary sits INSIDE the zoom, so "save this frame" is never zoomed.
-                final stage = GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTapUp: _tap,
-                  onScaleStart: _start,
-                  onScaleUpdate: _update,
-                  onScaleEnd: _end,
-                  child: ClipRect(
-                    child: Transform(
-                      transform: Matrix4.identity()
-                        ..translateByDouble(z.offset.dx, z.offset.dy, 0, 1)
-                        ..scaleByDouble(z.scale, z.scale, 1, 1),
-                      child: RepaintBoundary(
-                        key: widget.captureKey,
-                        child: ClipRect(child: _frame(context, p, g, cs)),
+                final stage = Listener(
+                  onPointerDown: (e) {
+                    if (_fingers == 0) _downAt = e.localPosition;
+                    _fingers++;
+                  },
+                  onPointerUp: (_) => _fingers = math.max(0, _fingers - 1),
+                  onPointerCancel: (_) => _fingers = math.max(0, _fingers - 1),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapUp: _tap,
+                    onScaleStart: _start,
+                    onScaleUpdate: _update,
+                    onScaleEnd: _end,
+                    child: ClipRect(
+                      child: Transform(
+                        transform: Matrix4.identity()
+                          ..translateByDouble(z.offset.dx, z.offset.dy, 0, 1)
+                          ..scaleByDouble(z.scale, z.scale, 1, 1),
+                        child: RepaintBoundary(
+                          key: widget.captureKey,
+                          child: ClipRect(child: _frame(context, p, g, cs)),
+                        ),
                       ),
                     ),
                   ),
@@ -481,9 +855,22 @@ class _EditorStageState extends State<EditorStage> {
         ? (scale: 1.0, cx: 0.5, cy: 0.5)
         : zoomAt(p.zooms, t);
     final quarter = (p.look.rotation ~/ 90) % 4;
-    final video = widget.video.value.isInitialized && !blank
+    Widget video = widget.video.value.isInitialized && !blank
         ? RotatedBox(quarterTurns: quarter, child: VideoPlayer(widget.video))
         : const ColoredBox(color: Colors.black);
+    if (p.look.tilt.abs() >= 0.05 && !blank) {
+      // Free rotation, enlarged just enough that no empty corner shows (same maths as the exporter).
+      final zoomFill = p.look.tiltZoom(p.frameW, p.frameH);
+      video = ClipRect(
+        child: Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..scaleByDouble(zoomFill, zoomFill, 1, 1)
+            ..rotateZ(p.look.tilt * math.pi / 180),
+          child: video,
+        ),
+      );
+    }
 
     Widget scene = Stack(
       clipBehavior: Clip.hardEdge,
@@ -775,103 +1162,182 @@ class _EditorStageState extends State<EditorStage> {
     ];
   }
 
-  /// Key-cyan outline around the selected overlay so it is obvious what a drag will move.
+  /// Frame around the selected overlay with handles (corners resize, the knob above turns it) and the
+  /// snap guides while it is dragged. Handles keep their on-screen size whatever the view zoom.
   List<Widget> _selection(
     EditProject p,
     String id,
     StageGeometry g,
     ColorScheme cs,
   ) {
-    Rect? r;
-    // picture-space items: map the picture rectangle into stage pixels
-    Rect fromPicture(Rect pr) => Rect.fromLTRB(
-      g.fullLeft + pr.left * g.fullW,
-      g.fullTop + pr.top * g.fullH,
-      g.fullLeft + pr.right * g.fullW,
-      g.fullTop + pr.bottom * g.fullH,
-    );
-    final m = p.markers.where((e) => e.id == id).firstOrNull;
-    if (m != null) {
-      final a = m.spec.anchor;
-      final side = 90 * g.kPicture * math.max(1, m.spec.scale);
-      final centre = Offset(
-        g.fullLeft + a.x * g.fullW,
-        g.fullTop + a.y * g.fullH,
-      );
-      r = Rect.fromCenter(center: centre, width: side, height: side);
-      if (m.spec.type == MarkerType.circle || m.spec.type == MarkerType.rect) {
-        r = fromPicture(
-          Rect.fromLTRB(
-            math.min(m.spec.x0, m.spec.x1),
-            math.min(m.spec.y0, m.spec.y1),
-            math.max(m.spec.x0, m.spec.x1),
-            math.max(m.spec.y0, m.spec.y1),
-          ),
-        ).inflate(6);
-      }
-    }
-    final tx = p.texts.where((e) => e.id == id).firstOrNull;
-    if (tx != null) {
-      r = Rect.fromCenter(
-        center: Offset(tx.x * g.w, tx.y * g.h),
-        width: math.max(60, tx.text.length * tx.sizeU * 0.55 * g.kOutput),
-        height: tx.sizeU * 1.5 * g.kOutput,
+    final out = <Widget>[];
+    final inv = 1 / _z.scale;
+    for (final x in _guideX) {
+      out.add(
+        Positioned(
+          left: x * g.w - 0.5 * inv,
+          top: 0,
+          bottom: 0,
+          width: inv,
+          child: IgnorePointer(child: ColoredBox(color: cs.tertiary)),
+        ),
       );
     }
-    final im = p.images.where((e) => e.id == id).firstOrNull;
-    if (im != null) {
-      final cw = im.widthFrac * g.w;
-      r = Rect.fromCenter(
-        center: Offset(im.x * g.w, im.y * g.h),
-        width: cw,
-        height: cw / im.aspect,
+    for (final y in _guideY) {
+      out.add(
+        Positioned(
+          top: y * g.h - 0.5 * inv,
+          left: 0,
+          right: 0,
+          height: inv,
+          child: IgnorePointer(child: ColoredBox(color: cs.tertiary)),
+        ),
       );
     }
-    final sh = p.shapes.where((e) => e.id == id).firstOrNull;
-    if (sh != null) {
-      r = Rect.fromCenter(
-        center: Offset(sh.x * g.w, sh.y * g.h),
-        width: sh.w * g.w,
-        height: sh.h * g.h,
-      );
-    }
-    final pip = p.pips.where((e) => e.id == id).firstOrNull;
-    if (pip != null) {
-      final cw = pip.widthFrac * g.w;
-      r = Rect.fromCenter(
-        center: Offset(pip.x * g.w, pip.y * g.h),
-        width: cw,
-        height: cw / pip.aspect,
-      );
-    }
-    final cv = p.covers.where((e) => e.id == id).firstOrNull;
-    if (cv != null) {
-      r = fromPicture(cv.editRect(c.coverEditEnd));
-    }
+    final f = _frameOf(p, id, g);
+    Rect? r = f?.rect;
+    var rot = f?.rot ?? 0;
+    var kind = f?.kind ?? _FrameKind.none;
     final z = p.zooms.where((e) => e.id == id).firstOrNull;
     if (z != null) {
       final half = 0.5 / z.scale;
       final cx = z.fx.clamp(half, 1 - half);
       final cy = z.fy.clamp(half, 1 - half);
-      r = fromPicture(
+      r = _fromPicture(
+        g,
         Rect.fromLTRB(cx - half, cy - half, cx + half, cy + half),
       );
+      rot = 0;
+      kind = _FrameKind.none;
     }
-    if (r == null) return const [];
-    return [
+    if (r == null) return out;
+    final dot = 14 * inv;
+    final above = _Frame(r, rot, kind: kind).rotateAbove();
+    final handles = kind != _FrameKind.none;
+    out.add(
       Positioned.fromRect(
         rect: r,
         child: IgnorePointer(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(color: cs.tertiary, width: 2),
-              borderRadius: BorderRadius.circular(6),
+          child: Transform.rotate(
+            angle: rot * math.pi / 180,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: cs.tertiary, width: 1.6 * inv),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                if (handles)
+                  for (final o in [
+                    Offset.zero,
+                    Offset(r.width, 0),
+                    Offset(r.width, r.height),
+                    Offset(0, r.height),
+                  ])
+                    Positioned(
+                      left: o.dx - dot / 2,
+                      top: o.dy - dot / 2,
+                      width: dot,
+                      height: dot,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: cs.tertiary,
+                            width: 2 * inv,
+                          ),
+                        ),
+                      ),
+                    ),
+                if (kind == _FrameKind.scaleRotate) ...[
+                  Positioned(
+                    left: r.width / 2 - 0.5 * inv,
+                    top: above ? -26 * inv : r.height,
+                    width: inv,
+                    height: 26 * inv,
+                    child: ColoredBox(color: cs.tertiary),
+                  ),
+                  Positioned(
+                    left: r.width / 2 - dot / 2,
+                    top: above
+                        ? -26 * inv - dot / 2
+                        : r.height + 26 * inv - dot / 2,
+                    width: dot,
+                    height: dot,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: cs.tertiary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2 * inv),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ),
       ),
-    ];
+    );
+    return out;
   }
+}
+
+enum _Handle { none, corner, rotate }
+
+/// What the handles of an overlay frame do.
+enum _FrameKind {
+  none,
+
+  /// Corners scale around the centre (picture-in-picture).
+  scale,
+
+  /// Corners scale, the knob turns it (text, image, shape, marker).
+  scaleRotate,
+
+  /// Corners move a rectangle's corner (covers, circles, boxes).
+  rect,
+}
+
+class _Frame {
+  _Frame(this.rect, this.rot, {required this.kind});
+  final Rect rect;
+
+  /// Degrees clockwise.
+  final double rot;
+  final _FrameKind kind;
+
+  Offset _turn(Offset local) {
+    final a = rot * math.pi / 180;
+    final dx = local.dx - rect.center.dx;
+    final dy = local.dy - rect.center.dy;
+    return Offset(
+      rect.center.dx + dx * math.cos(a) - dy * math.sin(a),
+      rect.center.dy + dx * math.sin(a) + dy * math.cos(a),
+    );
+  }
+
+  /// Corners in stage pixels, top left first, clockwise.
+  List<Offset> corners() => [
+    _turn(rect.topLeft),
+    _turn(rect.topRight),
+    _turn(rect.bottomRight),
+    _turn(rect.bottomLeft),
+  ];
+
+  /// The knob sits above the frame unless that would leave the stage.
+  bool rotateAbove() => _turn(rect.topCenter).dy > 40;
+
+  Offset rotateHandle(bool above) => _turn(
+    above
+        ? rect.topCenter.translate(0, -26)
+        : rect.bottomCenter.translate(0, 26),
+  );
 }
 
 /// Shown while the preview is zoomed: the zoom factor, tap to go back to fit.

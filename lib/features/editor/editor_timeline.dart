@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -68,6 +69,16 @@ class EditorTimelineState extends State<EditorTimeline> {
   double _reDx = 0;
   double _reStartX = 0;
   int _reTarget = 0;
+  double _reFingerX = 0;
+  double _reScroll = 0; // how far the timeline scrolled under the finger during this drag
+  double _reW = 0;
+  Timer? _reTimer;
+
+  @override
+  void dispose() {
+    _reTimer?.cancel();
+    super.dispose();
+  }
 
   void zoomBy(double f) =>
       setState(() => pxPerMs = (pxPerMs * f).clamp(0.01, 0.6));
@@ -284,10 +295,12 @@ class EditorTimelineState extends State<EditorTimeline> {
     // Prefer selected chip handles, then any chip body (overlays on top of the video row).
     for (final ch in chips.reversed) {
       final r = _chipRect(ch, w);
-      if (!r.inflate(6).contains(pos)) continue;
+      if (!r.inflate(10).contains(pos)) continue;
       if (_isSelected(ch)) {
-        if ((pos.dx - r.left).abs() < 16) return (chip: ch, grab: _Grab.start);
-        if ((pos.dx - r.right).abs() < 16) return (chip: ch, grab: _Grab.end);
+        // Easy-to-hit trim zones, but never more than 40 % of a short clip each.
+        final zone = math.min(24.0, r.width * 0.4);
+        if ((pos.dx - r.left).abs() < zone) return (chip: ch, grab: _Grab.start);
+        if ((pos.dx - r.right).abs() < zone) return (chip: ch, grab: _Grab.end);
       }
       if (r.contains(pos)) return (chip: ch, grab: _Grab.body);
     }
@@ -495,32 +508,74 @@ class EditorTimelineState extends State<EditorTimeline> {
     }
     HapticFeedback.mediumImpact();
     c.selectSegment(ch.index);
+    _reW = w;
+    _reScroll = 0;
+    _reFingerX = d.localPosition.dx;
     setState(() {
       _reIdx = ch.index;
       _reStartX = d.localPosition.dx;
       _reDx = 0;
       _reTarget = ch.index;
     });
+    _reTimer?.cancel();
+    _reTimer = Timer.periodic(const Duration(milliseconds: 32), (_) => _reAutoScroll());
+  }
+
+  /// Where the dragged clip would land: how many of the other clips have their middle left of it.
+  int _reTargetFor(int idx, double w) {
+    final p = c.project;
+    final starts = p.segmentOutStarts;
+    double centre(int i) => _x(starts[i] + p.segments[i].outLengthMs ~/ 2, w);
+    final dragged = centre(idx) + _reDx;
+    var target = 0;
+    for (var i = 0; i < p.segments.length; i++) {
+      if (i != idx && centre(i) < dragged) target++;
+    }
+    return target;
   }
 
   void _reMove(LongPressMoveUpdateDetails d, double w) {
     final idx = _reIdx;
     if (idx == null) return;
-    final p = c.project;
-    final starts = p.segmentOutStarts;
-    double centre(int i) => _x(starts[i] + p.segments[i].outLengthMs ~/ 2, w);
-    final dragged = centre(idx) + (d.localPosition.dx - _reStartX);
-    var target = 0;
-    for (var i = 0; i < p.segments.length; i++) {
-      if (i != idx && centre(i) < dragged) target++;
+    _reFingerX = d.localPosition.dx;
+    _reW = w;
+    _reDx = _reFingerX - _reStartX + _reScroll;
+    _reRefresh(idx, w);
+  }
+
+  void _reRefresh(int idx, double w) {
+    final target = _reTargetFor(idx, w);
+    if (target != _reTarget) HapticFeedback.selectionClick();
+    setState(() => _reTarget = target);
+  }
+
+  /// Near the left or right edge the timeline scrolls by itself so a clip can be carried far.
+  void _reAutoScroll() {
+    final idx = _reIdx;
+    if (idx == null || !mounted) return;
+    const edge = 56.0;
+    final w = _reW;
+    var dir = 0.0;
+    if (_reFingerX < edge) {
+      dir = -(edge - _reFingerX) / edge;
+    } else if (_reFingerX > w - edge) {
+      dir = (_reFingerX - (w - edge)) / edge;
     }
-    setState(() {
-      _reDx = d.localPosition.dx - _reStartX;
-      _reTarget = target;
-    });
+    if (dir == 0) return;
+    final before = c.outMs;
+    // up to ~14 px per tick, whatever the zoom
+    c.seekOut(before + (dir.clamp(-1.0, 1.0) * 14 / pxPerMs).round());
+    final moved = (c.outMs - before) * pxPerMs;
+    if (moved == 0) return;
+    // The chips slid under the finger: keep the carried clip where the finger is.
+    _reScroll += moved;
+    _reDx = _reFingerX - _reStartX + _reScroll;
+    _reRefresh(idx, w);
   }
 
   void _reEnd() {
+    _reTimer?.cancel();
+    _reTimer = null;
     final idx = _reIdx;
     if (idx == null) return;
     final target = _reTarget;
@@ -736,8 +791,8 @@ class _TimelinePainter extends CustomPainter {
             RRect.fromRectAndRadius(
               Rect.fromCenter(
                 center: Offset(hx, r.center.dy),
-                width: 6,
-                height: math.min(r.height - 8, 22),
+                width: 8,
+                height: math.min(r.height - 8, 26),
               ),
               const Radius.circular(3),
             ),
@@ -788,8 +843,16 @@ class _TimelinePainter extends CustomPainter {
         Offset(lx, EditorTimelineState.rulerH + EditorTimelineState.videoH + 2),
         Paint()
           ..color = scheme.tertiary
-          ..strokeWidth = 4
+          ..strokeWidth = 5
           ..strokeCap = StrokeCap.round,
+      );
+      // round tips so the landing place reads at a glance, even under a thumb
+      final tip = Paint()..color = scheme.tertiary;
+      canvas.drawCircle(Offset(lx, EditorTimelineState.rulerH - 3), 5, tip);
+      canvas.drawCircle(
+        Offset(lx, EditorTimelineState.rulerH + EditorTimelineState.videoH + 3),
+        5,
+        tip,
       );
     }
 

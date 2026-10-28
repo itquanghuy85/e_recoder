@@ -75,6 +75,34 @@ class PicturePanel extends StatelessWidget {
           ],
         ),
         const SizedBox(height: Space.md),
+        Row(
+          children: [
+            Text(t.picTilt, style: tt.titleSmall),
+            const Spacer(),
+            Text(
+              '${look.tilt.round()}°',
+              style: tt.labelLarge?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            if (look.tilt.abs() >= 0.5)
+              TextButton(
+                onPressed: () => c.setTilt(0),
+                child: Text(t.picTiltReset),
+              ),
+          ],
+        ),
+        Semantics(
+          identifier: 'pic_tilt',
+          child: Slider(
+            value: look.tilt.clamp(-45.0, 45.0),
+            min: -45,
+            max: 45,
+            divisions: 90,
+            onChangeStart: (_) => c.beginGesture(),
+            onChanged: (v) => c.setTilt(v, record: false),
+            onChangeEnd: (_) => c.flush(),
+          ),
+        ),
+        const SizedBox(height: Space.sm),
         Text(t.picAspect, style: tt.titleSmall),
         const SizedBox(height: Space.xs),
         Wrap(
