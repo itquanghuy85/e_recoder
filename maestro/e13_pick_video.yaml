@@ -1,5 +1,5 @@
 appId: com.huluca.escreenrecorder
-name: E13 pick a video from the phone (system picker) -> editor, a portrait-by-flag video stays portrait
+name: E13 pick a video from the phone, opens in the editor, plays, portrait-by-flag stays portrait
 tags:
   - p0
   - module-editor
