@@ -1525,5 +1525,5 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get iosNoRecording =>
-      'Screen recording is not available on iOS yet. The library and editor work; recording and overlay markers over other apps are Android-only.';
+      'On iPhone the app records its own screen and your voice. Recording other apps and the floating markers over them are Android-only for now.';
 }

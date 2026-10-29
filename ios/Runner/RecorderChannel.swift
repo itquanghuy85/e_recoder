@@ -11,8 +11,9 @@ import UniformTypeIdentifiers
 /// phone, thumbnails, waveform and loudness, the native renderers for text / shapes (the same bitmaps
 /// are shown in the preview and put in the export), and the exporter (`IOSExporter`).
 ///
-/// What iOS does not allow or this version does not have yet: screen recording of other apps (needs a
-/// ReplayKit Broadcast Extension), markers over other apps, speech to text, voice effects. Those calls
+/// Recording is ReplayKit's in-app capture (`ScreenRecorder`): this app's own screen. What iOS does not
+/// allow or this version does not have yet: recording other apps (needs a ReplayKit Broadcast Extension),
+/// markers over other apps, speech to text, voice effects. Those calls
 /// answer "not available" and the app shows its iOS notice instead.
 final class RecorderChannel: NSObject, FlutterStreamHandler, PHPickerViewControllerDelegate,
     UIDocumentPickerDelegate
@@ -21,6 +22,7 @@ final class RecorderChannel: NSObject, FlutterStreamHandler, PHPickerViewControl
     private let events: FlutterEventChannel
     private var sink: FlutterEventSink?
     private var exporter: IOSExporter?
+    private lazy var screen = ScreenRecorder { [weak self] in self?.send($0) }
     private var pendingPick: FlutterResult?
     private var pendingKind = ""
     private var pendingEdit = false
@@ -80,9 +82,14 @@ final class RecorderChannel: NSObject, FlutterStreamHandler, PHPickerViewControl
         let a = call.arguments as? [String: Any] ?? [:]
         switch call.method {
         // --- recording: not possible from inside the app on iOS
-        case "start": result(false)
-        case "stop", "pause", "resume": result(nil)
-        case "canOverlay": result(false)
+        case "start":
+            // ReplayKit in-app capture: this app's own screen (+ microphone).
+            screen.start(bitrate: a["bitrate"] as? Int ?? 0, mic: a["mic"] as? Bool ?? false) { result($0) }
+        case "stop": screen.stop(); result(nil)
+        case "pause": screen.pause(); result(nil)
+        case "resume": screen.resume(); result(nil)
+        // iOS has no "display over other apps" permission: nothing to ask for.
+        case "canOverlay": result(true)
         case "requestOverlay": result(nil)
         case "displayInfo":
             let b = UIScreen.main.nativeBounds

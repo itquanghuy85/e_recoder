@@ -2914,7 +2914,7 @@ abstract class AppL10n {
   /// No description provided for @iosNoRecording.
   ///
   /// In vi, this message translates to:
-  /// **'Bản iOS chưa quay được màn hình. Hiện có thư viện và trình chỉnh sửa; quay màn hình và dấu nổi trên ứng dụng khác chỉ có trên Android.'**
+  /// **'Trên iPhone, ứng dụng quay màn hình của chính nó cùng giọng nói của bạn. Quay ứng dụng khác và dấu nổi trên chúng hiện chỉ có trên Android.'**
   String get iosNoRecording;
 }
 

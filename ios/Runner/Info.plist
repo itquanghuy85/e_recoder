@@ -5,7 +5,9 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Saves the frames you export as pictures to your photo library.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Records your voice-over while you edit.</string>
+	<string>Records your voice while you record the screen, and your voice-overs while you edit.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Lets you choose videos, pictures and music from your library to edit.</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>

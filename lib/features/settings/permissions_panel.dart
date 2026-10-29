@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -59,19 +61,22 @@ class _PermissionsPanelState extends ConsumerState<PermissionsPanel>
     final t = AppL10n.of(context);
     final g = ref.read(permissionsGatewayProvider);
     final native = ref.read(nativeRecorderProvider);
+    // iOS has no "display over other apps" permission and no battery optimisation to switch off.
+    final ios = defaultTargetPlatform == TargetPlatform.iOS;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _PermRow(
-          id: 'perm_overlay',
-          icon: Icons.layers_outlined,
-          title: t.permOverlayTitle,
-          body: t.permOverlayBody,
-          granted: _overlay,
-          onGrant: () async {
-            await native.requestOverlay();
-          },
-        ),
+        if (!ios)
+          _PermRow(
+            id: 'perm_overlay',
+            icon: Icons.layers_outlined,
+            title: t.permOverlayTitle,
+            body: t.permOverlayBody,
+            granted: _overlay,
+            onGrant: () async {
+              await native.requestOverlay();
+            },
+          ),
         _PermRow(
           id: 'perm_mic',
           icon: Icons.mic_none,
@@ -96,15 +101,16 @@ class _PermissionsPanelState extends ConsumerState<PermissionsPanel>
             await _refresh();
           },
         ),
-        _PermRow(
-          id: 'perm_battery',
-          icon: Icons.battery_charging_full,
-          title: t.permBatteryTitle,
-          body: t.permBatteryBody,
-          granted: null,
-          grantLabel: t.permOpenSettings,
-          onGrant: g.openSettings,
-        ),
+        if (!ios)
+          _PermRow(
+            id: 'perm_battery',
+            icon: Icons.battery_charging_full,
+            title: t.permBatteryTitle,
+            body: t.permBatteryBody,
+            granted: null,
+            grantLabel: t.permOpenSettings,
+            onGrant: g.openSettings,
+          ),
       ],
     );
   }
