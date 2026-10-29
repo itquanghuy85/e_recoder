@@ -49,7 +49,9 @@ Giao diện dựng là Flutter dùng chung; **bộ xuất** (Media3 trên Androi
 
 ## 3. Tình trạng iOS và vì sao
 
-- Đã có khung `ios/` (chạy được phần thư viện/trình chỉnh sửa theo giao diện Flutter, chưa có quay màn hình, chưa build thử); chưa có bản iOS nào để cài. Build iOS cần macOS + Xcode (và tài khoản Apple Developer để phát hành).
+- Đã có lớp native iOS (`ios/Runner/RecorderChannel.swift`, `MediaProbe.swift`, `OverlayRenderer.swift`, `IOSExporter.swift`) cho kênh `escreenrecorder/recorder`: thư viện video của app, **Chọn video từ máy** (PHPicker, có sao chép vào thư mục app vì iOS chỉ đưa tệp tạm), chọn ảnh/nhạc, hình thu nhỏ, sóng âm, độ ồn, vẽ chữ/hình/vùng che đặc/dấu (CoreGraphics), chia sẻ, lưu khung hình vào Ảnh, và **bộ xuất AVFoundation**: cắt, đổi thứ tự, tốc độ hằng, đóng băng khung, đoạn trống, âm lượng từng đoạn, xoay 90° và xoay tự do, cắt khung, tỉ lệ ra, chữ/ảnh/hình/dấu/PiP ảnh có khung thời gian, nhạc/giọng có fade.
+- **Chưa có trên iOS** (bị bỏ qua khi xuất, video vẫn xuất được): ramp tốc độ, chạy ngược, chuyển cảnh, zoom, làm mờ/mosaic/tiêu điểm, PiP video, màu, GIF, phụ đề tự động, hiệu ứng giọng, thu giọng; quay màn hình cần Broadcast Extension. **Mã Swift này chưa từng được biên dịch hay chạy** (máy phát triển là Windows); `.github/workflows/ios.yml` biên dịch nó trên macOS khi push, và cột iOS ở trên vẫn là 🕓 cho tới khi workflow xanh và đã thử trên iPhone thật.
+- Build iOS cần macOS + Xcode (và tài khoản Apple Developer để phát hành).
 - Kiểm tra tự động: `.github/workflows/ios.yml` dựng iOS trên máy macOS của GitHub (xem file). Chỉ khi workflow đó chạy xanh và có thử trên iPhone thật thì cột iOS ở trên mới được đổi từ 🕓 sang ✅.
 - Không thể đưa lên iOS: dấu nổi trên app khác, đếm ngược nổi, thu tiếng nội bộ của app khác. Đây là giới hạn của hệ điều hành, không phải thiếu sót của app.
 

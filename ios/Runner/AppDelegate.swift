@@ -10,7 +10,13 @@ import UIKit
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
+  /// The iOS side of the `escreenrecorder/recorder` channel (library, pickers, renderers, exporter).
+  private var recorderChannel: RecorderChannel?
+
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RecorderChannel") {
+      recorderChannel = RecorderChannel(messenger: registrar.messenger())
+    }
   }
 }

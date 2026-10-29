@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/formatters.dart';
+import '../../core/video_source.dart';
 import '../../core/native_recorder.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
@@ -71,9 +72,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     try {
       // mixWithOthers: the picture-in-picture and music players must not take the audio focus away
       // from this one (Android would pause it, and the playhead would stand still).
-      final v = VideoPlayerController.contentUri(
-        Uri.parse(widget.entry.uri),
-        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+      final v = videoControllerFor(
+        widget.entry.uri,
+        options: VideoPlayerOptions(mixWithOthers: true),
       );
       await v.initialize();
       if (!mounted) {

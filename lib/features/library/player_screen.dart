@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../core/formatters.dart';
 import '../../core/native_recorder.dart';
+import '../../core/video_source.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
@@ -20,9 +21,7 @@ class PlayerScreen extends ConsumerStatefulWidget {
 }
 
 class _PlayerScreenState extends ConsumerState<PlayerScreen> {
-  late final VideoPlayerController _c = VideoPlayerController.contentUri(
-    Uri.parse(widget.entry.uri),
-  );
+  late final VideoPlayerController _c = videoControllerFor(widget.entry.uri);
   bool _failed = false;
 
   @override
