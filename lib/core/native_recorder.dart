@@ -25,10 +25,48 @@ class RecStateEvent extends RecEvent {
 
 /// A marker placed in "clean" mode while recording: nothing was drawn, so the editor draws it.
 class RecMark {
-  const RecMark({required this.tMs, required this.holdMs, required this.spec});
+  const RecMark({
+    required this.tMs,
+    required this.holdMs,
+    required this.spec,
+    this.kind = 'tap',
+    this.group = 0,
+    this.app,
+    this.sensitive = false,
+    this.pauseMs,
+    this.zoom,
+  });
   final int tMs;
   final int holdMs;
   final MarkerSpec spec;
+
+  /// tap | input | swipe | noise. Marks saved before these fields existed read as plain taps.
+  final String kind;
+
+  /// Keys of one typing burst share a group (> 0).
+  final int group;
+  final String? app;
+
+  /// Content that must never be shown in the video.
+  final bool sensitive;
+
+  /// Freeze time at this mark; null follows the setting.
+  final int? pauseMs;
+
+  /// Zoom factor for this mark; null follows the setting.
+  final double? zoom;
+
+  factory RecMark.fromMap(Map<dynamic, dynamic> raw) => RecMark(
+    tMs: (raw['tMs'] as num).toInt(),
+    holdMs: (raw['holdMs'] as num).toInt(),
+    spec: MarkerSpec.fromMap(Map<String, dynamic>.from(raw['spec'] as Map)),
+    kind: (raw['kind'] as String?) ?? 'tap',
+    group: (raw['group'] as num?)?.toInt() ?? 0,
+    app: raw['app'] as String?,
+    sensitive: (raw['sensitive'] as bool?) ?? false,
+    pauseMs: (raw['pauseMs'] as num?)?.toInt(),
+    zoom: (raw['zoom'] as num?)?.toDouble(),
+  );
 }
 
 class RecSavedEvent extends RecEvent {
@@ -206,13 +244,7 @@ class NativeRecorder {
               height: (m['height'] as num?)?.toInt() ?? 0,
               marks: [
                 for (final raw in (m['marks'] as List<dynamic>? ?? const []))
-                  RecMark(
-                    tMs: ((raw as Map)['tMs'] as num).toInt(),
-                    holdMs: (raw['holdMs'] as num).toInt(),
-                    spec: MarkerSpec.fromMap(
-                      Map<String, dynamic>.from(raw['spec'] as Map),
-                    ),
-                  ),
+                  RecMark.fromMap(raw as Map),
               ],
             );
           case 'error':

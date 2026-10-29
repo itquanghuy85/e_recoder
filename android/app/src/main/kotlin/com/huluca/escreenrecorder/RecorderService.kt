@@ -176,7 +176,14 @@ class RecorderService : Service(), ControlBar.Listener {
 
     private fun addMark(spec: MarkerSpec, tMs: Long) {
         Haptics.tick(this, 40)
-        marks.add(mapOf("tMs" to tMs, "holdMs" to (config?.markerHoldMs ?: 2500L), "spec" to spec.toMap()))
+        // kind/group/sensitive/app/pauseMs/zoom are optional in the editor (null = follow its settings); a mark
+        // placed by hand is a plain tap.
+        marks.add(
+            mapOf(
+                "tMs" to tMs, "holdMs" to (config?.markerHoldMs ?: 2500L), "spec" to spec.toMap(),
+                "kind" to "tap", "group" to 0, "sensitive" to false,
+            ),
+        )
     }
 
     private val tick = object : Runnable {

@@ -3,7 +3,9 @@ import 'dart:ui' show Color, Offset;
 
 import '../../core/native_recorder.dart' show RecMark;
 import '../marker/marker_spec.dart';
+import '../marker/marker_timing.dart';
 import 'edit_project.dart';
+import 'touch_log.dart';
 
 /// What the "direct it for me" pass may do. Every item is optional and the result is an ordinary
 /// project, so each change can be edited or undone like anything made by hand.
@@ -16,6 +18,11 @@ class DirectorOptions {
     this.zoomScale = AutoDirector.zoomScale,
     this.zoomRampMs = kZoomRampMs,
     this.zoomHoldMs = 0,
+    this.pauseMs = 0,
+    this.pauseZoom = 1,
+    this.inputMode = InputMode.merge,
+    this.typingLabel = 'Typing…',
+    this.typedLabel = 'Typed',
   });
 
   /// Zoom smoothly into the area of each marker.
@@ -39,6 +46,19 @@ class DirectorOptions {
   /// Extra time the zoom stays after the marker has faded.
   final int zoomHoldMs;
 
+  /// Freeze the picture for this long at each meaningful touch (0 = never, at most 1.5 s).
+  final int pauseMs;
+
+  /// 1 = marks only; 1.2 to 1.5 also eases in a little when the position of the touch is known.
+  final double pauseZoom;
+
+  /// What happens to typing bursts.
+  final InputMode inputMode;
+
+  /// Captions for a typing step: while keys are pressed, and after they are done.
+  final String typingLabel;
+  final String typedLabel;
+
   static const none = DirectorOptions(zoom: false, number: false, idle: false);
 
   DirectorOptions copyWith({
@@ -49,6 +69,11 @@ class DirectorOptions {
     double? zoomScale,
     int? zoomRampMs,
     int? zoomHoldMs,
+    int? pauseMs,
+    double? pauseZoom,
+    InputMode? inputMode,
+    String? typingLabel,
+    String? typedLabel,
   }) => DirectorOptions(
     zoom: zoom ?? this.zoom,
     number: number ?? this.number,
@@ -59,6 +84,11 @@ class DirectorOptions {
     zoomScale: zoomScale ?? this.zoomScale,
     zoomRampMs: zoomRampMs ?? this.zoomRampMs,
     zoomHoldMs: zoomHoldMs ?? this.zoomHoldMs,
+    pauseMs: pauseMs ?? this.pauseMs,
+    pauseZoom: pauseZoom ?? this.pauseZoom,
+    inputMode: inputMode ?? this.inputMode,
+    typingLabel: typingLabel ?? this.typingLabel,
+    typedLabel: typedLabel ?? this.typedLabel,
   );
 
   static const Object _keep = Object();
@@ -107,7 +137,206 @@ abstract final class AutoDirector {
     if (o.stepLabel != null) out = labelSteps(out, o.stepLabel!);
     if (o.zoom) out = autoZoom(out, o);
     if (o.idle && idleRanges.isNotEmpty) out = speedUpIdle(out, idleRanges);
+    if (o.pauseMs > 0) out = pauseAtMarkers(out, o.pauseMs);
     return out;
+  }
+
+  /// Freezes the picture at the moment of each marker's press. Marks closer than [mergeMs] share one freeze.
+  static EditProject pauseAtMarkers(
+    EditProject p,
+    int ms, {
+    int mergeMs = 1500,
+  }) {
+    final takes = [for (final m in p.markers) m.takeMs]..sort();
+    final picked = <int>[];
+    for (final t in takes) {
+      if (picked.isNotEmpty && t - picked.last < mergeMs) continue;
+      picked.add(t);
+    }
+    var out = p;
+    // Latest first, so an earlier freeze never moves where a later one goes.
+    for (final t in picked.reversed) {
+      out = freezeAt(out, t, ms);
+    }
+    return out;
+  }
+
+  /// A still of source time [t] lasting [ms], put at the cut. A cut too close to a segment's edge uses
+  /// that edge. Overlays that span [t] stretch over the still, since they follow source time.
+  static EditProject freezeAt(EditProject p, int t, int ms) {
+    final len = ms.clamp(0, 1500);
+    if (len < EditProject.minSegmentMs) return p;
+    final q = p.splitAt(t);
+    for (var i = 0; i < q.segments.length; i++) {
+      final s = q.segments[i];
+      if (s.isStill || s.blank || s.reverse) continue;
+      if (s.endMs == t) return q.insertFreezeAt(i + 1, t, ms: len);
+      if (s.startMs == t) return q.insertFreezeAt(i, t, ms: len);
+    }
+    final i = q.segmentAtSource(t);
+    if (i < 0) return q;
+    final s = q.segments[i];
+    if (s.reverse || s.blank) return q;
+    return t - s.startMs <= s.endMs - t
+        ? q.insertFreezeAt(i, t, ms: len)
+        : q.insertFreezeAt(i + 1, t, ms: len);
+  }
+
+  /// A project drawn from the touches found in a recording: a mark and (if wanted) a freeze at each
+  /// meaningful touch, and one "typing" step for each typing burst instead of a mark per key. Touches
+  /// without a known position get a caption instead of a mark, and are never zoomed to.
+  static EditProject fromTouches(
+    EditProject base,
+    List<TouchEvent> events,
+    DirectorOptions o, {
+    String stepPrefix = 'Step ',
+  }) {
+    var out = base;
+    final dur = base.durationMs;
+    final freezes = <FreezeAt>[];
+    final sorted = [...events]..sort((a, b) => a.tMs.compareTo(b.tMs));
+
+    bool keyAsTap(TouchEvent e) =>
+        e.kind == TouchKind.input &&
+        o.inputMode == InputMode.perKey &&
+        e.count <= 4;
+
+    final taps = [
+      for (final e in sorted)
+        if (e.kind == TouchKind.tap)
+          e
+        else if (keyAsTap(e))
+          _asTap(e),
+    ];
+    var step = 0;
+    for (var i = 0; i < taps.length; i++) {
+      final e = taps[i];
+      step++;
+      if (e.hasPosition) {
+        final cue = (e.tMs - MarkerTiming.cueMs)
+            .clamp(0, math.max(0, dur - 300))
+            .toInt();
+        out = out.upsertMarker(
+          MarkerItem(
+            id: 'tp_${i}_${e.tMs}',
+            cueStartMs: cue,
+            holdMs: 1500,
+            spec: MarkerSpec(
+              type: o.number ? MarkerType.number : MarkerType.ripple,
+              x0: e.x!.clamp(0.0, 1.0),
+              y0: e.y!.clamp(0.0, 1.0),
+              number: step,
+            ),
+          ),
+        );
+      } else {
+        out = out.upsertText(
+          _caption('tpt_${i}_${e.tMs}', '$stepPrefix$step', e.tMs - 100, e.tMs + 1500, dur),
+        );
+      }
+    }
+    freezes.addAll(TouchPlan.freezes(taps, o.pauseMs));
+
+    if (o.inputMode != InputMode.skip) {
+      final groups = <int, List<TouchEvent>>{};
+      for (final e in sorted) {
+        if (e.kind != TouchKind.input || keyAsTap(e)) continue;
+        groups.putIfAbsent(e.group, () => []).add(e);
+      }
+      var gi = 0;
+      for (final keys in groups.values) {
+        gi++;
+        final start = keys.first.tMs;
+        final end = keys.last.endMs ?? keys.last.tMs;
+        final typing = keys.any((k) => k.sensitive) ? o.typedLabel : o.typingLabel;
+        out = out.upsertText(_caption('typ_$gi', typing, start - 400, end, dur));
+        out = out.upsertText(_caption('typd_$gi', o.typedLabel, end, end + 1500, dur));
+        // The field is the last tap before the first key, when its place is known.
+        final field = sorted
+            .where((e) => e.kind == TouchKind.tap && e.tMs < start)
+            .lastOrNull;
+        if (o.pauseZoom > 1 &&
+            field != null &&
+            field.hasPosition &&
+            start - field.tMs < 5000) {
+          final zs = math.max(0, start - 500);
+          final ze = math.min(dur, end + 500);
+          if (ze - zs >= 800 &&
+              !out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100)) {
+            out = out.upsertZoom(
+              ZoomItem(
+                id: 'zi_$gi',
+                fx: field.x!,
+                fy: field.y!,
+                scale: o.pauseZoom.clamp(1.2, 1.5),
+                startMs: zs,
+                endMs: ze,
+                inMs: o.zoomRampMs,
+                outMs: o.zoomRampMs,
+              ),
+            );
+          }
+        }
+        if (o.pauseMs > 0) {
+          freezes.add((tMs: start, ms: 500));
+          freezes.add((tMs: end, ms: 500));
+        }
+      }
+    }
+
+    if (o.pauseZoom > 1) {
+      for (final e in taps) {
+        if (!e.hasPosition) continue;
+        final zs = math.max(0, e.tMs - zoomLeadMs);
+        final ze = math.min(dur, e.tMs + 1200);
+        if (ze - zs < 800) continue;
+        if (out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100)) continue;
+        out = out.upsertZoom(
+          ZoomItem(
+            id: 'zt_${e.tMs}',
+            fx: e.x!,
+            fy: e.y!,
+            scale: o.pauseZoom.clamp(1.2, 1.5),
+            startMs: zs,
+            endMs: ze,
+            inMs: o.zoomRampMs,
+            outMs: o.zoomRampMs,
+          ),
+        );
+      }
+    }
+
+    freezes.sort((a, b) => b.tMs.compareTo(a.tMs));
+    for (final f in freezes) {
+      out = freezeAt(out, f.tMs, f.ms);
+    }
+    return out;
+  }
+
+  static TouchEvent _asTap(TouchEvent e) => TouchEvent(
+    tMs: e.tMs,
+    kind: TouchKind.tap,
+    x: e.x,
+    y: e.y,
+    endMs: e.endMs,
+    app: e.app,
+  );
+
+  static TextItem _caption(String id, String text, int from, int to, int dur) {
+    final start = from.clamp(0, math.max(0, dur - 300)).toInt();
+    final end = to.clamp(start + 300, math.max(start + 300, dur)).toInt();
+    return TextItem(
+      id: id,
+      text: text,
+      x: 0.5,
+      y: 0.1,
+      sizeU: 20,
+      startMs: start,
+      endMs: end,
+      box: const Color(0xB3000000),
+      outline: false,
+      motion: const ItemMotion(enter: EnterExit.pop),
+    );
   }
 
   /// A caption (the prefix, then N) over each step marker while it is shown. Ids are derived from the marker, so
