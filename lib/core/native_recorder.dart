@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
+import '../features/editor/touch_log.dart' show RawTouch;
 import '../features/marker/marker_spec.dart';
 
 enum RecPhase { idle, countdown, recording, paused, saving }
@@ -283,6 +284,36 @@ class NativeRecorder {
   Future<void> stop() => _method.invokeMethod('stop');
   Future<void> pause() => _method.invokeMethod('pause');
   Future<void> resume() => _method.invokeMethod('resume');
+
+  /// The touches in a finished recording. [mode] "dots" looks for Android's "show taps" spots (with their
+  /// place); "changes" only finds the moments the picture changed after standing still (no place).
+  Future<List<RawTouch>> scanTouches(
+    String uri,
+    int durationMs, {
+    String mode = 'changes',
+  }) async {
+    final raw =
+        await _method.invokeListMethod<Map<dynamic, dynamic>>('scanTouches', {
+          'uri': uri,
+          'durationMs': durationMs,
+          'mode': mode,
+        }) ??
+        const [];
+    return [for (final m in raw) RawTouch.fromMap(m)];
+  }
+
+  /// Is developer mode on, and is "show taps" on? (Android only.)
+  Future<({bool developer, bool showTaps})> touchSetup() async {
+    final m = await _method.invokeMapMethod<String, dynamic>('touchSetup');
+    return (
+      developer: (m?['developer'] as bool?) ?? false,
+      showTaps: (m?['showTaps'] as bool?) ?? false,
+    );
+  }
+
+  /// Opens a system settings page: "about", "developer" or the main one.
+  Future<void> openSystemSettings(String page) =>
+      _method.invokeMethod('openSystemSettings', {'page': page});
 
   Future<bool> canOverlay() async =>
       (await _method.invokeMethod<bool>('canOverlay')) ?? false;

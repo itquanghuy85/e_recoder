@@ -488,5 +488,46 @@
   "exportNotifFailed": "Export failed.",
   "stepLabelPrefix": "Step ",
   "speedMuteFast": "Mute sound above 2× speed",
-  "iosNoRecording": "On iPhone the app records its own screen and your voice. Recording other apps and the floating markers over them are Android-only for now."
+  "iosNoRecording": "On iPhone the app records its own screen and your voice. Recording other apps and the floating markers over them are Android-only for now.",
+  "touchSourceTitle": "Detect touches",
+  "touchSourceOff": "Off",
+  "touchSourceDots": "Show-taps dots",
+  "touchSourceManual": "Manual",
+  "touchSourceHint": "Dots: the editor finds the white dots of Android's “Show taps” in the video and knows when and where you pressed. Manual: shake the phone or use the notification button. Off: nothing is detected. Without either, “Build from touches” still finds when the screen changed, but not where you pressed.",
+  "touchGuideTitle": "Turn on Show taps",
+  "touchGuideStep1": "1. Turn on developer mode: open About phone and tap Build number 7 times.",
+  "touchGuideAbout": "Open About phone",
+  "touchGuideStep2": "2. In Developer options, turn on Show taps (Pointer location is not needed).",
+  "touchGuideDev": "Open Developer options",
+  "touchGuideStep3": "3. Record as usual. The dots show in the video; the editor finds them and can hide them under nicer marks.",
+  "touchGuideDevOn": "Developer mode: on",
+  "touchGuideDevOff": "Developer mode: off",
+  "touchGuideTapsOn": "Show taps: on",
+  "touchGuideTapsOff": "Show taps: off",
+  "touchGuideRecheck": "Check again",
+  "inputModeTitle": "Typing",
+  "inputModeMerge": "One step “Typing”",
+  "inputModePerKey": "Mark each key (short bursts only)",
+  "inputModeSkip": "Leave typing out",
+  "pauseTitle": "Freeze at each touch",
+  "pauseZoomTitle": "Gentle zoom at touches",
+  "pauseHint": "The picture freezes for this long at each press (0 = never). Presses closer than 1.5 s share one freeze. Frozen moments are never sped up. The zoom only applies when the place of the press is known.",
+  "autoFromTouches": "Build from touches",
+  "autoFromTouchesRunning": "Looking for touches…",
+  "autoTouchesNone": "No touches found in this video.",
+  "autoTouchesDone": "{taps} touches, {typing} typing steps.",
+  "@autoTouchesDone": {
+    "placeholders": {
+      "taps": {
+        "type": "int"
+      },
+      "typing": {
+        "type": "int"
+      }
+    }
+  },
+  "autoTouchesNoPlace": "Only the moments were found, not the places: step captions and freezes, no zoom.",
+  "autoPreviewPause": "Preview first freeze",
+  "typingLabel": "Typing…",
+  "typedLabel": "Typed"
 }

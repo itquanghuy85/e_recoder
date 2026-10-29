@@ -1526,4 +1526,105 @@ class AppL10nEn extends AppL10n {
   @override
   String get iosNoRecording =>
       'On iPhone the app records its own screen and your voice. Recording other apps and the floating markers over them are Android-only for now.';
+
+  @override
+  String get touchSourceTitle => 'Detect touches';
+
+  @override
+  String get touchSourceOff => 'Off';
+
+  @override
+  String get touchSourceDots => 'Show-taps dots';
+
+  @override
+  String get touchSourceManual => 'Manual';
+
+  @override
+  String get touchSourceHint =>
+      'Dots: the editor finds the white dots of Android\'s “Show taps” in the video and knows when and where you pressed. Manual: shake the phone or use the notification button. Off: nothing is detected. Without either, “Build from touches” still finds when the screen changed, but not where you pressed.';
+
+  @override
+  String get touchGuideTitle => 'Turn on Show taps';
+
+  @override
+  String get touchGuideStep1 =>
+      '1. Turn on developer mode: open About phone and tap Build number 7 times.';
+
+  @override
+  String get touchGuideAbout => 'Open About phone';
+
+  @override
+  String get touchGuideStep2 =>
+      '2. In Developer options, turn on Show taps (Pointer location is not needed).';
+
+  @override
+  String get touchGuideDev => 'Open Developer options';
+
+  @override
+  String get touchGuideStep3 =>
+      '3. Record as usual. The dots show in the video; the editor finds them and can hide them under nicer marks.';
+
+  @override
+  String get touchGuideDevOn => 'Developer mode: on';
+
+  @override
+  String get touchGuideDevOff => 'Developer mode: off';
+
+  @override
+  String get touchGuideTapsOn => 'Show taps: on';
+
+  @override
+  String get touchGuideTapsOff => 'Show taps: off';
+
+  @override
+  String get touchGuideRecheck => 'Check again';
+
+  @override
+  String get inputModeTitle => 'Typing';
+
+  @override
+  String get inputModeMerge => 'One step “Typing”';
+
+  @override
+  String get inputModePerKey => 'Mark each key (short bursts only)';
+
+  @override
+  String get inputModeSkip => 'Leave typing out';
+
+  @override
+  String get pauseTitle => 'Freeze at each touch';
+
+  @override
+  String get pauseZoomTitle => 'Gentle zoom at touches';
+
+  @override
+  String get pauseHint =>
+      'The picture freezes for this long at each press (0 = never). Presses closer than 1.5 s share one freeze. Frozen moments are never sped up. The zoom only applies when the place of the press is known.';
+
+  @override
+  String get autoFromTouches => 'Build from touches';
+
+  @override
+  String get autoFromTouchesRunning => 'Looking for touches…';
+
+  @override
+  String get autoTouchesNone => 'No touches found in this video.';
+
+  @override
+  String autoTouchesDone(int taps, int typing) {
+    return '$taps touches, $typing typing steps.';
+  }
+
+  @override
+  String get autoTouchesNoPlace =>
+      'Only the moments were found, not the places: step captions and freezes, no zoom.';
+
+  @override
+  String get autoPreviewPause => 'Preview first freeze';
+
+  @override
+  String get typingLabel => 'Typing…';
+
+  @override
+  String get typedLabel => 'Typed';
 }

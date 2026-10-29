@@ -1521,4 +1521,105 @@ class AppL10nVi extends AppL10n {
   @override
   String get iosNoRecording =>
       'Trên iPhone, ứng dụng quay màn hình của chính nó cùng giọng nói của bạn. Quay ứng dụng khác và dấu nổi trên chúng hiện chỉ có trên Android.';
+
+  @override
+  String get touchSourceTitle => 'Phát hiện lần chạm';
+
+  @override
+  String get touchSourceOff => 'Tắt';
+
+  @override
+  String get touchSourceDots => 'Chấm trắng';
+
+  @override
+  String get touchSourceManual => 'Thủ công';
+
+  @override
+  String get touchSourceHint =>
+      'Chấm trắng: khi chỉnh sửa, app tìm các chấm trắng của “Hiển thị lần chạm” trong video để biết bạn bấm lúc nào, ở đâu. Thủ công: lắc máy hoặc dùng nút trên thông báo. Tắt: không phát hiện. Dù không bật gì, “Dựng từ lần chạm” vẫn tìm được lúc màn hình đổi nhưng không biết bạn bấm ở đâu.';
+
+  @override
+  String get touchGuideTitle => 'Bật hiển thị lần chạm';
+
+  @override
+  String get touchGuideStep1 =>
+      '1. Bật chế độ nhà phát triển: vào Thông tin điện thoại, bấm 7 lần vào Số hiệu bản dựng.';
+
+  @override
+  String get touchGuideAbout => 'Mở Thông tin điện thoại';
+
+  @override
+  String get touchGuideStep2 =>
+      '2. Trong Tùy chọn nhà phát triển, bật Hiển thị lần chạm (không cần Vị trí con trỏ).';
+
+  @override
+  String get touchGuideDev => 'Mở Tùy chọn nhà phát triển';
+
+  @override
+  String get touchGuideStep3 =>
+      '3. Quay như thường. Chấm trắng hiện trong video; khi chỉnh sửa app tự tìm và có thể che bằng dấu đẹp hơn.';
+
+  @override
+  String get touchGuideDevOn => 'Chế độ nhà phát triển: đã bật';
+
+  @override
+  String get touchGuideDevOff => 'Chế độ nhà phát triển: chưa bật';
+
+  @override
+  String get touchGuideTapsOn => 'Hiển thị lần chạm: đã bật';
+
+  @override
+  String get touchGuideTapsOff => 'Hiển thị lần chạm: chưa bật';
+
+  @override
+  String get touchGuideRecheck => 'Kiểm tra lại';
+
+  @override
+  String get inputModeTitle => 'Xử lý nhập liệu';
+
+  @override
+  String get inputModeMerge => 'Gộp thành một bước “Nhập liệu”';
+
+  @override
+  String get inputModePerKey => 'Hiện dấu từng phím (chỉ khi ít phím)';
+
+  @override
+  String get inputModeSkip => 'Bỏ qua phần nhập liệu';
+
+  @override
+  String get pauseTitle => 'Dừng hình tại mỗi lần chạm';
+
+  @override
+  String get pauseZoomTitle => 'Phóng to nhẹ tại chỗ chạm';
+
+  @override
+  String get pauseHint =>
+      'Video dừng đúng lúc chạm trong khoảng thời gian này (0 = không dừng). Các lần chạm cách nhau dưới 1,5 giây dùng chung một lần dừng. Đoạn dừng không bị tua nhanh. Phóng to chỉ áp dụng khi biết vị trí chạm.';
+
+  @override
+  String get autoFromTouches => 'Dựng từ lần chạm';
+
+  @override
+  String get autoFromTouchesRunning => 'Đang tìm lần chạm…';
+
+  @override
+  String get autoTouchesNone => 'Không tìm thấy lần chạm nào trong video.';
+
+  @override
+  String autoTouchesDone(int taps, int typing) {
+    return '$taps lần chạm, $typing bước nhập liệu.';
+  }
+
+  @override
+  String get autoTouchesNoPlace =>
+      'Chỉ tìm được thời điểm, không biết vị trí: có chú thích bước và dừng hình, không phóng to.';
+
+  @override
+  String get autoPreviewPause => 'Xem thử chỗ dừng đầu tiên';
+
+  @override
+  String get typingLabel => 'Đang nhập…';
+
+  @override
+  String get typedLabel => 'Đã nhập';
 }

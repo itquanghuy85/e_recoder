@@ -8,6 +8,7 @@ import 'marker_preview.dart';
 import 'marker_settings.dart';
 import 'marker_spec.dart';
 import 'marker_timing.dart';
+import 'touch_source_section.dart';
 
 /// Demo geometry per tool, all aimed at the mock button at (0.5, 0.55).
 MarkerSpec demoMarker(
@@ -467,6 +468,7 @@ class _ModeSection extends ConsumerWidget {
             value: settings.armShake,
             onChanged: (v) => n.update(settings.copyWith(armShake: v)),
           ),
+        if (settings.mode == MarkMode.clean) const TouchSourceSection(),
         if (settings.mode == MarkMode.clean) ...[
           const SizedBox(height: Space.sm),
           Text(t.autoAfterRec, style: tt.titleSmall),

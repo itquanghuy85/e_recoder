@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:e_screen_recorder/app/settings_store.dart';
 import 'package:e_screen_recorder/core/native_recorder.dart';
+import 'package:e_screen_recorder/features/editor/touch_log.dart';
 import 'package:e_screen_recorder/core/permissions_gateway.dart';
 import 'package:e_screen_recorder/features/marker/marker_spec.dart';
 import 'package:e_screen_recorder/features/record/recorder_controller.dart';
@@ -53,6 +54,26 @@ class FakeRecorder implements NativeRecorder {
 
   @override
   Future<bool> canOverlay() async => overlayGranted;
+
+  List<RawTouch> touches = [];
+  ({bool developer, bool showTaps}) setup = (developer: false, showTaps: false);
+  final opened = <String>[];
+
+  @override
+  Future<List<RawTouch>> scanTouches(
+    String uri,
+    int durationMs, {
+    String mode = 'changes',
+  }) async {
+    calls.add('scanTouches:$mode');
+    return touches;
+  }
+
+  @override
+  Future<({bool developer, bool showTaps})> touchSetup() async => setup;
+
+  @override
+  Future<void> openSystemSettings(String page) async => opened.add(page);
   @override
   Future<void> requestOverlay() async => calls.add('requestOverlay');
   @override

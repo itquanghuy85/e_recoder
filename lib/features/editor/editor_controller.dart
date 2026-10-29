@@ -10,6 +10,7 @@ import '../marker/marker_spec.dart';
 import '../marker/marker_timing.dart';
 import 'auto_director.dart';
 import 'edit_project.dart';
+import 'touch_log.dart';
 import 'captions_from_speech.dart';
 import 'srt.dart';
 import 'export_presets.dart';
@@ -150,6 +151,78 @@ class EditorController extends ChangeNotifier {
     } finally {
       directing = false;
       if (!_disposed) notifyListeners();
+    }
+  }
+
+  /// "dots" looks for Android's show-taps spots in the video; anything else only finds when the screen changed.
+  String touchMode = 'changes';
+
+  /// What the last "build from touches" found: touches, typing steps, and whether their places were known.
+  ({int taps, int typing, bool placed})? lastTouches;
+
+  /// Finds the touches in the video, sorts out typing, and draws marks, captions and freezes from them as
+  /// one undoable step. Without a place for the touches only captions and freezes are made.
+  Future<void> directFromTouches({
+    required DirectorOptions options,
+    required String stepPrefix,
+  }) async {
+    if (directing) return;
+    directing = true;
+    notifyListeners();
+    try {
+      final src = _project;
+      var raw = await native.scanTouches(
+        src.sourceUri,
+        src.durationMs,
+        mode: touchMode,
+      );
+      if (raw.isEmpty && touchMode == 'dots') {
+        raw = await native.scanTouches(
+          src.sourceUri,
+          src.durationMs,
+          mode: 'changes',
+        );
+      }
+      if (_disposed) return;
+      final events = TouchClassifier.classify(raw);
+      lastTouches = (
+        taps: events.where((e) => e.kind == TouchKind.tap).length,
+        typing: events
+            .where((e) => e.kind == TouchKind.input)
+            .map((e) => e.group)
+            .toSet()
+            .length,
+        placed: events.any((e) => e.hasPosition),
+      );
+      if (events.isEmpty) return;
+      var base = _project;
+      if (options.idle) {
+        final ranges = await native.analyzeIdle(src.sourceUri, src.durationMs);
+        if (_disposed) return;
+        base = AutoDirector.speedUpIdle(base, ranges);
+      }
+      _apply(
+        AutoDirector.fromTouches(
+          base,
+          events,
+          options,
+          stepPrefix: stepPrefix,
+        ),
+      );
+    } finally {
+      directing = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
+  /// Puts the playhead a moment before the first freeze made by the director, so playing shows it.
+  void seekToFirstFreeze() {
+    final starts = _project.segmentOutStarts;
+    for (var i = 0; i < _project.segments.length; i++) {
+      if (_project.segments[i].isStill) {
+        seekOut((starts[i] - 1200).clamp(0, _project.outDurationMs));
+        return;
+      }
     }
   }
 

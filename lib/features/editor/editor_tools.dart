@@ -13,6 +13,7 @@ import 'editor_pro_tools.dart';
 import 'auto_caption_sheet.dart';
 import 'srt.dart';
 import 'edit_project.dart';
+import 'touch_log.dart' show InputMode;
 
 enum EditorTool {
   cut,
@@ -1386,6 +1387,90 @@ class _AutoPanel extends StatelessWidget {
             o.copyWith(stepLabel: v ? t.stepLabelPrefix : null),
           ),
         ),
+        const Divider(),
+        Semantics(
+          identifier: 'auto_touches_run',
+          child: OutlinedButton.icon(
+            onPressed: c.directing
+                ? null
+                : () => c.directFromTouches(
+                    options: o.copyWith(
+                      typingLabel: t.typingLabel,
+                      typedLabel: t.typedLabel,
+                    ),
+                    stepPrefix: t.stepLabelPrefix,
+                  ),
+            icon: const Icon(Icons.touch_app),
+            label: Text(c.directing ? t.autoFromTouchesRunning : t.autoFromTouches),
+          ),
+        ),
+        if (c.lastTouches != null && !c.directing)
+          Semantics(
+            identifier: 'auto_touches_result',
+            liveRegion: true,
+            child: Text(
+              c.lastTouches!.taps + c.lastTouches!.typing == 0
+                  ? t.autoTouchesNone
+                  : '${t.autoTouchesDone(c.lastTouches!.taps, c.lastTouches!.typing)}'
+                        '${c.lastTouches!.placed ? '' : ' ${t.autoTouchesNoPlace}'}',
+              style: tt.bodySmall?.copyWith(color: cs.onSurface),
+            ),
+          ),
+        editorSlider(
+          context: context,
+          c: c,
+          id: 'auto_pause',
+          label: t.pauseTitle,
+          value: o.pauseMs.toDouble(),
+          min: 0,
+          max: 1500,
+          onChanged: (v) => c.setDirectorOptions(o.copyWith(pauseMs: v.round())),
+          fmt: editorSecs2,
+        ),
+        editorSlider(
+          context: context,
+          c: c,
+          id: 'auto_pause_zoom',
+          label: t.pauseZoomTitle,
+          value: o.pauseZoom,
+          min: 1,
+          max: 1.5,
+          onChanged: (v) => c.setDirectorOptions(
+            o.copyWith(pauseZoom: v < 1.1 ? 1.0 : v.clamp(1.2, 1.5)),
+          ),
+          fmt: (v) => v < 1.1 ? '—' : '${v.toStringAsFixed(1).replaceAll('.', ',')}×',
+        ),
+        Text(t.inputModeTitle, style: tt.labelLarge),
+        Wrap(
+          spacing: Space.sm,
+          children: [
+            for (final (m, label) in [
+              (InputMode.merge, t.inputModeMerge),
+              (InputMode.perKey, t.inputModePerKey),
+              (InputMode.skip, t.inputModeSkip),
+            ])
+              Semantics(
+                identifier: 'auto_input_${m.name}',
+                child: ChoiceChip(
+                  label: Text(label),
+                  selected: o.inputMode == m,
+                  onSelected: c.directing
+                      ? null
+                      : (_) => c.setDirectorOptions(o.copyWith(inputMode: m)),
+                ),
+              ),
+          ],
+        ),
+        Text(
+          t.pauseHint,
+          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+        ),
+        if (c.project.segments.any((s) => s.isStill))
+          TextButton.icon(
+            onPressed: c.seekToFirstFreeze,
+            icon: const Icon(Icons.play_circle_outline),
+            label: Text(t.autoPreviewPause),
+          ),
         if (o.zoom) ...[
           Text(t.zoomAutoTuning, style: tt.labelLarge),
           editorSlider(

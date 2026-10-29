@@ -7,7 +7,7 @@
 ## 1. Quyết định đã chốt
 - Dấu vẽ lúc quay = cửa sổ nổi, **ghi thẳng vào video** (spike: `FLAG_SECURE` hiện ô đen, không ẩn được). Không sửa được sau.
 - Trình chỉnh sửa thêm dấu mới trên timeline, tự bắt đầu sớm ~0,5 s trước điểm chạm → người xem biết trước chỗ sắp bấm.
-- Không dùng Accessibility ở bản đầu (rủi ro duyệt CH Play). Chặn-rồi-chạm-lại để sau.
+- Không dùng Accessibility (rủi ro duyệt CH Play; đã cân nhắc lại 2026-10-29 và giữ nguyên). Lần chạm lấy từ chấm "Hiển thị lần chạm" hoặc phân tích khung hình.
 - Kiến trúc: Flutter (UI) + Kotlin (quay, cửa sổ nổi, xuất video).
 
 ## 2. Công nghệ

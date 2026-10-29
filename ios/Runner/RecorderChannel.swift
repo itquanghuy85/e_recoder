@@ -121,6 +121,9 @@ final class RecorderChannel: NSObject, FlutterStreamHandler, PHPickerViewControl
 
         // --- analysis
         case "analyzeIdle": result([])
+        case "scanTouches": result([])
+        case "touchSetup": result(["developer": false, "showTaps": false])
+        case "openSystemSettings": result(nil)
         case "loudness":
             let uri = a["uri"] as? String ?? ""
             let s = a["startMs"] as? Int ?? 0

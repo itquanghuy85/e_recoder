@@ -101,7 +101,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         zoomScale: mk.zoomScale,
         zoomRampMs: mk.zoomRampMs,
         zoomHoldMs: mk.zoomHoldMs,
+        pauseMs: mk.pauseMs,
+        pauseZoom: mk.pauseZoom,
+        inputMode: mk.inputMode,
       );
+      c.touchMode = mk.touchSource == TouchSource.dots ? 'dots' : 'changes';
       c.addListener(_onController);
       c.loadWaveform();
       setState(() {

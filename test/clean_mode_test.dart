@@ -4,6 +4,7 @@ import 'package:e_screen_recorder/core/permissions_gateway.dart';
 import 'package:e_screen_recorder/features/editor/editor_controller.dart';
 import 'package:e_screen_recorder/features/editor/auto_director.dart';
 import 'package:e_screen_recorder/features/editor/edit_project.dart';
+import 'package:e_screen_recorder/features/editor/touch_log.dart';
 import 'package:e_screen_recorder/features/editor/project_store.dart';
 import 'package:e_screen_recorder/features/marker/marker_settings.dart';
 import 'package:e_screen_recorder/features/marker/marker_spec.dart';
@@ -228,6 +229,77 @@ void main() {
       await c.directAuto();
       expect(fake.calls, isNot(contains('analyzeIdle')));
       expect(c.project.zooms, isNotEmpty);
+    });
+  });
+
+  group('editor build from touches', () {
+    EditorController make(FakeRecorder fake) {
+      final c = EditorController(
+        project: EditProject.fresh(
+          sourceUri: 'content://v/3',
+          name: 'a.mp4',
+          durationMs: 30000,
+          frameW: 720,
+          frameH: 1600,
+        ),
+        native: fake,
+        store: MemoryProjectStore(),
+      );
+      addTearDown(c.dispose);
+      c.setDirectorOptions(const DirectorOptions(idle: false, pauseMs: 800));
+      return c;
+    }
+
+    test('one undo step: marks, typing step and freezes', () async {
+      final fake = FakeRecorder();
+      addTearDown(fake.controller.close);
+      fake.touches = [
+        const RawTouch(tMs: 2000, x: 0.5, y: 0.3),
+        for (var i = 0; i < 6; i++)
+          RawTouch(tMs: 6000 + i * 300, x: 0.1 + i * 0.1, y: 0.8),
+      ];
+      final c = make(fake);
+      await c.directFromTouches(
+        options: c.directorOptions,
+        stepPrefix: 'Step ',
+      );
+      expect(fake.calls, contains('scanTouches:changes'));
+      expect(c.lastTouches, (taps: 1, typing: 1, placed: true));
+      expect(c.project.markers.length, 1);
+      expect(c.project.segments.where((s) => s.isStill).length, 3);
+      c.undo();
+      expect(c.project.markers, isEmpty);
+      expect(c.project.segments.length, 1);
+    });
+
+    test('dots that find nothing fall back to the screen changes', () async {
+      final fake = FakeRecorder();
+      addTearDown(fake.controller.close);
+      final c = make(fake)..touchMode = 'dots';
+      fake.touches = [];
+      await c.directFromTouches(
+        options: c.directorOptions,
+        stepPrefix: 'Step ',
+      );
+      expect(fake.calls, ['scanTouches:dots', 'scanTouches:changes']);
+      expect(c.lastTouches!.taps, 0);
+      expect(c.project.segments.length, 1);
+    });
+
+    test('moments without places give captions and freezes, no marks', () async {
+      final fake = FakeRecorder();
+      addTearDown(fake.controller.close);
+      fake.touches = const [RawTouch(tMs: 4000), RawTouch(tMs: 12000)];
+      final c = make(fake);
+      await c.directFromTouches(
+        options: c.directorOptions.copyWith(pauseZoom: 1.5),
+        stepPrefix: 'Step ',
+      );
+      expect(c.lastTouches!.placed, isFalse);
+      expect(c.project.markers, isEmpty);
+      expect(c.project.zooms, isEmpty);
+      expect(c.project.texts.length, 2);
+      expect(c.project.segments.where((s) => s.isStill).length, 2);
     });
   });
 }

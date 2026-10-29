@@ -2916,6 +2916,192 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Trên iPhone, ứng dụng quay màn hình của chính nó cùng giọng nói của bạn. Quay ứng dụng khác và dấu nổi trên chúng hiện chỉ có trên Android.'**
   String get iosNoRecording;
+
+  /// No description provided for @touchSourceTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phát hiện lần chạm'**
+  String get touchSourceTitle;
+
+  /// No description provided for @touchSourceOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt'**
+  String get touchSourceOff;
+
+  /// No description provided for @touchSourceDots.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm trắng'**
+  String get touchSourceDots;
+
+  /// No description provided for @touchSourceManual.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thủ công'**
+  String get touchSourceManual;
+
+  /// No description provided for @touchSourceHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chấm trắng: khi chỉnh sửa, app tìm các chấm trắng của “Hiển thị lần chạm” trong video để biết bạn bấm lúc nào, ở đâu. Thủ công: lắc máy hoặc dùng nút trên thông báo. Tắt: không phát hiện. Dù không bật gì, “Dựng từ lần chạm” vẫn tìm được lúc màn hình đổi nhưng không biết bạn bấm ở đâu.'**
+  String get touchSourceHint;
+
+  /// No description provided for @touchGuideTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật hiển thị lần chạm'**
+  String get touchGuideTitle;
+
+  /// No description provided for @touchGuideStep1.
+  ///
+  /// In vi, this message translates to:
+  /// **'1. Bật chế độ nhà phát triển: vào Thông tin điện thoại, bấm 7 lần vào Số hiệu bản dựng.'**
+  String get touchGuideStep1;
+
+  /// No description provided for @touchGuideAbout.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở Thông tin điện thoại'**
+  String get touchGuideAbout;
+
+  /// No description provided for @touchGuideStep2.
+  ///
+  /// In vi, this message translates to:
+  /// **'2. Trong Tùy chọn nhà phát triển, bật Hiển thị lần chạm (không cần Vị trí con trỏ).'**
+  String get touchGuideStep2;
+
+  /// No description provided for @touchGuideDev.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở Tùy chọn nhà phát triển'**
+  String get touchGuideDev;
+
+  /// No description provided for @touchGuideStep3.
+  ///
+  /// In vi, this message translates to:
+  /// **'3. Quay như thường. Chấm trắng hiện trong video; khi chỉnh sửa app tự tìm và có thể che bằng dấu đẹp hơn.'**
+  String get touchGuideStep3;
+
+  /// No description provided for @touchGuideDevOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chế độ nhà phát triển: đã bật'**
+  String get touchGuideDevOn;
+
+  /// No description provided for @touchGuideDevOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chế độ nhà phát triển: chưa bật'**
+  String get touchGuideDevOff;
+
+  /// No description provided for @touchGuideTapsOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiển thị lần chạm: đã bật'**
+  String get touchGuideTapsOn;
+
+  /// No description provided for @touchGuideTapsOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiển thị lần chạm: chưa bật'**
+  String get touchGuideTapsOff;
+
+  /// No description provided for @touchGuideRecheck.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểm tra lại'**
+  String get touchGuideRecheck;
+
+  /// No description provided for @inputModeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xử lý nhập liệu'**
+  String get inputModeTitle;
+
+  /// No description provided for @inputModeMerge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Gộp thành một bước “Nhập liệu”'**
+  String get inputModeMerge;
+
+  /// No description provided for @inputModePerKey.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện dấu từng phím (chỉ khi ít phím)'**
+  String get inputModePerKey;
+
+  /// No description provided for @inputModeSkip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ qua phần nhập liệu'**
+  String get inputModeSkip;
+
+  /// No description provided for @pauseTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dừng hình tại mỗi lần chạm'**
+  String get pauseTitle;
+
+  /// No description provided for @pauseZoomTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phóng to nhẹ tại chỗ chạm'**
+  String get pauseZoomTitle;
+
+  /// No description provided for @pauseHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Video dừng đúng lúc chạm trong khoảng thời gian này (0 = không dừng). Các lần chạm cách nhau dưới 1,5 giây dùng chung một lần dừng. Đoạn dừng không bị tua nhanh. Phóng to chỉ áp dụng khi biết vị trí chạm.'**
+  String get pauseHint;
+
+  /// No description provided for @autoFromTouches.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dựng từ lần chạm'**
+  String get autoFromTouches;
+
+  /// No description provided for @autoFromTouchesRunning.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tìm lần chạm…'**
+  String get autoFromTouchesRunning;
+
+  /// No description provided for @autoTouchesNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy lần chạm nào trong video.'**
+  String get autoTouchesNone;
+
+  /// No description provided for @autoTouchesDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'{taps} lần chạm, {typing} bước nhập liệu.'**
+  String autoTouchesDone(int taps, int typing);
+
+  /// No description provided for @autoTouchesNoPlace.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ tìm được thời điểm, không biết vị trí: có chú thích bước và dừng hình, không phóng to.'**
+  String get autoTouchesNoPlace;
+
+  /// No description provided for @autoPreviewPause.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem thử chỗ dừng đầu tiên'**
+  String get autoPreviewPause;
+
+  /// No description provided for @typingLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang nhập…'**
+  String get typingLabel;
+
+  /// No description provided for @typedLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nhập'**
+  String get typedLabel;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

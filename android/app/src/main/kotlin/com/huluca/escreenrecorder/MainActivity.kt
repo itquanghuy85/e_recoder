@@ -14,6 +14,7 @@ import android.provider.Settings
 import com.huluca.escreenrecorder.export.ExportJob
 import com.huluca.escreenrecorder.export.IdleAnalyzer
 import com.huluca.escreenrecorder.export.OverlayRenderers
+import com.huluca.escreenrecorder.export.TouchScan
 import com.huluca.escreenrecorder.marker.MarkerRenderer
 import com.huluca.escreenrecorder.marker.MarkerSpec
 import com.huluca.escreenrecorder.overlay.timecodeTypeface
@@ -53,6 +54,32 @@ class MainActivity : FlutterActivity() {
             "resume" -> { sendToService(RecorderService.ACTION_RESUME); result.success(null) }
             "snapshot" -> result.success(RecorderBus.snapshot())
             "canOverlay" -> result.success(Settings.canDrawOverlays(this))
+            "scanTouches" -> async(result) {
+                TouchScan.scan(
+                    this, Uri.parse(call.argument<String>("uri")!!),
+                    (call.argument<Number>("durationMs")!!).toLong(), call.argument<String>("mode") ?: "changes",
+                )
+            }
+            // Where the user is in "show taps": developer options on, and the option itself on.
+            "touchSetup" -> {
+                val dev = Settings.Global.getInt(contentResolver, Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1
+                val taps = Settings.System.getInt(contentResolver, "show_touches", 0) == 1
+                result.success(mapOf("developer" to dev, "showTaps" to taps))
+            }
+            "openSystemSettings" -> {
+                val action = when (call.argument<String>("page")) {
+                    "about" -> Settings.ACTION_DEVICE_INFO_SETTINGS
+                    "developer" -> Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS
+                    else -> Settings.ACTION_SETTINGS
+                }
+                try {
+                    startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                } catch (_: Exception) {
+                    // Some makers hide the page: the main settings screen is the fallback.
+                    try { startActivity(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) {}
+                }
+                result.success(null)
+            }
             "requestOverlay" -> {
                 startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
                 result.success(null)

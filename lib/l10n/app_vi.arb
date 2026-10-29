@@ -631,5 +631,46 @@
   "exportNotifFailed": "Xuất không thành công.",
   "stepLabelPrefix": "Bước ",
   "speedMuteFast": "Tắt tiếng khi nhanh hơn 2×",
-  "iosNoRecording": "Trên iPhone, ứng dụng quay màn hình của chính nó cùng giọng nói của bạn. Quay ứng dụng khác và dấu nổi trên chúng hiện chỉ có trên Android."
+  "iosNoRecording": "Trên iPhone, ứng dụng quay màn hình của chính nó cùng giọng nói của bạn. Quay ứng dụng khác và dấu nổi trên chúng hiện chỉ có trên Android.",
+  "touchSourceTitle": "Phát hiện lần chạm",
+  "touchSourceOff": "Tắt",
+  "touchSourceDots": "Chấm trắng",
+  "touchSourceManual": "Thủ công",
+  "touchSourceHint": "Chấm trắng: khi chỉnh sửa, app tìm các chấm trắng của “Hiển thị lần chạm” trong video để biết bạn bấm lúc nào, ở đâu. Thủ công: lắc máy hoặc dùng nút trên thông báo. Tắt: không phát hiện. Dù không bật gì, “Dựng từ lần chạm” vẫn tìm được lúc màn hình đổi nhưng không biết bạn bấm ở đâu.",
+  "touchGuideTitle": "Bật hiển thị lần chạm",
+  "touchGuideStep1": "1. Bật chế độ nhà phát triển: vào Thông tin điện thoại, bấm 7 lần vào Số hiệu bản dựng.",
+  "touchGuideAbout": "Mở Thông tin điện thoại",
+  "touchGuideStep2": "2. Trong Tùy chọn nhà phát triển, bật Hiển thị lần chạm (không cần Vị trí con trỏ).",
+  "touchGuideDev": "Mở Tùy chọn nhà phát triển",
+  "touchGuideStep3": "3. Quay như thường. Chấm trắng hiện trong video; khi chỉnh sửa app tự tìm và có thể che bằng dấu đẹp hơn.",
+  "touchGuideDevOn": "Chế độ nhà phát triển: đã bật",
+  "touchGuideDevOff": "Chế độ nhà phát triển: chưa bật",
+  "touchGuideTapsOn": "Hiển thị lần chạm: đã bật",
+  "touchGuideTapsOff": "Hiển thị lần chạm: chưa bật",
+  "touchGuideRecheck": "Kiểm tra lại",
+  "inputModeTitle": "Xử lý nhập liệu",
+  "inputModeMerge": "Gộp thành một bước “Nhập liệu”",
+  "inputModePerKey": "Hiện dấu từng phím (chỉ khi ít phím)",
+  "inputModeSkip": "Bỏ qua phần nhập liệu",
+  "pauseTitle": "Dừng hình tại mỗi lần chạm",
+  "pauseZoomTitle": "Phóng to nhẹ tại chỗ chạm",
+  "pauseHint": "Video dừng đúng lúc chạm trong khoảng thời gian này (0 = không dừng). Các lần chạm cách nhau dưới 1,5 giây dùng chung một lần dừng. Đoạn dừng không bị tua nhanh. Phóng to chỉ áp dụng khi biết vị trí chạm.",
+  "autoFromTouches": "Dựng từ lần chạm",
+  "autoFromTouchesRunning": "Đang tìm lần chạm…",
+  "autoTouchesNone": "Không tìm thấy lần chạm nào trong video.",
+  "autoTouchesDone": "{taps} lần chạm, {typing} bước nhập liệu.",
+  "@autoTouchesDone": {
+    "placeholders": {
+      "taps": {
+        "type": "int"
+      },
+      "typing": {
+        "type": "int"
+      }
+    }
+  },
+  "autoTouchesNoPlace": "Chỉ tìm được thời điểm, không biết vị trí: có chú thích bước và dừng hình, không phóng to.",
+  "autoPreviewPause": "Xem thử chỗ dừng đầu tiên",
+  "typingLabel": "Đang nhập…",
+  "typedLabel": "Đã nhập"
 }
