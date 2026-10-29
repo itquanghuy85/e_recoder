@@ -36,7 +36,12 @@ class ExtraPlayers extends ChangeNotifier {
   ) async {
     if (_starting.contains(id) || into.containsKey(id)) return;
     _starting.add(id);
-    final v = VideoPlayerController.file(File(path));
+    // Several players run at once (video, picture-in-picture, music): none may take the audio focus
+    // from the others, or Android pauses whichever started first.
+    final v = VideoPlayerController.file(
+      File(path),
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+    );
     try {
       await v.initialize();
       if (_disposed || !_wanted(id)) {

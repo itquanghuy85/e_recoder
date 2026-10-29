@@ -69,7 +69,12 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   Future<void> _init() async {
     try {
-      final v = VideoPlayerController.contentUri(Uri.parse(widget.entry.uri));
+      // mixWithOthers: the picture-in-picture and music players must not take the audio focus away
+      // from this one (Android would pause it, and the playhead would stand still).
+      final v = VideoPlayerController.contentUri(
+        Uri.parse(widget.entry.uri),
+        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+      );
       await v.initialize();
       if (!mounted) {
         await v.dispose();
