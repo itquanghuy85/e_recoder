@@ -10,7 +10,7 @@ Gói: `com.huluca.escreenrecorder` — **không đổi được sau lần phát 
 2. Sao chép `android/key.properties.example` → `android/key.properties`, điền mật khẩu và đường dẫn `storeFile`. Tệp này và `*.jks` đã nằm trong `.gitignore`.
 3. Bật **Play App Signing** khi tạo ứng dụng trên Play Console (Google giữ khoá ký, bạn giữ khoá tải lên).
 4. Build: `flutter build appbundle --release` → `build/app/outputs/bundle/release/app-release.aab`.
-   Trước khi tăng bản: sửa `version: 1.0.0+N` trong `pubspec.yaml` (N = versionCode, luôn tăng).
+   Trước khi tăng bản: sửa `version: 1.x.y+N` trong `pubspec.yaml` (N = versionCode, luôn tăng).
 5. Chưa có `key.properties` thì bản release tự ký bằng khoá debug (chỉ để thử, **không** tải lên Play).
 
 ## 2. Thông tin cửa hàng (tiếng Việt)

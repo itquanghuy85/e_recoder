@@ -1,0 +1,1 @@
+Chọn video bất kỳ trong máy để chỉnh sửa. Khung lớp phủ kéo giãn có vạch hút, xoay tự do, cắt và sắp xếp timeline dễ hơn, nút phát ổn định hơn. Chế độ sạch: dựng dấu, bước nhập liệu và dừng hình từ các lần chạm.

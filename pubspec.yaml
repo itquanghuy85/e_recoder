@@ -1,7 +1,7 @@
 name: e_screen_recorder
 description: "E Screen Recorder - quay màn hình, dấu đánh dấu báo trước, chỉnh sửa video."
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.2.0+3
 
 environment:
   sdk: ^3.13.3
