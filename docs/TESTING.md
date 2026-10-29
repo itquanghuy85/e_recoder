@@ -85,3 +85,8 @@ Kiểm chứng file video: `powershell -File scripts\verify_latest.ps1 [-Sheet]`
 Lưu ý: nhãn Flutter gộp nhiều Text (thẻ danh sách, thẻ cấu hình) → assert bằng regex `.*chuỗi.*`; id nút = `Semantics(identifier: ...)`.
 Hay gặp: flow hỏng ngay ở `profile_card` vì máy Oppo bị đưa về màn hình chính (sau một lần chạy hỏng, sau khi cài bản mới, hoặc khởi động lạnh). Cách xử lý: `adb shell am force-stop com.huluca.escreenrecorder`, HOME, `am start -n com.huluca.escreenrecorder/.MainActivity`, đợi ~10 s rồi chạy lại (flow nào hỏng khi "warm" thì thử `-Cold` và ngược lại). Một bản quay còn chạy dở do flow hỏng cũng làm flow sau lệch: force-stop app. Trước đây ghi nhận: lần chạy đầu sau khi cài bản mới hay hỏng ở `profile_card` (app chưa kịp lên): mở app bằng tay, đợi ~10 s rồi chạy lại. Chế độ quay sạch: lắc máy / rung phản hồi cần kiểm tay.
 Máy thử có thể bị 3uTools (PC) kéo ứng dụng khác lên trước: `adb shell am force-stop cn.tools3u.mobile`.
+
+## Dựng từ lần chạm (S25 Ultra, SM-S938B, bản debug)
+- `e15_touch_settings`: chọn "Chấm trắng", hộp hướng dẫn 3 bước, nút mở "Thông tin điện thoại" và quay lại app — PASS.
+- `e16_build_from_touches`: quay sạch trên Cài đặt, mở editor, "Dựng từ lần chạm" (đổi khung, không có vị trí) → "3 lần chạm", chú thích "Bước 1" + đoạn dừng 0,8 s, hoàn tác về 1 đoạn — PASS.
+- Chưa kiểm: chế độ chấm trắng thật. `screenrecord` của adb trên S25 không thấy chấm "Hiển thị lần chạm" khi tiêm chạm bằng `adb input`; cần thử với ghi hình của app và chạm thật.

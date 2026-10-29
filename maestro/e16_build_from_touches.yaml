@@ -1,0 +1,82 @@
+appId: com.huluca.escreenrecorder
+name: E16 build from touches - clean recording, scan, steps and freezes in one undo step
+tags:
+  - p1
+  - module-editor
+---
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_clean
+      CORNER: corner_2
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: com.android.settings
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Cài đặt"
+    timeout: 15000
+# A still page, a press that changes it, a still page, another press.
+- waitForAnimationToEnd:
+    timeout: 2000
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 3000
+    optional: true
+- tapOn:
+    point: 50%, 30%
+- waitForAnimationToEnd:
+    timeout: 2000
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 3500
+    optional: true
+- back
+- waitForAnimationToEnd:
+    timeout: 2000
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 3500
+    optional: true
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 25000
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- tapOn:
+    id: "tool_auto"
+- swipe:
+    start: 50%, 92%
+    end: 50%, 76%
+    duration: 400
+- swipe:
+    start: 50%, 92%
+    end: 50%, 76%
+    duration: 400
+- tapOn:
+    id: "auto_touches_run"
+- extendedWaitUntil:
+    visible:
+      id: "auto_touches_result"
+    timeout: 120000
+- takeScreenshot: artifacts/e16_touches
+- assertVisible: "[1-9][0-9]* lần chạm.*"
+- tapOn:
+    id: "editor_undo"
+- assertVisible: "Dòng thời gian: 1 đoạn.*"

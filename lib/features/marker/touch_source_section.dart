@@ -56,7 +56,9 @@ class TouchSourceSection extends ConsumerWidget {
         if (s.touchSource == TouchSource.dots)
           Align(
             alignment: AlignmentDirectional.centerStart,
-            child: TextButton.icon(
+            child: Semantics(
+              identifier: 'touch_guide_open',
+              child: TextButton.icon(
               key: const ValueKey('touch_guide_open'),
               onPressed: () => showDialog<void>(
                 context: context,
@@ -64,6 +66,7 @@ class TouchSourceSection extends ConsumerWidget {
               ),
               icon: const Icon(Icons.developer_mode),
               label: Text(t.touchGuideTitle),
+            ),
             ),
           ),
         const SizedBox(height: Space.sm),

@@ -1,0 +1,49 @@
+appId: com.huluca.escreenrecorder
+name: E15 touch detection settings - choice, show-taps guide with settings shortcuts
+tags:
+  - p1
+  - module-editor
+---
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_clean
+      CORNER: corner_2
+- tapOn:
+    text: "Cài đặt.*"
+- tapOn:
+    id: "settings_markers"
+- scrollUntilVisible:
+    element:
+      id: "touch_source_dots"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: "touch_source_dots"
+- takeScreenshot: artifacts/e15_touch_source
+- scrollUntilVisible:
+    element:
+      id: "touch_guide_open"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: "touch_guide_open"
+- assertVisible: "1. Bật chế độ nhà phát triển.*"
+- assertVisible: "Chế độ nhà phát triển: .*"
+- assertVisible: "Hiển thị lần chạm: .*"
+- takeScreenshot: artifacts/e15_guide
+# The shortcut opens the system page and the app comes back.
+- tapOn: "Mở Thông tin điện thoại"
+- extendedWaitUntil:
+    notVisible: "Mở Thông tin điện thoại"
+    timeout: 8000
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- assertVisible: "Chế độ nhà phát triển: .*"
+- tapOn: "Đóng"
+- tapOn:
+    id: "touch_source_manual"
