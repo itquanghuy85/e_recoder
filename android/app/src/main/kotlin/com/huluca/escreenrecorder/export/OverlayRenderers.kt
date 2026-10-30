@@ -89,6 +89,109 @@ object OverlayRenderers {
         return Rendered(bmp, w, h)
     }
 
+    /**
+     * One caption cue rendered at rest (no per-word reveal yet), drawn with [style] only.
+     *
+     * Like [renderText], the bitmap is anchored at its centre and [Rendered.wPx]/[Rendered.hPx] tell
+     * the caller how big it is, so this function does not position anything: the caller places the
+     * bitmap (Dart preview and the export both already do this for text). [CaptionStyle.x] /
+     * [CaptionStyle.y] are therefore ignored here, and no `frameH` is needed.
+     *
+     * [frameW] is used only to convert U units to pixels and to wrap lines. A null [style] falls back
+     * to [CaptionStyle] defaults. Text effects use the style's own colour/width/blur/radius; the
+     * `drawFx` presets are for [TextClip.fx] only and are not used here.
+     */
+    fun renderCue(cue: CaptionCue, style: CaptionStyle?, frameW: Int): Rendered {
+        val st = style ?: CaptionStyle()
+        val u = frameW / 360f
+        val size = st.sizeU * u
+        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = st.color
+            textSize = size
+            typeface = typefaceFor(st.fontId, true)
+            textAlign = Paint.Align.LEFT
+        }
+        val outlineW = if (st.outlineColor != null && st.outlineWidth > 0f) st.outlineWidth * u else 0f
+        val shadowR = if (st.shadowColor != null && st.shadowBlur > 0f) st.shadowBlur * u else 0f
+        val boxPad = if (st.boxColor != null) size * 0.35f else 0f
+        val padding = 4f * u + outlineW + shadowR * 2f + boxPad
+        val maxW = (frameW - padding * 2f).coerceAtLeast(size)
+
+        val lines = wrapCueText(cue.text, maxW, fill)
+        val lineH = size * 1.2f
+        val widths = lines.map { fill.measureText(it) }
+        val textW = widths.maxOrNull() ?: 0f
+        val w = ceil(textW + padding * 2f).toInt().coerceAtLeast(8)
+        val h = ceil(lineH * lines.size + padding * 2f).toInt().coerceAtLeast(8)
+        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val c = Canvas(bmp)
+
+        if (st.boxColor != null) {
+            val inset = (padding - boxPad - shadowR).coerceAtLeast(0f)
+            val bp = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = st.boxColor }
+            val r = st.boxRadius * u
+            c.drawRoundRect(RectF(inset, inset, w - inset, h - inset), r, r, bp)
+        }
+        val halo = if (outlineW > 0f) {
+            Paint(fill).apply {
+                setStyle(Paint.Style.STROKE)
+                strokeWidth = outlineW
+                strokeJoin = Paint.Join.ROUND
+                color = st.outlineColor ?: 0xFF000000.toInt()
+            }
+        } else {
+            null
+        }
+        if (shadowR > 0f) {
+            fill.setShadowLayer(shadowR, shadowR * 0.5f, shadowR * 0.7f, st.shadowColor ?: 0xFF000000.toInt())
+        }
+        lines.forEachIndexed { i, line ->
+            val lw = widths[i]
+            val x = when (st.align) {
+                "left" -> padding
+                "right" -> w - padding - lw
+                else -> (w - lw) / 2f
+            }
+            val y = padding + lineH * i + size * 0.95f
+            if (halo != null) c.drawText(line, x, y, halo)
+            c.drawText(line, x, y, fill)
+        }
+        return Rendered(bmp, w, h)
+    }
+
+    /** Splits [text] into lines no wider than [maxWidth] px, measuring words with [paint]. */
+    private fun wrapCueText(text: String, maxWidth: Float, paint: Paint): List<String> {
+        val out = mutableListOf<String>()
+        for (para in text.split('\n')) {
+            val words = para.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+            if (words.isEmpty()) {
+                out.add("")
+                continue
+            }
+            val sb = StringBuilder()
+            var lineW = 0f
+            for (word in words) {
+                val wordW = paint.measureText(word)
+                val spaceW = if (sb.isEmpty()) 0f else paint.measureText(" ")
+                if (sb.isNotEmpty() && lineW + spaceW + wordW > maxWidth) {
+                    out.add(sb.toString())
+                    sb.setLength(0)
+                    sb.append(word)
+                    lineW = wordW
+                } else {
+                    if (sb.isNotEmpty()) {
+                        sb.append(' ')
+                        lineW += spaceW
+                    }
+                    sb.append(word)
+                    lineW += wordW
+                }
+            }
+            out.add(sb.toString())
+        }
+        return out.ifEmpty { listOf("") }
+    }
+
     private fun scaleRgb(color: Int, f: Float): Int {
         val r = (((color shr 16) and 0xFF) * f).toInt().coerceIn(0, 255)
         val g = (((color shr 8) and 0xFF) * f).toInt().coerceIn(0, 255)
