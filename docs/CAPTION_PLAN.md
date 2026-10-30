@@ -29,13 +29,13 @@ Phase 1 (44e78fc), H1 (58cb2d0), H2 (c16c5c4), H3 (b401fef), 2a (8842aaf), 2b+2b
 
 ## PHẦN 5 — CÁC PHASE CÒN LẠI
 Phase 2 (2c-2g): XONG, xem Phần 9.
-Phase 3-10 (Phase 3 đã xong, Phần 10): progressive reveal, style editor, 12 template, SRT, Whisper, timeline, export, E2E.
+Phase 3 (Phần 10), 4 (Phần 11), 5 + 7 + dọn dữ liệu + SRT (Phần 12): XONG. Còn lại, không làm đợt này: Whisper, timeline riêng cho phụ đề.
 
 ## PHẦN 6 — CHECKLIST CUỐI
 cues=null preview/export không đổi, 6 effect e5a9c4c nguyên, 4 RevealMode, preview=export, 12 template, style editor đủ, Whisper OK, SRT OK, timeline OK, test PASS, không dep lạ, không đổi tên cũ.
 
 ## PHẦN 7 — TRẠNG THÁI
-Phase 1, H1-3, 2a, 2b+fix: ✅. Phase 2 (2c-2g): ✅ (xem Phần 9). Phase 3 (chữ hiện dần): ✅ preview, xuất video chưa (xem Phần 10). Phase 4 (style editor): ✅ (Phần 11). Phase 5-10: ⬜.
+Phase 1, H1-3, 2a, 2b+fix: ✅. Phase 2 (2c-2g): ✅ (xem Phần 9). Phase 3 (chữ hiện dần): ✅ preview, xuất video chưa (xem Phần 10). Phase 4 (style editor): ✅ (Phần 11). Phase 5 (12 mẫu), Phase 7 (xuất video có phụ đề), dọn dữ liệu thử, nhập SRT vào phụ đề: ✅ (Phần 12). Whisper và timeline riêng cho phụ đề: KHÔNG làm đợt này (Phần 12, mục "Không làm").
 
 ## PHẦN 8 — KHÔNG LÀM
 Không CustomPainter Flutter, không đổi typedef SubtitleCue, không tự thêm dep, không iOS export đợt này, không đổi tên cũ, không gộp phase, không tải Whisper không rõ nguồn, không sửa production để test pass.
@@ -107,3 +107,50 @@ Lệnh `maestro` trong PATH (npm) không chạy được. Dùng bản trong `D:\
 - Xuất video vẫn chưa vẽ phụ đề (Phase 7). Khi làm, phải đặt chữ theo `TextItem.x/y` (không dùng `captionStyle.x/y`).
 - Flow rollback: sau mỗi vòng playhead trôi nhẹ nên nền video khác nhau giữa các lần chạy; so sánh bằng mắt vùng chữ.
 - Dữ liệu thử trên máy S25: đã dọn các item rỗng/ "Văn bản" do các lần chạy thử cũ để lại trong dự án video `media/235`.
+
+## PHẦN 12 — PHASE 5 (12 mẫu), PHASE 7 (xuất video), dọn dữ liệu thử, SRT, chấm kéo nhỏ
+
+Phần này thay các ghi chú "xuất video chưa" của Phần 10 và 11.
+
+### Phase 7 — xuất video có phụ đề
+- `Overlays.kt`: `CueOverlay` (MỚI). Mỗi khung hình tính thời gian nguồn qua `ItemClock`, tìm cue đang hiện, vẽ bằng ĐÚNG `OverlayRenderers.renderCue` của preview (cùng phông, màu, viền, nền, kiểu hiện chữ), bitmap lấy từ cache LRU 24 (một cue đứng yên dùng lại bitmap, không tải lại texture). Vị trí, xoay, độ mờ, chuyển động vào/ra lấy từ item như `MotionBitmapOverlay`.
+- `CueFrames.kt` (MỚI, thuần toán): cue nào hiện ở thời điểm t (đầu bao gồm, cuối loại trừ), bước hiện chữ 50ms (`REVEAL_STEP_MS`, bằng `cueRevealStepMs` bên Dart), "có cue nào nằm trong cửa sổ xuất".
+- `Exporter.captionOverlays`: item có `cues` dùng `CueOverlay`, item chữ thường (cues null) đi đường cũ không đổi.
+- Hiện chữ theo thời gian GỐC của video, nên đổi tốc độ / cắt đoạn vẫn đúng.
+
+### Phase 5 — 12 mẫu phụ đề
+- `assets/caption_templates.json` (12 mẫu, tên/mô tả vi + en): Chuẩn, TikTok, Karaoke vàng, Điện ảnh, Neon, Tối giản, Nhãn vàng, Máy chữ, Viết tay, Impact đỏ, Bản tin, Pastel. Dùng đủ 4 kiểu hiện chữ và cả 6 phông có sẵn; mỗi mẫu có viền, bóng hoặc nền để luôn đọc được.
+- `caption_templates.dart` (đọc và kiểm tra mẫu, bỏ qua mục hỏng), `caption_template_picker.dart` (lưới 2 cột, mỗi thẻ vẽ bằng renderer native thật, chạm 1 lần để áp dụng, dấu tick ở mẫu đang dùng). Tab "Mẫu" nằm giữa "Câu" và "Kiểu" của panel Phụ đề. Chỉnh tay ở tab Kiểu thì mẫu không còn được đánh dấu.
+- Áp mẫu đưa item tới vị trí của mẫu (vd Impact đỏ ở giữa khung).
+- Phông BeVietnam/Inter/Montserrat: ĐÃ ĐÁNH GIÁ, KHÔNG THÊM. Cả 6 phông có sẵn hiển thị đúng dấu tiếng Việt ("Xin chào các bạn") trên S25 Ultra (xem `test-results/phase5/`), 12 mẫu đủ khác biệt, nên thêm file font bên thứ ba chỉ tăng dung lượng và rủi ro giấy phép mà không tăng chất lượng.
+
+### Nhập SRT vào phụ đề
+- Nút "Nhập phụ đề (.srt)" trong tab "Câu": thêm các dòng SRT thành cue của phụ đề (bỏ dòng ngắn hơn 100ms, cắt theo độ dài video). Nút cũ ở tab Chữ vẫn tạo chữ rời như trước (không đổi). SRT không có thời gian từng từ, nên các từ chia đều trong dòng.
+- Chỉ kiểm bằng test (controller + widget có tệp thật). CHƯA kiểm trên máy thật qua hộp chọn tệp.
+
+### Chấm kéo ở 4 góc
+- Chấm khung chọn nhỏ lại: 14dp -> 8dp (núm xoay 10dp), viền mảnh hơn. Vùng chạm không đổi (vẫn bắt từ ~24dp quanh góc), nên kéo vẫn dễ.
+- Khung chọn của phụ đề giờ ôm đúng dòng đang hiện (trước đây là 1 thanh mỏng), kéo góc / chụm 2 ngón đổi cỡ chữ của KIỂU phụ đề (trước đây đổi cỡ của item, không có tác dụng).
+
+### Dọn dữ liệu thử
+- Lỗi gốc đã sửa ở Phase 4: tắt phụ đề không để lại item rỗng.
+- `scripts/qa/qa_data.ps1`: `-Action record|list|clean [-Apply]`. Chỉ xoá file có tên trong `test-results/qa_created_files.txt` (do test ghi, `verify_caption_export.ps1 -Record` hoặc `-Action record`); mặc định chạy thử, không xoá. Xoá file + dòng MediaStore; chỉ sửa cơ sở dữ liệu dự án khi `adb run-as` chạy được (bản debug, bản release không cho), trên BẢN SAO, sao lưu trước vào `test-results/projects_backup_*.db`, chỉ xoá dòng dự án của video bị xoá (`scripts/qa/projects_db.py`). Không động tới video/dự án thật.
+- Đã chạy `clean -Apply` trên S25: xoá 5 bản xuất thử + 1 dòng dự án; DB toàn vẹn (`integrity_check` ok). Chạy lại sau lượt kiểm thử cuối (xem Kết quả).
+- Dự án video `msf%3A232` có 2 chữ cũ ("EXPORT QA 2026", "Văn bản") không do đợt này tạo, nên để nguyên.
+
+### Kết quả kiểm thử thực tế (S25 Ultra R5CY6323KMX)
+- `flutter analyze` sạch; `flutter test` 317/317; `gradlew testDebugUnitTest` 85/85; build debug OK.
+- Maestro PASS: `caption_phase2_smoke`, `caption_phase3_reveal`, `caption_phase4_style`, `caption_phase5_templates`, `caption_rollback_effects` (cues=null, 6 kiểu chữ giống e5a9c4c), `caption_phase7_full`, `caption_rollback_export`, `caption_phase7_speed`.
+- Xuất video thật (kéo file về, cắt khung bằng ffmpeg, `scripts/qa/verify_caption_export.ps1`):
+  - Luồng đầy đủ `caption_phase7_full`: tạo 2 dòng, áp mẫu "Nhãn vàng", kéo chữ lên, thoát và mở lại app (dự án giữ nguyên dòng, kiểu, vị trí), đổi sang karaoke, xuất 720p. Khung hình ở 0.6/2.2/3.7/5.2s thấy "Mot hai ba bon" tô dần từng từ, ở 6.5s không chữ, 7.6s "Goodbye" tô dần, 9.6s không chữ; timecode in sẵn trong video khớp thời điểm. Chữ ở đúng vị trí đã kéo, đúng nhãn vàng.
+  - Đổi tốc độ 2x (`caption_phase7_speed`, nguồn thử tạo bằng `qa_make_test_source`): chữ bám thời gian gốc (timecode 0.6 -> "Mot", 2.2 -> "Mot hai", 3.8, 5.4, 6.4 không chữ, 7.6 "Goodbye"); video 6.0s.
+  - Đồng bộ âm thanh: độ dài audio và video lệch <= 25ms ở cả hai bản xuất, âm lượng bình thường (-21 dB trung bình).
+  - Chữ thường có hiệu ứng (glow) không phụ đề vẫn xuất như cũ (`caption_rollback_export`).
+- Chạy lại các Phase trước (2, 3, 4) và kiểm tra rollback: không hồi quy.
+
+### Không làm / lưu ý
+- Whisper: không làm. Cần mô hình nhận dạng tải về (rủi ro nguồn và dung lượng) trong khi app đã có nhận dạng giọng nói trên máy của Android ("Tạo phụ đề tự động" ở tab Chữ). Phụ đề tự động đó vẫn tạo chữ rời kiểu cũ, chưa chuyển thành cue có kiểu/mẫu; việc nối hai bên là hướng phát triển tiếp theo.
+- Timeline riêng cho phụ đề: không làm; phụ đề là 1 item chữ trên timeline hiện có, sửa dòng và thời gian trong panel.
+- Nhập SRT qua hộp chọn tệp trên máy thật chưa kiểm (xem trên).
+- Ảnh xem trước ở thẻ mẫu là ảnh tĩnh cả câu; hiệu ứng hiện chữ xem ở preview và video xuất.
+- Chạy lại Maestro cần video `ESR_edit_20261030_121019` có sẵn trong thư viện; bài `caption_phase7_speed` cần nguồn thử: chạy `maestro/qa_make_test_source.yaml`, ghi tên file bằng `qa_data.ps1 -Action record`, đổi PATTERN trong flow, rồi `qa_data.ps1 -Action clean -Apply` khi xong.

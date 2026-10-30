@@ -90,3 +90,11 @@ Máy thử có thể bị 3uTools (PC) kéo ứng dụng khác lên trước: `a
 - `e15_touch_settings`: chọn "Chấm trắng", hộp hướng dẫn 3 bước, nút mở "Thông tin điện thoại" và quay lại app — PASS.
 - `e16_build_from_touches`: quay sạch trên Cài đặt, mở editor, "Dựng từ lần chạm" (đổi khung, không có vị trí) → "3 lần chạm", chú thích "Bước 1" + đoạn dừng 0,8 s, hoàn tác về 1 đoạn — PASS.
 - Chưa kiểm: chế độ chấm trắng thật. `screenrecord` của adb trên S25 không thấy chấm "Hiển thị lần chạm" khi tiêm chạm bằng `adb input`; cần thử với ghi hình của app và chạm thật.
+
+## Phụ đề tự động (Auto Caption) — S25 Ultra, bản debug
+Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
+- Flow: `maestro/caption_phase2_smoke`, `caption_phase3_reveal`, `caption_phase4_style`, `caption_phase5_templates`, `caption_rollback_effects` (preview), `caption_phase7_full` (tạo, mẫu, kéo, lưu, mở lại, xuất), `caption_phase7_speed` (xuất khi tăng tốc 2x), `caption_rollback_export` (chữ thường vẫn xuất như cũ).
+- Chạy Maestro trên máy này: lệnh `maestro` trong PATH (npm) không chạy; dùng `D:\JOB\_tools\maestro\x\maestro\bin` + `JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8` (xem `scripts/run_flow.ps1`), `--test-output-dir test-results/<tên>` để lấy ảnh. Toạ độ `point:` phải là số nguyên %.
+- Kiểm tra video xuất: `scripts\qa\verify_caption_export.ps1 [-At "0.6,2.2"] [-Record]` kéo bản xuất mới nhất, in độ dài video/âm thanh (đồng bộ), tạo ảnh lưới khung hình (`sheet.png`). Video thử có timecode in sẵn nên mỗi khung cho thấy thời gian nguồn.
+- Dọn dữ liệu thử: `scripts\qa\qa_data.ps1 -Action list|clean [-Apply]` (mặc định chạy thử). Chỉ xoá file có trong `test-results/qa_created_files.txt`; xem quy tắc an toàn ở đầu script.
+- Thư viện chỉ liệt kê video do chính app tạo (quyền truy cập MediaStore), nên video thử phải là bản xuất của app (`maestro/qa_make_test_source.yaml`), không thể chép tay bằng adb.

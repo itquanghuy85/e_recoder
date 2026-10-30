@@ -1706,4 +1706,10 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get captionReset => 'Reset style';
+
+  @override
+  String get captionTabTemplates => 'Templates';
+
+  @override
+  String get captionTemplateSample => 'Hello everyone';
 }

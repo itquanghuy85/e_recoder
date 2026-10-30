@@ -222,3 +222,48 @@ class MotionBitmapOverlay(
             .build()
     }
 }
+
+/**
+ * A caption item with cues: shows the cue active at the playhead, drawn by [OverlayRenderers.renderCue]
+ * (the same renderer the editor preview uses), revealed word by word / character by character / karaoke
+ * as the style asks. Position, rotation, opacity and enter/exit motion come from the item, like
+ * [MotionBitmapOverlay]. Times are SOURCE ms; [clock] converts the clip's presentation time to them.
+ */
+@UnstableApi
+class CueOverlay(
+    private val item: TextClip,
+    private val frameW: Int,
+    private val clock: ItemClock,
+) : BitmapOverlay() {
+    private val cues = item.cues ?: emptyList()
+
+    /** Pictures already drawn, newest last. A steady cue reuses its bitmap, so nothing is re-uploaded. */
+    private val cache = object : LinkedHashMap<String, Bitmap>(32, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Bitmap>?) = size > 24
+    }
+
+    override fun getBitmap(presentationTimeUs: Long): Bitmap {
+        val t = clock.sourceMs(presentationTimeUs)
+        val i = CueFrames.activeIndex(cues, t)
+        if (i < 0) return EMPTY
+        val step = CueFrames.revealStep(item.captionStyle, t)
+        return cache.getOrPut("$i|$step") {
+            OverlayRenderers.renderCue(cues[i], item.captionStyle, frameW, step).bitmap
+        }
+    }
+
+    override fun getOverlaySettings(presentationTimeUs: Long): OverlaySettings {
+        val t = clock.sourceMs(presentationTimeUs)
+        val shown = CueFrames.activeIndex(cues, t) >= 0
+        val st = OverlayMotion.at(
+            item.motion, item.x, item.y, 1f, item.opacity,
+            t - item.startMs, item.endMs - item.startMs,
+        )
+        return StaticOverlaySettings.Builder()
+            .setBackgroundFrameAnchor(st.x * 2f - 1f, 1f - st.y * 2f)
+            .setScale(st.scale, st.scale)
+            .setAlphaScale(if (shown && st.visible) st.alpha else 0f)
+            .setRotationDegrees(-item.rotation)
+            .build()
+    }
+}

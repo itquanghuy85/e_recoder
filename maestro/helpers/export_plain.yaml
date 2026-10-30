@@ -1,0 +1,15 @@
+appId: com.huluca.escreenrecorder
+name: Helper - export the open edit at 720p (used to make a throwaway source for editing tests)
+tags:
+  - helper
+---
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p720"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000

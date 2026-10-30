@@ -1701,4 +1701,10 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get captionReset => 'Đặt lại kiểu';
+
+  @override
+  String get captionTabTemplates => 'Mẫu';
+
+  @override
+  String get captionTemplateSample => 'Xin chào các bạn';
 }

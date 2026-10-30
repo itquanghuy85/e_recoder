@@ -8,6 +8,7 @@ import '../marker/marker_preview.dart' show CuePainter;
 import '../marker/marker_spec.dart';
 import '../marker/marker_sprite.dart';
 import '../marker/marker_timing.dart';
+import 'caption_models.dart';
 import 'edit_project.dart';
 import 'editor_controller.dart';
 import 'editor_math.dart';
@@ -174,6 +175,47 @@ class _EditorStageState extends State<EditorStage> {
   );
 
   /// The overlay's frame on the stage (stage pixels), or null when it has none.
+  /// Text size in U units. A caption's size is its style's, not the item's own.
+  static double _sizeOf(TextItem t) => t.cues != null
+      ? (t.captionStyle ?? CaptionStyle.standard).sizeU
+      : t.sizeU;
+
+  TextItem _withSize(TextItem t, double v) => t.cues != null
+      ? c.withCaptionStyle(
+          t,
+          (t.captionStyle ?? CaptionStyle.standard).copyWith(sizeU: v),
+        )
+      : t.copyWith(sizeU: v);
+
+  /// Size of the frame drawn around a text: the text itself, or for a caption the line showing now
+  /// (else its longest line), wrapped like the renderer wraps it.
+  Size _textFrameSize(TextItem tx, StageGeometry g) {
+    final size = _sizeOf(tx) * g.kOutput;
+    var text = tx.text;
+    var pad = 0.0;
+    final cues = tx.cues;
+    if (cues != null) {
+      final now = c.sourceMs;
+      final live = cues.where((e) => e.isActiveAt(now)).firstOrNull;
+      text =
+          (live ??
+                  cues.fold<CaptionCue?>(
+                    null,
+                    (b, e) =>
+                        b == null || e.text.length > b.text.length ? e : b,
+                  ))
+              ?.text ??
+          '';
+      if ((tx.captionStyle ?? CaptionStyle.standard).boxColor != null) {
+        pad = size * 0.7;
+      }
+    }
+    final maxW = g.w * 0.94;
+    final wide = text.length * size * 0.55 + pad;
+    final lines = math.max(1, (wide / maxW).ceil());
+    return Size(math.max(60, math.min(wide, maxW)), size * 1.5 * lines + pad);
+  }
+
   _Frame? _frameOf(EditProject p, String id, StageGeometry g) {
     final m = p.markers.where((e) => e.id == id).firstOrNull;
     if (m != null) {
@@ -208,11 +250,12 @@ class _EditorStageState extends State<EditorStage> {
     }
     final tx = p.texts.where((e) => e.id == id).firstOrNull;
     if (tx != null) {
+      final fs = _textFrameSize(tx, g);
       return _Frame(
         Rect.fromCenter(
           center: Offset(tx.x * g.w, tx.y * g.h),
-          width: math.max(60, tx.text.length * tx.sizeU * 0.55 * g.kOutput),
-          height: tx.sizeU * 1.5 * g.kOutput,
+          width: fs.width,
+          height: fs.height,
         ),
         tx.rotation,
         kind: _FrameKind.scaleRotate,
@@ -365,10 +408,7 @@ class _EditorStageState extends State<EditorStage> {
     }
     final t = p.texts.where((e) => e.id == id).firstOrNull;
     if (t != null) {
-      c.updateText(
-        t.copyWith(sizeU: (_hBase * k).clamp(8.0, 80.0)),
-        record: false,
-      );
+      c.updateText(_withSize(t, (_hBase * k).clamp(8.0, 80.0)), record: false);
       return;
     }
     final im = p.images.where((e) => e.id == id).firstOrNull;
@@ -450,7 +490,7 @@ class _EditorStageState extends State<EditorStage> {
       final pp = p.pips.where((e) => e.id == id).firstOrNull;
       final mk = p.markers.where((e) => e.id == id).firstOrNull;
       _hBase =
-          tx?.sizeU ??
+          (tx == null ? null : _sizeOf(tx)) ??
           im?.widthFrac ??
           sh?.w ??
           pp?.widthFrac ??
@@ -515,15 +555,13 @@ class _EditorStageState extends State<EditorStage> {
     if (t != null) {
       final cur = p.texts.firstWhere((e) => e.id == t.id);
       final sn = _snapMove(cur.x + ox, cur.y + oy, two);
-      c.updateText(
-        cur.copyWith(
-          x: sn.dx,
-          y: sn.dy,
-          sizeU: two ? (t.sizeU * d.scale).clamp(8.0, 80.0) : null,
-          rotation: two ? t.rotation + d.rotation * 180 / math.pi : null,
-        ),
-        record: false,
+      var next = cur.copyWith(
+        x: sn.dx,
+        y: sn.dy,
+        rotation: two ? t.rotation + d.rotation * 180 / math.pi : null,
       );
+      if (two) next = _withSize(next, (_sizeOf(t) * d.scale).clamp(8.0, 80.0));
+      c.updateText(next, record: false);
       return;
     }
     final im = _gImage;
@@ -1241,7 +1279,10 @@ class _EditorStageState extends State<EditorStage> {
       kind = _FrameKind.none;
     }
     if (r == null) return out;
-    final dot = 14 * inv;
+    // Small on screen so they do not cover what is being placed; a finger still grabs them from
+    // ~24 dp away (see _grabHandle), the visible dot is only a marker.
+    final dot = 8 * inv;
+    final knob = 10 * inv;
     final above = _Frame(r, rot, kind: kind).rotateAbove();
     final handles = kind != _FrameKind.none;
     out.add(
@@ -1279,7 +1320,7 @@ class _EditorStageState extends State<EditorStage> {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: cs.tertiary,
-                            width: 2 * inv,
+                            width: 1.5 * inv,
                           ),
                         ),
                       ),
@@ -1293,17 +1334,20 @@ class _EditorStageState extends State<EditorStage> {
                     child: ColoredBox(color: cs.tertiary),
                   ),
                   Positioned(
-                    left: r.width / 2 - dot / 2,
+                    left: r.width / 2 - knob / 2,
                     top: above
-                        ? -26 * inv - dot / 2
-                        : r.height + 26 * inv - dot / 2,
-                    width: dot,
-                    height: dot,
+                        ? -26 * inv - knob / 2
+                        : r.height + 26 * inv - knob / 2,
+                    width: knob,
+                    height: knob,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: cs.tertiary,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2 * inv),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 1.5 * inv,
+                        ),
                       ),
                     ),
                   ),

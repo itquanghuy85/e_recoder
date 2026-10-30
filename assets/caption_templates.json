@@ -1,1 +1,252 @@
-[]
+[
+  {
+    "id": "standard",
+    "name": "Chuẩn",
+    "nameEn": "Standard",
+    "hint": "Trắng đậm, viền đen. Đọc được trên mọi nền.",
+    "hintEn": "Bold white, black outline. Readable on anything.",
+    "style": {
+      "fontId": "barlow",
+      "bold": true,
+      "sizeU": 24,
+      "color": 4294967295,
+      "outlineColor": 4278190080,
+      "outlineWidth": 2,
+      "shadowColor": 2566914048,
+      "shadowBlur": 3,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.85,
+      "revealMode": "wordByWord",
+      "templateId": "standard"
+    }
+  },
+  {
+    "id": "tiktok",
+    "name": "TikTok",
+    "nameEn": "TikTok",
+    "hint": "Chữ to, viền dày, hiện từng từ ở giữa khung.",
+    "hintEn": "Big, thick outline, word by word near the middle.",
+    "style": {
+      "fontId": "sans",
+      "bold": true,
+      "sizeU": 32,
+      "color": 4294967295,
+      "outlineColor": 4278190080,
+      "outlineWidth": 4,
+      "shadowColor": 1711276032,
+      "shadowBlur": 2,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.62,
+      "revealMode": "wordByWord",
+      "templateId": "tiktok"
+    }
+  },
+  {
+    "id": "karaoke-gold",
+    "name": "Karaoke vàng",
+    "nameEn": "Gold karaoke",
+    "hint": "Tô vàng theo nhịp từng từ.",
+    "hintEn": "Fills gold word by word.",
+    "style": {
+      "fontId": "barlow",
+      "bold": true,
+      "sizeU": 28,
+      "color": 4294956554,
+      "outlineColor": 4278190080,
+      "outlineWidth": 3,
+      "shadowColor": 2566914048,
+      "shadowBlur": 3,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.82,
+      "revealMode": "karaokeHighlight",
+      "templateId": "karaoke-gold"
+    }
+  },
+  {
+    "id": "cinema",
+    "name": "Điện ảnh",
+    "nameEn": "Cinema",
+    "hint": "Chữ có chân trên nền đen mờ, hiện cả câu.",
+    "hintEn": "Serif on a soft black bar, whole line.",
+    "style": {
+      "fontId": "serif",
+      "bold": false,
+      "sizeU": 22,
+      "color": 4294309365,
+      "boxColor": 3003121664,
+      "boxRadius": 6,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.9,
+      "revealMode": "none",
+      "templateId": "cinema"
+    }
+  },
+  {
+    "id": "neon",
+    "name": "Neon",
+    "nameEn": "Neon",
+    "hint": "Chữ phát sáng xanh, hiện từng ký tự.",
+    "hintEn": "Glowing cyan, letter by letter.",
+    "style": {
+      "fontId": "sans",
+      "bold": true,
+      "sizeU": 28,
+      "color": 4293327871,
+      "shadowColor": 4281193712,
+      "shadowBlur": 9,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.78,
+      "revealMode": "charByChar",
+      "templateId": "neon"
+    }
+  },
+  {
+    "id": "minimal",
+    "name": "Tối giản",
+    "nameEn": "Minimal",
+    "hint": "Nhỏ, gọn, bóng nhẹ ở sát đáy.",
+    "hintEn": "Small and clean at the very bottom.",
+    "style": {
+      "fontId": "sans",
+      "bold": false,
+      "sizeU": 20,
+      "color": 4294967295,
+      "shadowColor": 3422552064,
+      "shadowBlur": 5,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.92,
+      "revealMode": "none",
+      "templateId": "minimal"
+    }
+  },
+  {
+    "id": "label-yellow",
+    "name": "Nhãn vàng",
+    "nameEn": "Yellow label",
+    "hint": "Chữ đen trên nhãn vàng, nổi bật.",
+    "hintEn": "Black on a yellow label, stands out.",
+    "style": {
+      "fontId": "condensed",
+      "bold": true,
+      "sizeU": 26,
+      "color": 4279308561,
+      "boxColor": 4294956554,
+      "boxRadius": 4,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.8,
+      "revealMode": "wordByWord",
+      "templateId": "label-yellow"
+    }
+  },
+  {
+    "id": "typewriter",
+    "name": "Máy chữ",
+    "nameEn": "Typewriter",
+    "hint": "Phông đơn cách, gõ từng ký tự, căn trái.",
+    "hintEn": "Monospace typed letter by letter, left aligned.",
+    "style": {
+      "fontId": "mono",
+      "bold": false,
+      "sizeU": 21,
+      "color": 4293459944,
+      "boxColor": 3423280395,
+      "boxRadius": 3,
+      "align": "left",
+      "x": 0.5,
+      "y": 0.86,
+      "revealMode": "charByChar",
+      "templateId": "typewriter"
+    }
+  },
+  {
+    "id": "handwritten",
+    "name": "Viết tay",
+    "nameEn": "Handwritten",
+    "hint": "Nét mềm, viền mảnh, hiện từng từ.",
+    "hintEn": "Soft script, thin outline, word by word.",
+    "style": {
+      "fontId": "cursive",
+      "bold": false,
+      "sizeU": 32,
+      "color": 4294967295,
+      "outlineColor": 3422552064,
+      "outlineWidth": 1.5,
+      "shadowColor": 2147483648,
+      "shadowBlur": 4,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.8,
+      "revealMode": "wordByWord",
+      "templateId": "handwritten"
+    }
+  },
+  {
+    "id": "impact",
+    "name": "Impact đỏ",
+    "nameEn": "Red impact",
+    "hint": "Chữ hẹp rất đậm, viền đỏ, giữa khung.",
+    "hintEn": "Heavy condensed, red outline, centred.",
+    "style": {
+      "fontId": "condensed",
+      "bold": true,
+      "sizeU": 36,
+      "color": 4294967295,
+      "outlineColor": 4293212469,
+      "outlineWidth": 4,
+      "shadowColor": 3003121664,
+      "shadowBlur": 4,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.5,
+      "revealMode": "wordByWord",
+      "templateId": "impact"
+    }
+  },
+  {
+    "id": "news",
+    "name": "Bản tin",
+    "nameEn": "News bar",
+    "hint": "Thanh xanh đậm như bản tin, hiện cả câu.",
+    "hintEn": "Dark blue bar like a news ticker.",
+    "style": {
+      "fontId": "barlow",
+      "bold": true,
+      "sizeU": 22,
+      "color": 4294967295,
+      "boxColor": 4060818779,
+      "boxRadius": 0,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.9,
+      "revealMode": "none",
+      "templateId": "news"
+    }
+  },
+  {
+    "id": "pastel",
+    "name": "Pastel",
+    "nameEn": "Pastel",
+    "hint": "Viên thuốc trắng bo tròn, chữ xám đậm.",
+    "hintEn": "Rounded white pill, dark grey text.",
+    "style": {
+      "fontId": "sans",
+      "bold": true,
+      "sizeU": 22,
+      "color": 4280232247,
+      "boxColor": 3959422975,
+      "boxRadius": 20,
+      "align": "center",
+      "x": 0.5,
+      "y": 0.86,
+      "revealMode": "wordByWord",
+      "templateId": "pastel"
+    }
+  }
+]

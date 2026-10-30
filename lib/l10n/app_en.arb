@@ -555,5 +555,7 @@
   "captionBoxRadius": "Corners",
   "captionPosY": "Vertical",
   "captionPosX": "Horizontal",
-  "captionReset": "Reset style"
+  "captionReset": "Reset style",
+  "captionTabTemplates": "Templates",
+  "captionTemplateSample": "Hello everyone"
 }

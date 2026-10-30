@@ -813,6 +813,26 @@ class EditorController extends ChangeNotifier {
     updateText(withCues(item, [...?item.cues, added]..sort(_byStart)));
   }
 
+  /// Adds the lines of a subtitle file (SRT) to the caption item as caption lines, creating the item
+  /// when there is none. Lines shorter than 100 ms are dropped, times are clamped to the video.
+  /// Returns how many lines were added. Word timings are not in an SRT: the words of a line share its
+  /// time equally when it is revealed.
+  int importCaptionCues(List<SubtitleCue> lines, {TextItem? on}) {
+    final dur = _project.durationMs;
+    final added = <CaptionCue>[];
+    for (final l in lines) {
+      final start = l.startMs.clamp(0, dur);
+      final end = l.endMs.clamp(0, dur);
+      if (end - start < 100 || l.text.trim().isEmpty) continue;
+      added.add(CaptionCue(text: l.text.trim(), startMs: start, endMs: end));
+    }
+    if (added.isEmpty) return 0;
+    final item = on ?? captionItem ?? _newCaptionItem();
+    selectedId = item.id;
+    updateText(withCues(item, [...?item.cues, ...added]..sort(_byStart)));
+    return added.length;
+  }
+
   /// Replaces cue [index] of [on] (or the current caption item).
   void updateCue(int index, CaptionCue cue, {TextItem? on}) {
     final item = on ?? captionItem;
@@ -860,7 +880,11 @@ class EditorController extends ChangeNotifier {
   /// The item's own `x` / `y` are what the preview and the export place the caption by (so dragging it
   /// on the stage works); a style with a position moves the item there. [record] false is for the
   /// frames of a slider drag (see [beginGesture] / [flush]).
-  void setCaptionStyle(CaptionStyle? style, {TextItem? on, bool record = true}) {
+  void setCaptionStyle(
+    CaptionStyle? style, {
+    TextItem? on,
+    bool record = true,
+  }) {
     final item = on ?? captionItem;
     if (item == null) return;
     var next = withCaptionStyle(item, style);

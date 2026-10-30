@@ -371,6 +371,12 @@ class Exporter(private val ctx: Context) {
         }
         for (t in job.texts) {
             if (t.endMs <= winStart || t.startMs >= winEnd) continue
+            val cues = t.cues
+            if (cues != null) {
+                // A caption: the cue on screen changes over time, so the overlay draws it per frame.
+                if (CueFrames.anyIn(cues, winStart, winEnd)) list.add(CueOverlay(t, fw, clock))
+                continue
+            }
             val r = OverlayRenderers.renderText(t, fw)
             list.add(MotionBitmapOverlay(r.bitmap, t.x, t.y, 1f, t.opacity, t.rotation, t.startMs, t.endMs, t.motion, clock))
         }

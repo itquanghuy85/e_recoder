@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +8,9 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
 import 'caption_models.dart';
 import 'caption_style_editor.dart';
+import 'caption_template_picker.dart';
 import 'editor_controller.dart';
+import 'srt.dart';
 
 /// Opens the caption panel: one row per subtitle line (text + start/end) with add / delete / turn off.
 Future<void> showCaptionPanel(BuildContext context, EditorController c) {
@@ -20,6 +23,21 @@ Future<void> showCaptionPanel(BuildContext context, EditorController c) {
   );
 }
 
+/// Picks a .srt file and adds its lines to the captions (one undo step).
+Future<void> importCaptionFile(BuildContext context, EditorController c) async {
+  final t = AppL10n.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  final picked = await c.native.pickMedia('file');
+  if (picked == null) return;
+  var n = 0;
+  try {
+    n = c.importCaptionCues(parseSrt(await File(picked.path).readAsString()));
+  } catch (_) {}
+  messenger.showSnackBar(
+    SnackBar(content: Text(n > 0 ? t.subtitlesImported(n) : t.subtitlesNone)),
+  );
+}
+
 class CaptionPanel extends StatefulWidget {
   const CaptionPanel({super.key, required this.controller});
   final EditorController controller;
@@ -29,7 +47,7 @@ class CaptionPanel extends StatefulWidget {
 }
 
 class _CaptionPanelState extends State<CaptionPanel> {
-  /// 0 = the lines, 1 = the look.
+  /// 0 = the lines, 1 = ready-made templates, 2 = the look.
   int _tab = 0;
 
   @override
@@ -74,6 +92,13 @@ class _CaptionPanelState extends State<CaptionPanel> {
                       ButtonSegment(
                         value: 1,
                         label: Semantics(
+                          identifier: 'cap_tab_templates',
+                          child: Text(t.captionTabTemplates),
+                        ),
+                      ),
+                      ButtonSegment(
+                        value: 2,
+                        label: Semantics(
                           identifier: 'cap_tab_style',
                           child: Text(t.captionTabStyle),
                         ),
@@ -85,6 +110,12 @@ class _CaptionPanelState extends State<CaptionPanel> {
                 ],
                 const SizedBox(height: Space.sm),
                 if (tab == 1)
+                  // The grid scrolls inside its own box, so the title and tabs stay put.
+                  SizedBox(
+                    height: MediaQuery.sizeOf(context).height * 0.6,
+                    child: CaptionTemplatePicker(controller: c),
+                  )
+                else if (tab == 2)
                   Flexible(
                     child: SingleChildScrollView(
                       child: CaptionStyleEditor(controller: c),
@@ -112,6 +143,15 @@ class _CaptionPanelState extends State<CaptionPanel> {
                               controller: c,
                             ),
                           ),
+                  ),
+                  const SizedBox(height: Space.sm),
+                  Semantics(
+                    identifier: 'caption_import_srt',
+                    child: OutlinedButton.icon(
+                      onPressed: () => importCaptionFile(context, c),
+                      icon: const Icon(Icons.subtitles_outlined),
+                      label: Text(t.subtitlesImport),
+                    ),
                   ),
                   const SizedBox(height: Space.sm),
                   Semantics(

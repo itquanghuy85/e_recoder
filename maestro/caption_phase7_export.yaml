@@ -1,0 +1,78 @@
+appId: com.huluca.escreenrecorder
+name: Caption phase 7 - captions are burned into the exported video
+tags:
+  - p1
+  - module-editor
+---
+# Needs a short ESR_* video in the library. The exported file is checked afterwards with
+# scripts/qa/verify_caption_export.ps1 (frames, duration, audio).
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_edit_20261030_121019.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "caption_panel"
+- runFlow:
+    when:
+      visible:
+        id: "caption_off"
+    commands:
+      - tapOn:
+          id: "caption_off"
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "cue_text_0"
+- eraseText: 40
+- inputText: "Mot hai ba bon"
+- tapOn:
+    id: "cue_end_0"
+- eraseText: 10
+- inputText: "6000"
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "cue_text_1"
+- eraseText: 40
+- inputText: "Goodbye"
+- tapOn:
+    id: "cue_start_1"
+- eraseText: 10
+- inputText: "7000"
+- tapOn:
+    id: "cue_end_1"
+- eraseText: 10
+- inputText: "9000"
+- tapOn:
+    id: "cue_text_1"
+- hideKeyboard
+# Look: karaoke fill on a dark box, serif.
+- tapOn:
+    id: "cap_tab_style"
+- tapOn:
+    id: "reveal_karaokeHighlight"
+- tapOn:
+    id: "cap_box"
+- tapOn:
+    id: "cap_font_serif"
+- back
+- tapOn:
+    point: 50%, 14%
+- takeScreenshot: artifacts/phase7_before_export
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p720"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000
+- takeScreenshot: artifacts/phase7_export_done
+# Leave the project as it was: captions off.
+- runFlow:
+    file: helpers/caption_cleanup.yaml

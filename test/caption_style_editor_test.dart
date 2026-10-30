@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:e_screen_recorder/core/native_recorder.dart' show PickedMedia;
 import 'package:e_screen_recorder/features/editor/caption_models.dart';
 import 'package:e_screen_recorder/features/editor/caption_panel.dart';
 import 'package:e_screen_recorder/features/editor/caption_style_editor.dart';
@@ -88,6 +91,74 @@ void main() {
     c.turnOffCaptions();
     expect(c.project.texts.single.text, 'Xin chào');
     expect(c.project.texts.single.cues, isNull);
+  });
+
+  group('SRT into captions', () {
+    test(
+      'lines become caption lines, sorted, clamped and short ones dropped',
+      () {
+        c.turnOffCaptions();
+        final n = c.importCaptionCues([
+          (startMs: 4000, endMs: 6000, text: ' Hai '),
+          (startMs: 0, endMs: 2000, text: 'Mot'),
+          (startMs: 7000, endMs: 7050, text: 'too short'),
+          (startMs: 8000, endMs: 9000, text: '   '),
+          (startMs: 19000, endMs: 30000, text: 'Cuoi'),
+        ]);
+        expect(n, 3);
+        final cues = c.captionItem!.cues!;
+        expect(cues.map((e) => e.text), ['Mot', 'Hai', 'Cuoi']);
+        expect(cues.last.endMs, 20000); // clamped to the video
+        expect(
+          c.captionItem!.captionStyle!.toJson(),
+          CaptionStyle.standard.toJson(),
+        );
+      },
+    );
+
+    test('they are added to the lines already there', () {
+      expect(c.captionItem!.cues!.length, 1);
+      c.importCaptionCues([(startMs: 5000, endMs: 6000, text: 'Them')]);
+      expect(c.captionItem!.cues!.length, 2);
+      expect(c.project.texts.length, 1);
+    });
+
+    test('nothing usable adds nothing', () {
+      final before = c.captionItem!.cues!.length;
+      expect(c.importCaptionCues(const []), 0);
+      expect(c.captionItem!.cues!.length, before);
+    });
+
+    testWidgets('the panel button reads the picked file', (tester) async {
+      final file = File('${Directory.systemTemp.path}/cap_test.srt')
+        ..writeAsStringSync(
+          '1\n00:00:01,000 --> 00:00:02,500\nXin chao\n\n'
+          '2\n00:00:03,000 --> 00:00:04,000\nTam biet\n',
+        );
+      addTearDown(() => file.deleteSync());
+      final fake = c.native as FakeRecorder;
+      fake.nextPick = PickedMedia(
+        path: file.path,
+        name: 'cap_test.srt',
+        kind: 'file',
+        durationMs: 0,
+        width: 0,
+        height: 0,
+      );
+      await tester.pumpWidget(_host(CaptionPanel(controller: c)));
+      // The tap starts real file IO, so it runs outside the fake clock.
+      await tester.runAsync(() async {
+        await tester.tap(find.text('Nhập phụ đề (.srt)'));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      });
+      await tester.pump();
+      expect(
+        c.captionItem!.cues!.map((e) => e.text),
+        containsAll(['Xin chao', 'Tam biet']),
+      );
+      expect(find.text('Đã thêm 2 dòng phụ đề.'), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 50));
+    });
   });
 
   testWidgets('reveal chips change the reveal mode', (tester) async {

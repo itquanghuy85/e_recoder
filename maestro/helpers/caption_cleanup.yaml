@@ -1,0 +1,29 @@
+appId: com.huluca.escreenrecorder
+name: Helper - turn captions off in the open editor, so the test project is left clean
+tags:
+  - helper
+---
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- runFlow:
+    when:
+      notVisible:
+        id: "editor_play"
+    commands:
+      - back
+- runFlow: ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    point: 50%, 14%
+- tapOn:
+    id: "caption_panel"
+- runFlow:
+    when:
+      visible:
+        id: "caption_off"
+    commands:
+      - tapOn:
+          id: "caption_off"
+- back

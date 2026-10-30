@@ -7,7 +7,7 @@ tags:
 - runFlow:
     file: helpers/open_edit.yaml
     env:
-      PATTERN: ".*ESR_.*"
+      PATTERN: ".*ESR_edit_20261030_121019.*"
 - runFlow: helpers/ensure_tools_open.yaml
 - tapOn:
     id: "tool_text"

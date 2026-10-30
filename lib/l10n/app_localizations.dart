@@ -3258,6 +3258,18 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Đặt lại kiểu'**
   String get captionReset;
+
+  /// No description provided for @captionTabTemplates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mẫu'**
+  String get captionTabTemplates;
+
+  /// No description provided for @captionTemplateSample.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xin chào các bạn'**
+  String get captionTemplateSample;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -42,8 +42,12 @@ class CaptionStyleEditor extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final s = styleOf(item);
 
-    void set(CaptionStyle next, {bool drag = false}) =>
-        c.setCaptionStyle(next, on: item, record: !drag);
+    // An edited look is no longer the template it started from.
+    void set(CaptionStyle next, {bool drag = false}) => c.setCaptionStyle(
+      next.copyWith(templateId: null),
+      on: item,
+      record: !drag,
+    );
 
     Widget slider({
       required String id,

@@ -698,5 +698,7 @@
   "captionBoxRadius": "Bo góc",
   "captionPosY": "Dọc",
   "captionPosX": "Ngang",
-  "captionReset": "Đặt lại kiểu"
+  "captionReset": "Đặt lại kiểu",
+  "captionTabTemplates": "Mẫu",
+  "captionTemplateSample": "Xin chào các bạn"
 }

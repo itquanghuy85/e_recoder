@@ -1,0 +1,73 @@
+﻿appId: com.huluca.escreenrecorder
+name: Caption phase 7 - captions follow SOURCE time when the clip is sped up (2x)
+tags:
+  - p1
+  - module-editor
+---
+# Needs a short ESR_* video in the library. The exported file is checked afterwards with
+# scripts/qa/verify_caption_export.ps1 (frames, duration, audio).
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_edit_20261030_230827.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "caption_panel"
+- runFlow:
+    when:
+      visible:
+        id: "caption_off"
+    commands:
+      - tapOn:
+          id: "caption_off"
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "cue_text_0"
+- eraseText: 40
+- inputText: "Mot hai ba bon"
+- tapOn:
+    id: "cue_end_0"
+- eraseText: 10
+- inputText: "6000"
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "cue_text_1"
+- eraseText: 40
+- inputText: "Goodbye"
+- tapOn:
+    id: "cue_start_1"
+- eraseText: 10
+- inputText: "7000"
+- tapOn:
+    id: "cue_end_1"
+- eraseText: 10
+- inputText: "9000"
+- tapOn:
+    id: "cue_text_1"
+- hideKeyboard
+- back
+# Select the clip on the timeline, then speed it up.
+- tapOn:
+    point: 70%, 52%
+- tapOn:
+    id: "tool_speed"
+- tapOn:
+    id: "speed_2_0"
+- tapOn:
+    point: 50%, 14%
+- takeScreenshot: artifacts/phase7_speed_before_export
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p720"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000
+- takeScreenshot: artifacts/phase7_export_done
