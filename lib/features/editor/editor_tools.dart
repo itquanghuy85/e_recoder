@@ -889,6 +889,15 @@ class _TextPanelState extends State<_TextPanel> {
           ),
           const SizedBox(height: Space.sm),
           Semantics(
+            identifier: 'caption_panel',
+            child: OutlinedButton.icon(
+              onPressed: () => showCaptionPanel(context, c),
+              icon: const Icon(Icons.closed_caption_outlined),
+              label: Text(t.presetSubtitle),
+            ),
+          ),
+          const SizedBox(height: Space.sm),
+          Semantics(
             identifier: 'import_srt',
             child: OutlinedButton.icon(
               onPressed: () => importSubtitleFile(context, c),
@@ -903,15 +912,6 @@ class _TextPanelState extends State<_TextPanel> {
               onPressed: () => showAutoCaptions(context, c),
               icon: const Icon(Icons.auto_awesome),
               label: Text(t.captionsAutoTitle),
-            ),
-          ),
-          const SizedBox(height: Space.sm),
-          Semantics(
-            identifier: 'caption_panel',
-            child: OutlinedButton.icon(
-              onPressed: () => showCaptionPanel(context, c),
-              icon: const Icon(Icons.closed_caption_outlined),
-              label: Text(t.presetSubtitle),
             ),
           ),
           const SizedBox(height: Space.md),
@@ -944,6 +944,15 @@ class _TextPanelState extends State<_TextPanel> {
             onChanged: (v) =>
                 c.updateText(sel.copyWith(text: v), record: false),
             onEditingComplete: c.flush,
+          ),
+        ),
+        const SizedBox(height: Space.sm),
+        Semantics(
+          identifier: 'caption_panel',
+          child: OutlinedButton.icon(
+            onPressed: () => showCaptionPanel(context, c),
+            icon: const Icon(Icons.closed_caption_outlined),
+            label: Text(t.presetSubtitle),
           ),
         ),
         const SizedBox(height: Space.sm),

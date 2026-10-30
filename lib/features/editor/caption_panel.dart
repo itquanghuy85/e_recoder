@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -30,58 +32,65 @@ class CaptionPanel extends StatelessWidget {
       builder: (context, _) {
         final item = c.captionItem;
         final cues = item?.cues ?? const <CaptionCue>[];
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            Space.md,
-            0,
-            Space.md,
-            MediaQuery.viewInsetsOf(context).bottom + Space.md,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                t.presetSubtitle,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: Space.sm),
-              Flexible(
-                child: cues.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: Space.lg),
-                        child: Center(child: Text(t.captionPanelEmpty)),
-                      )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: cues.length,
-                        itemBuilder: (_, i) => _CueRow(
-                          key: ValueKey('cue$i'),
-                          index: i,
-                          cue: cues[i],
-                          controller: c,
-                        ),
-                      ),
-              ),
-              const SizedBox(height: Space.sm),
-              Semantics(
-                identifier: 'caption_add',
-                child: FilledButton.tonal(
-                  onPressed: () => c.addCue(),
-                  child: Text(t.captionPanelAdd),
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              Space.md,
+              0,
+              Space.md,
+              MediaQuery.viewInsetsOf(context).bottom + Space.md,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  t.presetSubtitle,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-              ),
-              if (item?.cues != null) ...[
+                const SizedBox(height: Space.sm),
+                Flexible(
+                  child: cues.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: Space.lg,
+                          ),
+                          child: Text(
+                            t.captionPanelEmpty,
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: cues.length,
+                          itemBuilder: (_, i) => _CueRow(
+                            key: ValueKey('cue$i'),
+                            index: i,
+                            cue: cues[i],
+                            controller: c,
+                          ),
+                        ),
+                ),
                 const SizedBox(height: Space.sm),
                 Semantics(
-                  identifier: 'caption_off',
-                  child: OutlinedButton(
-                    onPressed: () => c.setCues(null),
-                    child: Text(t.captionPanelOff),
+                  identifier: 'caption_add',
+                  child: FilledButton.tonal(
+                    onPressed: () => c.addCue(),
+                    child: Text(t.captionPanelAdd),
                   ),
                 ),
+                if (item?.cues != null) ...[
+                  const SizedBox(height: Space.sm),
+                  Semantics(
+                    identifier: 'caption_off',
+                    child: OutlinedButton(
+                      onPressed: () => c.setCues(null),
+                      child: Text(t.captionPanelOff),
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         );
       },
@@ -113,9 +122,18 @@ class _CueRowState extends State<_CueRow> {
   @override
   void initState() {
     super.initState();
-    for (final f in _focus) {
+    for (final (i, f) in _focus.indexed) {
       f.addListener(() {
-        if (!f.hasFocus) _commit();
+        if (!f.hasFocus) {
+          _commit();
+        } else if (i > 0) {
+          // Numbers are replaced, not edited digit by digit.
+          final ctl = i == 1 ? _start : _end;
+          ctl.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: ctl.text.length,
+          );
+        }
       });
     }
   }
@@ -135,6 +153,11 @@ class _CueRowState extends State<_CueRow> {
 
   @override
   void dispose() {
+    // Closing the sheet while a field still has focus must not drop what was typed.
+    final c = widget.controller;
+    final i = widget.index;
+    final next = _pending();
+    if (next != null) scheduleMicrotask(() => c.updateCue(i, next));
     for (final f in _focus) {
       f.dispose();
     }
@@ -144,7 +167,8 @@ class _CueRowState extends State<_CueRow> {
     super.dispose();
   }
 
-  void _commit() {
+  /// The cue as typed, or null when it equals the stored one.
+  CaptionCue? _pending() {
     final s = int.tryParse(_start.text) ?? widget.cue.startMs;
     var e = int.tryParse(_end.text) ?? widget.cue.endMs;
     if (e <= s) e = s + 1;
@@ -152,9 +176,14 @@ class _CueRowState extends State<_CueRow> {
     if (next.text == widget.cue.text &&
         next.startMs == widget.cue.startMs &&
         next.endMs == widget.cue.endMs) {
-      return;
+      return null;
     }
-    widget.controller.updateCue(widget.index, next);
+    return next;
+  }
+
+  void _commit() {
+    final next = _pending();
+    if (next != null) widget.controller.updateCue(widget.index, next);
   }
 
   Widget _num(

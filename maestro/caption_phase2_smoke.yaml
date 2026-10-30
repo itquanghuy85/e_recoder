@@ -1,0 +1,78 @@
+appId: com.huluca.escreenrecorder
+name: Caption phase 2 smoke - add two cues, they show on the stage, turn captions off
+tags:
+  - p1
+  - module-editor
+---
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "caption_panel"
+# Start clean: earlier runs leave their cues in the saved project.
+- runFlow:
+    when:
+      visible:
+        id: "caption_off"
+    commands:
+      - tapOn:
+          id: "caption_off"
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "cue_text_0"
+- eraseText: 40
+- inputText: "Hello"
+- tapOn:
+    id: "cue_end_0"
+- eraseText: 10
+- inputText: "2000"
+- tapOn:
+    id: "cue_text_1"
+- eraseText: 40
+- inputText: "Goodbye"
+- tapOn:
+    id: "cue_start_1"
+- eraseText: 10
+- inputText: "2000"
+- tapOn:
+    id: "cue_end_1"
+- eraseText: 10
+- inputText: "4000"
+- tapOn:
+    id: "cue_text_0"
+- hideKeyboard
+- takeScreenshot: artifacts/phase2_panel
+- back
+# Tap an empty spot on the video to deselect, so the selection frame does not cover the caption.
+- tapOn:
+    point: 50%, 22%
+# Drag the timeline to about 1.0 s (inside cue 1), then about 2.5 s (inside cue 2). The video stays paused.
+- swipe:
+    start: 62%, 46%
+    end: 41%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase2_cue1_active
+- swipe:
+    start: 62%, 46%
+    end: 29%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase2_cue2_active
+- tapOn:
+    id: "caption_panel"
+- tapOn:
+    id: "caption_off"
+- back
+- tapOn:
+    point: 50%, 22%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase2_no_caption
