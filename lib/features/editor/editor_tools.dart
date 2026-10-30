@@ -11,6 +11,7 @@ import '../marker/marker_spec.dart';
 import 'editor_controller.dart';
 import 'editor_pro_tools.dart';
 import 'auto_caption_sheet.dart';
+import 'caption_panel.dart';
 import 'srt.dart';
 import 'edit_project.dart';
 import 'touch_log.dart' show InputMode;
@@ -902,6 +903,15 @@ class _TextPanelState extends State<_TextPanel> {
               onPressed: () => showAutoCaptions(context, c),
               icon: const Icon(Icons.auto_awesome),
               label: Text(t.captionsAutoTitle),
+            ),
+          ),
+          const SizedBox(height: Space.sm),
+          Semantics(
+            identifier: 'caption_panel',
+            child: OutlinedButton.icon(
+              onPressed: () => showCaptionPanel(context, c),
+              icon: const Icon(Icons.closed_caption_outlined),
+              label: Text(t.presetSubtitle),
             ),
           ),
           const SizedBox(height: Space.md),

@@ -3138,6 +3138,36 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Sticker'**
   String get presetSticker;
+
+  /// No description provided for @captionPanelAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'+ Thêm câu'**
+  String get captionPanelAdd;
+
+  /// No description provided for @captionPanelOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt phụ đề'**
+  String get captionPanelOff;
+
+  /// No description provided for @captionPanelEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có câu phụ đề nào.'**
+  String get captionPanelEmpty;
+
+  /// No description provided for @captionPanelStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu (ms)'**
+  String get captionPanelStart;
+
+  /// No description provided for @captionPanelEnd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết thúc (ms)'**
+  String get captionPanelEnd;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

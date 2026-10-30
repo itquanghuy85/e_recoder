@@ -1646,4 +1646,19 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get presetSticker => 'Sticker';
+
+  @override
+  String get captionPanelAdd => '+ Add line';
+
+  @override
+  String get captionPanelOff => 'Turn captions off';
+
+  @override
+  String get captionPanelEmpty => 'No caption lines yet.';
+
+  @override
+  String get captionPanelStart => 'Start (ms)';
+
+  @override
+  String get captionPanelEnd => 'End (ms)';
 }

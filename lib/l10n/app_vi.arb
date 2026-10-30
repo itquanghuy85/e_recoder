@@ -678,5 +678,10 @@
   "presetExtrude": "Chữ nổi 3D",
   "presetHollow": "Chữ rỗng",
   "presetGlitch": "Glitch",
-  "presetSticker": "Sticker"
+  "presetSticker": "Sticker",
+  "captionPanelAdd": "+ Thêm câu",
+  "captionPanelOff": "Tắt phụ đề",
+  "captionPanelEmpty": "Chưa có câu phụ đề nào.",
+  "captionPanelStart": "Bắt đầu (ms)",
+  "captionPanelEnd": "Kết thúc (ms)"
 }

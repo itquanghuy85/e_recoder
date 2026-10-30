@@ -1641,4 +1641,19 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get presetSticker => 'Sticker';
+
+  @override
+  String get captionPanelAdd => '+ Thêm câu';
+
+  @override
+  String get captionPanelOff => 'Tắt phụ đề';
+
+  @override
+  String get captionPanelEmpty => 'Chưa có câu phụ đề nào.';
+
+  @override
+  String get captionPanelStart => 'Bắt đầu (ms)';
+
+  @override
+  String get captionPanelEnd => 'Kết thúc (ms)';
 }
