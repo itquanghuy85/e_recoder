@@ -5,12 +5,16 @@ import 'dart:ui' show Color, Rect;
 import '../marker/marker_spec.dart';
 import '../marker/marker_timing.dart';
 import 'audio_track.dart';
+import 'caption_models.dart';
 import 'overlay_items.dart';
 import 'overlay_motion.dart';
 import 'picture_look.dart';
 import 'segment.dart';
 
 export 'audio_track.dart';
+// Not re-exported: srt.dart already exports a `SubtitleCue` record for SRT cues, and re-exporting
+// this class would make every file that imports both libraries ambiguous. Import
+// caption_models.dart directly where word timing / caption styling is needed.
 export 'overlay_items.dart';
 export 'overlay_motion.dart';
 export 'picture_look.dart';
@@ -220,6 +224,8 @@ class TextItem {
     this.opacity = 1,
     this.motion = ItemMotion.fadeOnly,
     this.fx = TextFx.none,
+    this.cues,
+    this.captionStyle,
   });
   final String id;
   final String text;
@@ -248,6 +254,13 @@ class TextItem {
   /// A look drawn into the bitmap (glow, gradient, 3D, ...); [TextFx.none] is the plain text.
   final TextFx fx;
 
+  /// Progressive subtitle cues drawn into this item instead of [text]; null keeps the old
+  /// one-picture behaviour (the 6 static [TextFx] looks).
+  final List<SubtitleCue>? cues;
+
+  /// Font, colour, placement and reveal mode for [cues]; null means the item's own text style.
+  final CaptionStyle? captionStyle;
+
   TextItem copyWith({
     String? text,
     Color? color,
@@ -266,6 +279,8 @@ class TextItem {
     double? opacity,
     ItemMotion? motion,
     TextFx? fx,
+    List<SubtitleCue>? cues,
+    CaptionStyle? captionStyle,
   }) => TextItem(
     id: id,
     text: text ?? this.text,
@@ -285,6 +300,8 @@ class TextItem {
     opacity: opacity ?? this.opacity,
     motion: motion ?? this.motion,
     fx: fx ?? this.fx,
+    cues: cues ?? this.cues,
+    captionStyle: captionStyle ?? this.captionStyle,
   );
   static const Object _keepBox = Object();
 
@@ -307,11 +324,18 @@ class TextItem {
     'opacity': opacity,
     'motion': motion.toJson(),
     'fx': fx.name,
+    // Left out entirely when null, so an old text clip sends the exact same payload as before.
+    if (cues != null) 'cues': cues!.map((e) => e.toJson()).toList(),
+    if (captionStyle != null) 'captionStyle': captionStyle!.toJson(),
   };
 
   /// What changes the rendered bitmap (not where or when it is shown).
-  String get lookKey =>
-      '$text|${color.toARGB32()}|$sizeU|$bold|${font.name}|$outline|${box?.toARGB32()}|$shadow|${align.name}|${fx.name}';
+  String get lookKey {
+    final base =
+        '$text|${color.toARGB32()}|$sizeU|$bold|${font.name}|$outline|${box?.toARGB32()}|$shadow|${align.name}|${fx.name}';
+    if (cues == null && captionStyle == null) return base;
+    return '$base|${cues?.map((e) => e.toJson()).toList()}|${captionStyle?.toJson()}';
+  }
 
   Map<String, Object> toJson() => {'id': id, ...toNative()};
   factory TextItem.fromJson(Map<String, dynamic> j) => TextItem(
@@ -342,6 +366,14 @@ class TextItem {
       (e) => e.name == j['fx'],
       orElse: () => TextFx.none,
     ),
+    cues: j['cues'] == null
+        ? null
+        : (j['cues'] as List)
+              .map((e) => SubtitleCue.fromJson(e as Map<String, dynamic>))
+              .toList(),
+    captionStyle: j['captionStyle'] == null
+        ? null
+        : CaptionStyle.fromJson(j['captionStyle'] as Map<String, dynamic>),
   );
 }
 

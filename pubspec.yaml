@@ -34,6 +34,9 @@ flutter:
   generate: true
   shaders:
     - shaders/mosaic.frag
+  assets:
+    # Caption presets (schema: id, name, previewHint, style: CaptionStyle JSON). Empty until Phase 5.
+    - assets/caption_templates.json
   fonts:
     - family: Barlow
       fonts:
