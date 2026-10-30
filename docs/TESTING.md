@@ -98,3 +98,10 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - Kiểm tra video xuất: `scripts\qa\verify_caption_export.ps1 [-At "0.6,2.2"] [-Record]` kéo bản xuất mới nhất, in độ dài video/âm thanh (đồng bộ), tạo ảnh lưới khung hình (`sheet.png`). Video thử có timecode in sẵn nên mỗi khung cho thấy thời gian nguồn.
 - Dọn dữ liệu thử: `scripts\qa\qa_data.ps1 -Action list|clean [-Apply]` (mặc định chạy thử). Chỉ xoá file có trong `test-results/qa_created_files.txt`; xem quy tắc an toàn ở đầu script.
 - Thư viện chỉ liệt kê video do chính app tạo (quyền truy cập MediaStore), nên video thử phải là bản xuất của app (`maestro/qa_make_test_source.yaml`), không thể chép tay bằng adb.
+
+### Phụ đề tự động và nhập SRT (S25 Ultra)
+- `maestro/qa_stt_probe.yaml -e SAMPLE=<file>`: đo STT trên video mẫu trong Download (kết quả đọc từ dự án bằng `adb run-as`, chỉ bản debug). Mẫu và văn bản gốc: `test-results/stt/` (tạo lại bằng TTS, xem `docs/CAPTION_PLAN.md` Phần 12).
+- `maestro/caption_auto_flow.yaml`: chọn video mẫu qua hộp chọn tệp, "Tạo phụ đề tự động", panel mở tab Mẫu, phát, xuất. Kiểm video: `scripts\qa\verify_caption_export.ps1 -At "0.8,2,..." -Record`.
+- `maestro/caption_srt_import.yaml`: cần `test.srt` (3 dòng) trong Download; chọn qua hộp chọn tệp thật.
+- Dọn video test chọn từ Download: `scripts\qa\qa_data.ps1 -Action clean -Apply -PickedProject "<đuôi uri dự án>"`.
+- Không dùng `clearState` trong flow: nó xoá cả cơ sở dữ liệu dự án của app.

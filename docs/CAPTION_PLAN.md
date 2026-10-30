@@ -35,7 +35,9 @@ Phase 3 (Phần 10), 4 (Phần 11), 5 + 7 + dọn dữ liệu + SRT (Phần 12):
 cues=null preview/export không đổi, 6 effect e5a9c4c nguyên, 4 RevealMode, preview=export, 12 template, style editor đủ, Whisper OK, SRT OK, timeline OK, test PASS, không dep lạ, không đổi tên cũ.
 
 ## PHẦN 7 — TRẠNG THÁI
-Phase 1, H1-3, 2a, 2b+fix: ✅. Phase 2 (2c-2g): ✅ (xem Phần 9). Phase 3 (chữ hiện dần): ✅ preview, xuất video chưa (xem Phần 10). Phase 4 (style editor): ✅ (Phần 11). Phase 5 (12 mẫu), Phase 7 (xuất video có phụ đề), dọn dữ liệu thử, nhập SRT vào phụ đề: ✅ (Phần 12). Whisper và timeline riêng cho phụ đề: KHÔNG làm đợt này (Phần 12, mục "Không làm").
+Phase 1, H1-3, 2a, 2b+fix: ✅. Phase 2 (2c-2g): ✅ (Phần 9). Phase 3 chữ hiện dần: ✅ (Phần 10). Phase 4 style editor: ✅ (Phần 11).
+Phase 5 (12 mẫu): ✅. Phase 6 nhập SRT: ✅ (kiểm trên máy thật); xuất SRT: ⬜. Phase 7 (xuất video có phụ đề + tạo phụ đề tự động thành CaptionCue): ✅ — dùng Android STT trên máy (không Whisper), chất lượng ở mục "STT quality thực tế" (Phần 12), pipeline ở Phần 13.
+Phase 8 timeline riêng cho phụ đề: ⬜. Phase 10 E2E: ✅ một phần (Phần 13). Whisper: không dùng (không cần).
 
 ## PHẦN 8 — KHÔNG LÀM
 Không CustomPainter Flutter, không đổi typedef SubtitleCue, không tự thêm dep, không iOS export đợt này, không đổi tên cũ, không gộp phase, không tải Whisper không rõ nguồn, không sửa production để test pass.
@@ -165,3 +167,31 @@ Bộ nhận dạng đang dùng: `SpeechRecognizer.createOnDeviceSpeechRecognizer
 - Giới hạn trung thực: mẫu là giọng tổng hợp sạch, chưa đo giọng người thật, giọng vùng miền, nhiều người nói, nhạc nền. Độ chính xác thực tế có thể thấp hơn.
 - Quyết định: GIỮ Android STT (>= 80% đúng và có mốc thời gian theo cụm). KHÔNG dùng Whisper: không cần, tránh dependency và model 75-142MB. Từng từ chia theo tỉ lệ số ký tự trong cụm (đủ cho hiện chữ dần).
 - Cách đo lại: `maestro/qa_stt_probe.yaml -e SAMPLE=<tên file trong Download>`, rồi đọc dự án bằng `adb run-as` (chỉ bản debug).
+
+## PHẦN 13 — TẠO PHỤ ĐỀ TỰ ĐỘNG THÀNH CAPTIONCUE + SRT TRÊN MÁY THẬT
+
+### Khảo sát (Bước 0)
+- "Tạo phụ đề tự động": `auto_caption_sheet.dart` + `EditorController.generateCaptions` + Kotlin `stt/{SttJob,SpeechToText,Chunker}`. API: `SpeechRecognizer.createOnDeviceSpeechRecognizer` (Android 13+), nhận file PCM đã cắt theo quãng nghỉ. Trả text + mốc bắt đầu/kết thúc theo CỤM (không có từng từ). Kết quả cũ là chữ rời (`TextItem` id `auto_*`), không có cues.
+- Repo chưa có `file_picker` (không cần: chọn tệp qua cầu native `pickMedia('file')` sẵn có) và chưa có Whisper. Không thêm dependency nào.
+
+### Đã làm
+- `EditorController.generateCaptionCues(lang, {style})`: STT, dàn câu vừa khung (`captionLineLength` theo cỡ chữ của mẫu, `layoutCaptions(balance: true)` không để lại 1 từ lẻ), thời gian từng từ chia theo độ dài từ trong cụm (`CaptionCue.splitByLength`, đủ cho hiện chữ dần), MỘT item phụ đề (id `autocap_*`) với kiểu mẫu TikTok có sẵn, `wordByWord`. Một bước undo. Tạo lại thay item `autocap_*` cũ, giữ các item phụ đề khác. `generateCaptions` cũ giữ nguyên (đổi chung hàm chạy STT `_runStt`, hành vi không đổi, test cũ vẫn qua).
+- Màn hình "Tạo phụ đề tự động": công tắc "Dùng mẫu TikTok có sẵn" (mặc định bật). Xong thì đóng sheet và mở panel Phụ đề ở tab "Mẫu" để đổi mẫu ngay.
+- Panel: ô sửa dòng hiện đủ các dòng của một câu (tối đa 3); thông báo kết quả nhập SRT nằm ngay trong panel (snack bar bị tấm panel che).
+- Nhập SRT: đọc tệp UTF-8 (có/không BOM) và UTF-16 (`decodeSubtitleBytes`); byte lạ thì đọc Latin-1 để vẫn có mốc thời gian.
+- `scripts/qa/qa_data.ps1 -PickedProject <đuôi uri>`: dọn dự án của video test chọn từ Downloads (vd `msf%3A248`), dùng chung quy tắc an toàn cũ.
+
+### Kết quả (S25 Ultra R5CY6323KMX)
+- STT: xem mục "STT quality thực tế" (Phần 12): 100% từ đúng trên tiếng Việt sạch, 93.2% khi có nhiễu, chạy được chế độ máy bay.
+- `maestro/caption_auto_flow.yaml` PASS (video mẫu 38s, 6 câu tiếng Việt): tạo xong sheet đóng, panel mở ở tab "Mẫu" với mẫu TikTok có dấu tick, tab "Câu" có nhiều dòng (mỗi dòng tối đa 2 hàng) có thời gian (vd 0-1595, 1635-3366, ...), phát thì chữ hiện dần theo lời. Xuất 720p: video 37.96s, âm thanh 37.96s (lệch ~2ms). Kéo file về cắt khung (`verify_caption_export.ps1`): ở 0.8s "xin chào các", 2.0s "tôi sẽ", 8.0s "đầu tiên bạn mở ứng dụng", 14s "sau khi quay xong", 21s "bạn có thể cắt ghép thêm chữ và", 27s "cuối cùng hãy xuất", 33s "cảm ơn các bạn đã xem", đúng câu đang được nói theo `stt_reference.json`. Ảnh: `test-results/auto/`.
+- `maestro/caption_srt_import.yaml` PASS: tệp `test.srt` 3 dòng (Xin chào / Tạm biệt / Cảm ơn) chọn qua hộp chọn tệp thật, panel hiện đúng 3 dòng, đúng dấu tiếng Việt, đúng thời gian (1000-3000, 4000-6000, 7000-9000), "Đã thêm 3 dòng phụ đề." Ảnh: `test-results/auto/srt_import_s25.png`.
+- Test tự động: `flutter test` 335/335, `gradlew testDebugUnitTest` 85/85, `flutter analyze` sạch, `assembleDebug` OK.
+- Chạy lại Phase 2, 3, 4, 5, rollback (cues=null, 6 kiểu chữ), full export: xem bảng cuối báo cáo bàn giao.
+
+### Lưu ý, rủi ro, chưa làm
+- Mẫu thử là giọng TỔNG HỢP sạch (không thể thu giọng người). Giọng người thật, vùng miền, nhiều người nói, nhạc nền chưa đo; độ chính xác thật có thể thấp hơn 93-100%.
+- Mốc thời gian chỉ ở mức cụm; từng từ chia theo độ dài nên có thể lệch vài trăm ms ở cụm dài. Cách duy nhất có mốc từng từ thật là Whisper (chưa cần).
+- Mẫu mặc định TikTok đặt chữ ở y=0.62 (gần giữa khung), có thể che hình; đổi mẫu hoặc kéo chữ ở panel.
+- Dòng phụ đề thêm tay vào item tự động sẽ mất khi "Tạo phụ đề tự động" chạy lại (item `autocap_*` bị thay). Phụ đề tạo bằng "+ Thêm câu" khi KHÔNG chọn item tự động là item riêng, được giữ.
+- Chưa làm: xuất SRT, timeline riêng cho phụ đề, "tạo lại" chỉ một đoạn.
+- `caption_auto_flow` không dùng `clearState` (sẽ xoá toàn bộ cơ sở dữ liệu dự án của app trên máy dùng chung); tự dọn bằng `helpers/caption_cleanup.yaml` và `qa_data.ps1`.
