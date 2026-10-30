@@ -137,6 +137,7 @@ enum RevealMode { none, wordByWord, charByChar, karaokeHighlight }
 class CaptionStyle {
   const CaptionStyle({
     this.fontId = 'barlow',
+    this.bold = true,
     this.sizeU = 22,
     this.color = 0xFFFFFFFF,
     this.outlineColor,
@@ -153,6 +154,7 @@ class CaptionStyle {
   });
 
   final String fontId;
+  final bool bold;
   final double sizeU;
   final int color;
   final int? outlineColor;
@@ -171,6 +173,7 @@ class CaptionStyle {
 
   CaptionStyle copyWith({
     String? fontId,
+    bool? bold,
     double? sizeU,
     int? color,
     Object? outlineColor = _keep,
@@ -186,6 +189,7 @@ class CaptionStyle {
     Object? templateId = _keep,
   }) => CaptionStyle(
     fontId: fontId ?? this.fontId,
+    bold: bold ?? this.bold,
     sizeU: sizeU ?? this.sizeU,
     color: color ?? this.color,
     outlineColor: identical(outlineColor, _keep)
@@ -209,6 +213,7 @@ class CaptionStyle {
 
   Map<String, Object?> toJson() => {
     'fontId': fontId,
+    'bold': bold,
     'sizeU': sizeU,
     'color': color,
     'outlineColor': outlineColor,
@@ -235,6 +240,7 @@ class CaptionStyle {
   ///   "previewHint": "Đậm, viền đen",   // String, one-line description
   ///   "style": {                        // CaptionStyle.toJson()
   ///     "fontId": "barlow",             // String: barlow | bevietnam | inter | montserrat
+  ///     "bold": true,                   // bool
   ///     "sizeU": 30,                    // double, U units (frame width / 360)
   ///     "color": 4294967295,            // int, ARGB
   ///     "outlineColor": 4278190080,     // int?, ARGB
@@ -253,6 +259,7 @@ class CaptionStyle {
   /// ```
   factory CaptionStyle.fromJson(Map<String, dynamic> j) => CaptionStyle(
     fontId: j['fontId'] as String? ?? 'barlow',
+    bold: j['bold'] as bool? ?? true,
     sizeU: (j['sizeU'] as num?)?.toDouble() ?? 22,
     color: (j['color'] as num?)?.toInt() ?? 0xFFFFFFFF,
     outlineColor: (j['outlineColor'] as num?)?.toInt(),

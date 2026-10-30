@@ -34,6 +34,7 @@ enum class RevealMode { none, wordByWord, charByChar, karaokeHighlight }
  */
 data class CaptionStyle(
     val fontId: String = "barlow",
+    val bold: Boolean = true,
     val sizeU: Float = 22f,
     val color: Int = 0xFFFFFFFF.toInt(),
     val outlineColor: Int? = null,

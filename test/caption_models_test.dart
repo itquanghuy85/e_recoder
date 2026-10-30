@@ -106,6 +106,7 @@ void main() {
     test('JSON round trip keeps every field', () {
       const s = CaptionStyle(
         fontId: 'inter',
+        bold: false,
         sizeU: 34,
         color: 0xFFFFD700,
         outlineColor: 0xFF000000,
@@ -122,6 +123,7 @@ void main() {
       );
       final back = CaptionStyle.fromJson(s.toJson());
       expect(back.fontId, 'inter');
+      expect(back.bold, isFalse);
       expect(back.sizeU, 34);
       expect(back.color, 0xFFFFD700);
       expect(back.outlineColor, 0xFF000000);

@@ -33,6 +33,13 @@ class OverlayRenderersCueTest {
     }
 
     @Test
+    fun `a non bold style renders`() {
+        val r = OverlayRenderers.renderCue(cue("không đậm"), CaptionStyle(bold = false), 1080)
+        assertNotNull(r.bitmap)
+        assertTrue(r.wPx > 0)
+    }
+
+    @Test
     fun `a null style uses defaults`() {
         val r = OverlayRenderers.renderCue(cue("mặc định"), null, 1080)
         assertNotNull(r.bitmap)
@@ -43,6 +50,7 @@ class OverlayRenderersCueTest {
     fun `default style matches the Dart model`() {
         val s = CaptionStyle()
         assertEquals("barlow", s.fontId)
+        assertTrue(s.bold)
         assertEquals(22f, s.sizeU, 0f)
         assertEquals(0xFFFFFFFF.toInt(), s.color)
         assertNull(s.outlineColor)

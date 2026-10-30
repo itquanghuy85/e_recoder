@@ -104,21 +104,21 @@ object OverlayRenderers {
     fun renderCue(cue: CaptionCue, style: CaptionStyle?, frameW: Int): Rendered {
         val st = style ?: CaptionStyle()
         val u = frameW / 360f
-        val size = st.sizeU * u
+        val fontSizePx = st.sizeU * u
         val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = st.color
-            textSize = size
-            typeface = typefaceFor(st.fontId, true)
+            textSize = fontSizePx
+            typeface = typefaceFor(st.fontId, st.bold)
             textAlign = Paint.Align.LEFT
         }
         val outlineW = if (st.outlineColor != null && st.outlineWidth > 0f) st.outlineWidth * u else 0f
         val shadowR = if (st.shadowColor != null && st.shadowBlur > 0f) st.shadowBlur * u else 0f
-        val boxPad = if (st.boxColor != null) size * 0.35f else 0f
+        val boxPad = if (st.boxColor != null) fontSizePx * 0.35f else 0f
         val padding = 4f * u + outlineW + shadowR * 2f + boxPad
-        val maxW = (frameW - padding * 2f).coerceAtLeast(size)
+        val maxW = (frameW - padding * 2f).coerceAtLeast(fontSizePx)
 
         val lines = wrapCueText(cue.text, maxW, fill)
-        val lineH = size * 1.2f
+        val lineH = fontSizePx * 1.2f
         val widths = lines.map { fill.measureText(it) }
         val textW = widths.maxOrNull() ?: 0f
         val w = ceil(textW + padding * 2f).toInt().coerceAtLeast(8)
@@ -152,7 +152,7 @@ object OverlayRenderers {
                 "right" -> w - padding - lw
                 else -> (w - lw) / 2f
             }
-            val y = padding + lineH * i + size * 0.95f
+            val y = padding + lineH * i + fontSizePx * 0.95f
             if (halo != null) c.drawText(line, x, y, halo)
             c.drawText(line, x, y, fill)
         }
