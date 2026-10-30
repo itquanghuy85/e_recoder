@@ -27,19 +27,19 @@ Future<void> showCaptionPanel(
   );
 }
 
-/// Picks a .srt file and adds its lines to the captions (one undo step).
-Future<void> importCaptionFile(BuildContext context, EditorController c) async {
-  final t = AppL10n.of(context);
-  final messenger = ScaffoldMessenger.of(context);
+/// Picks a .srt file and adds its lines to the captions (one undo step). Returns how many lines were
+/// added, or null when nothing was picked. The panel shows the answer itself (a snack bar would sit
+/// behind the sheet).
+Future<int?> importCaptionFile(EditorController c) async {
   final picked = await c.native.pickMedia('file');
-  if (picked == null) return;
-  var n = 0;
+  if (picked == null) return null;
   try {
-    n = c.importCaptionCues(parseSrt(await File(picked.path).readAsString()));
-  } catch (_) {}
-  messenger.showSnackBar(
-    SnackBar(content: Text(n > 0 ? t.subtitlesImported(n) : t.subtitlesNone)),
-  );
+    return c.importCaptionCues(
+      parseSrt(decodeSubtitleBytes(await File(picked.path).readAsBytes())),
+    );
+  } catch (_) {
+    return 0;
+  }
 }
 
 class CaptionPanel extends StatefulWidget {
@@ -60,6 +60,9 @@ class CaptionPanel extends StatefulWidget {
 class _CaptionPanelState extends State<CaptionPanel> {
   /// 0 = the lines, 1 = ready-made templates, 2 = the look.
   late int _tab = widget.initialTab;
+
+  /// What the last import did, shown under its button.
+  String? _note;
 
   @override
   Widget build(BuildContext context) {
@@ -159,11 +162,33 @@ class _CaptionPanelState extends State<CaptionPanel> {
                   Semantics(
                     identifier: 'caption_import_srt',
                     child: OutlinedButton.icon(
-                      onPressed: () => importCaptionFile(context, c),
+                      onPressed: () async {
+                        final n = await importCaptionFile(c);
+                        if (n != null && mounted) {
+                          setState(
+                            () => _note = n > 0
+                                ? t.subtitlesImported(n)
+                                : t.subtitlesNone,
+                          );
+                        }
+                      },
                       icon: const Icon(Icons.subtitles_outlined),
                       label: Text(t.subtitlesImport),
                     ),
                   ),
+                  if (_note != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: Space.xs),
+                      child: Semantics(
+                        identifier: 'caption_note',
+                        liveRegion: true,
+                        child: Text(
+                          _note!,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: Space.sm),
                   Semantics(
                     identifier: 'caption_add',

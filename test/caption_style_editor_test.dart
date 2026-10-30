@@ -156,7 +156,7 @@ void main() {
         c.captionItem!.cues!.map((e) => e.text),
         containsAll(['Xin chao', 'Tam biet']),
       );
-      expect(find.text('Đã thêm 2 dòng phụ đề.'), findsOneWidget);
+      expect(find.text('Đã thêm 2 dòng phụ đề.'), findsOneWidget); // inside the panel, not a snack bar
       await tester.pump(const Duration(milliseconds: 50));
     });
   });

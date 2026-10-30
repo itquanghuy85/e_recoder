@@ -1,0 +1,56 @@
+appId: com.huluca.escreenrecorder
+name: Caption SRT import - a real .srt file picked on the phone becomes caption lines
+tags:
+  - p1
+  - module-editor
+---
+# Needs test.srt in the phone's Download folder (3 Vietnamese lines: Xin chào, Tạm biệt, Cảm ơn).
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_edit_20261030_121019.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "caption_panel"
+- runFlow:
+    when:
+      visible:
+        id: "caption_off"
+    commands:
+      - tapOn:
+          id: "caption_off"
+- tapOn:
+    id: "caption_import_srt"
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      notVisible: "test.srt"
+    commands:
+      - tapOn: "Hiển thị gốc"
+      - tapOn: "Tải xuống"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- tapOn: "test.srt"
+- extendedWaitUntil:
+    visible: ".*Đã thêm 3 dòng.*"
+    timeout: 10000
+- takeScreenshot: artifacts/srt_import_s25
+- assertVisible:
+    id: "cue_text_0"
+- assertVisible:
+    id: "cue_text_2"
+# Look at the stage while a line is on: drag the timeline to about 1.5 s
+- back
+- tapOn:
+    point: 50%, 14%
+- swipe:
+    start: 62%, 46%
+    end: 49%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/srt_import_stage
+- runFlow:
+    file: helpers/caption_cleanup.yaml

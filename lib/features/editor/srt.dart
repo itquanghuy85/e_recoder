@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 /// One subtitle line: shown from [startMs] to [endMs] (milliseconds).
 typedef SubtitleCue = ({int startMs, int endMs, String text});
 
@@ -35,4 +38,28 @@ List<SubtitleCue> parseSrt(String raw) {
   }
   out.sort((a, b) => a.startMs.compareTo(b.startMs));
   return out;
+}
+
+/// Text of a subtitle file from its bytes. Editors save SRT as UTF-8 (with or without a BOM) or UTF-16
+/// (Windows Notepad's "Unicode"); anything that is not valid UTF-8 is read as Latin-1 so the timings
+/// still parse (accents may then be wrong, which the person sees and fixes in the panel).
+String decodeSubtitleBytes(Uint8List b) {
+  if (b.length >= 2 && b[0] == 0xFF && b[1] == 0xFE) return _utf16(b, 2, true);
+  if (b.length >= 2 && b[0] == 0xFE && b[1] == 0xFF) return _utf16(b, 2, false);
+  final start = b.length >= 3 && b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF
+      ? 3
+      : 0;
+  try {
+    return utf8.decode(b.sublist(start));
+  } on FormatException {
+    return latin1.decode(b.sublist(start));
+  }
+}
+
+String _utf16(Uint8List b, int from, bool little) {
+  final units = <int>[];
+  for (var i = from; i + 1 < b.length; i += 2) {
+    units.add(little ? b[i] | (b[i + 1] << 8) : (b[i] << 8) | b[i + 1]);
+  }
+  return String.fromCharCodes(units);
 }
