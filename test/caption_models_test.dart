@@ -242,4 +242,34 @@ void main() {
       expect(item.copyWith(captionStyle: next).captionStyle, next);
     });
   });
+
+  splitByLengthTests();
+}
+
+void splitByLengthTests() {
+  group('CaptionCue.splitByLength', () {
+    test('words share the span in proportion to their length and are contiguous', () {
+      final w = CaptionCue.splitByLength('aa bbbb cc', startMs: 1000, endMs: 2000);
+      expect(w.map((e) => e.text), ['aa', 'bbbb', 'cc']);
+      expect(w.first.startMs, 1000);
+      expect(w.last.endMs, 2000);
+      for (var i = 1; i < w.length; i++) {
+        expect(w[i].startMs, w[i - 1].endMs);
+      }
+      // 2 + 4 + 2 = 8 characters over 1000 ms
+      expect(w[0].endMs, 1250);
+      expect(w[1].endMs, 1750);
+    });
+
+    test('empty text gives no words, a zero span gives zero-length words', () {
+      expect(CaptionCue.splitByLength('   ', startMs: 0, endMs: 1000), isEmpty);
+      final z = CaptionCue.splitByLength('a b', startMs: 500, endMs: 500);
+      expect(z.every((e) => e.startMs == 500 && e.endMs == 500), isTrue);
+    });
+
+    test('a line break is just a space', () {
+      final w = CaptionCue.splitByLength('xin chào\ncác bạn', startMs: 0, endMs: 800);
+      expect(w.map((e) => e.text), ['xin', 'chào', 'các', 'bạn']);
+    });
+  });
 }

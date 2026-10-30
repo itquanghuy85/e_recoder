@@ -557,5 +557,14 @@
   "captionPosX": "Horizontal",
   "captionReset": "Reset style",
   "captionTabTemplates": "Templates",
-  "captionTemplateSample": "Hello everyone"
+  "captionTemplateSample": "Hello everyone",
+  "captionsCreatedCues": "{n} caption lines made. Pick a template or edit the lines in Captions.",
+  "@captionsCreatedCues": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "captionsApplyTemplate": "Use the TikTok template"
 }

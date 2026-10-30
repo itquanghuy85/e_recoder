@@ -77,6 +77,53 @@ void main() {
     });
   });
 
+  group('layoutCaptions balance', () {
+    const phrase =
+        'xin chào các bạn hôm nay tôi sẽ hướng dẫn cách quay màn hình điện thoại';
+
+    test(
+      'without balance the tail can be one stray word (the old behaviour)',
+      () {
+        final c = layoutCaptions([SttPiece(0, 7000, phrase)], maxLine: 18);
+        expect(c.last.text.split(RegExp(r'\s+')).length, 1);
+        expect(c.last.text, 'thoại');
+      },
+    );
+
+    test(
+      'with balance no caption is a stray word and the count does not grow',
+      () {
+        final plain = layoutCaptions([SttPiece(0, 7000, phrase)], maxLine: 18);
+        final c = layoutCaptions(
+          [SttPiece(0, 7000, phrase)],
+          maxLine: 18,
+          balance: true,
+        );
+        expect(c.length, lessThanOrEqualTo(plain.length));
+        for (final cue in c) {
+          expect(
+            cue.text.split(RegExp(r'\s+')).length,
+            greaterThan(2),
+            reason: cue.text,
+          );
+          for (final line in cue.text.split('\n')) {
+            expect(line.length, lessThanOrEqualTo(18));
+          }
+        }
+        expect(c.map((e) => e.text.replaceAll('\n', ' ')).join(' '), phrase);
+      },
+    );
+
+    test('a phrase that fits one caption is left alone', () {
+      final c = layoutCaptions(
+        [SttPiece(0, 2000, 'xin chào')],
+        maxLine: 18,
+        balance: true,
+      );
+      expect(c.single.text, 'xin chào');
+    });
+  });
+
   group('generateCaptions', () {
     late FakeRecorder fake;
     late EditorController c;

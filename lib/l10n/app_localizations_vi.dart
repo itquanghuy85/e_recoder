@@ -1707,4 +1707,12 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get captionTemplateSample => 'Xin chào các bạn';
+
+  @override
+  String captionsCreatedCues(int n) {
+    return 'Đã tạo $n dòng phụ đề. Chọn mẫu hoặc sửa từng dòng trong mục Phụ đề.';
+  }
+
+  @override
+  String get captionsApplyTemplate => 'Dùng mẫu TikTok có sẵn';
 }

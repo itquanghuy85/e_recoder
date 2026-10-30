@@ -5,7 +5,10 @@ param(
   [string]$Name = "",
   # clean: really delete. Without it nothing is changed (dry run).
   [switch]$Apply,
-  [string]$Package = "com.huluca.escreenrecorder"
+  [string]$Package = "com.huluca.escreenrecorder",
+  # clean: also remove the project of a video a test picked from Downloads (not in MediaStore as ours):
+  # the end of its project uri, e.g. "msf%3A248"
+  [string[]]$PickedProject = @()
 )
 # Test data made by QA runs (exports and the projects opened from them).
 #
@@ -51,7 +54,7 @@ if ($Action -eq "list") {
 }
 
 # clean
-if ($names.Count -eq 0) { Write-Output "manifest is empty: nothing to clean"; exit 0 }
+if ($names.Count -eq 0 -and $PickedProject.Count -eq 0) { Write-Output "manifest is empty: nothing to clean"; exit 0 }
 $ids = @()
 foreach ($n in $names) {
   $id = Get-MediaId $n
@@ -65,13 +68,14 @@ foreach ($n in $names) {
 # The projects of those videos live in the app's debug database.
 $canRunAs = $false
 try { $null = adb -s $Serial shell "run-as $Package ls databases" 2>&1; $canRunAs = ($LASTEXITCODE -eq 0) } catch {}
-if ($ids.Count -gt 0 -and $canRunAs) {
+if (($ids.Count -gt 0 -or $PickedProject.Count -gt 0) -and $canRunAs) {
   $orig = Join-Path $env:TEMP "esr_projects_orig.db"
   $edit = Join-Path $env:TEMP "esr_projects_edit.db"
   adb -s $Serial shell "am force-stop $Package" | Out-Null
   cmd /c "adb -s $Serial exec-out run-as $Package cat databases/projects.db > `"$orig`""
   Copy-Item $orig $edit -Force
-  $removed = python "$PSScriptRoot\projects_db.py" $edit @ids
+  $refs = @($ids) + @($PickedProject | ForEach-Object { "uri:$_" })
+  $removed = python "$PSScriptRoot\projects_db.py" $edit @refs
   Write-Output ("{0}: {1} project row(s) of those videos" -f $(if ($Apply) { "remove" } else { "would remove" }), $removed)
   if ($Apply -and [int]$removed -gt 0) {
     $bak = Join-Path $root ("test-results\projects_backup_{0}.db" -f (Get-Date -Format "yyyyMMdd_HHmmss"))

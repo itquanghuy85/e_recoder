@@ -726,27 +726,107 @@ class EditorController extends ChangeNotifier {
     sttProgress = null;
     notifyListeners();
     try {
-      await native.sttStart(_project.sourceUri, lang);
-      while (true) {
-        await Future<void>.delayed(sttPoll);
-        if (_disposed) return 0;
-        final s = await native.sttStatus();
-        sttProgress = s;
-        notifyListeners();
-        if (s.finished) break;
-      }
-      final s = sttProgress!;
-      if (s.state == 'cancelled') return 0;
-      if (s.state == 'error') {
-        sttError = s.error.isEmpty ? 'error' : s.error;
-        return 0;
-      }
-      final cues = layoutCaptions(s.pieces);
+      final pieces = await _runStt(lang);
+      if (pieces == null) return 0;
+      final cues = layoutCaptions(pieces);
       if (cues.isEmpty) {
         sttError = 'no_speech';
         return 0;
       }
       return importSubtitles(cues, idPrefix: 'auto', replaceSamePrefix: true);
+    } catch (e) {
+      sttError = 'error';
+      return 0;
+    } finally {
+      sttBusy = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
+  /// Runs the on-device recogniser over the video's sound and returns the phrases it heard (each with
+  /// its start / end), or null when it was cancelled or failed ([sttError] says why for a failure).
+  Future<List<SttPiece>?> _runStt(String lang) async {
+    await native.sttStart(_project.sourceUri, lang);
+    while (true) {
+      await Future<void>.delayed(sttPoll);
+      if (_disposed) return null;
+      final s = await native.sttStatus();
+      sttProgress = s;
+      notifyListeners();
+      if (s.finished) break;
+    }
+    final s = sttProgress!;
+    if (s.state == 'cancelled') return null;
+    if (s.state == 'error') {
+      sttError = s.error.isEmpty ? 'error' : s.error;
+      return null;
+    }
+    return s.pieces;
+  }
+
+  /// Id prefix of the caption item the automatic captions make; making them again replaces it.
+  static const autoCaptionPrefix = 'autocap';
+
+  /// Longest line (characters) that fits the frame at [style]'s size, from the renderer's own rule of
+  /// thumb (a character is about 0.55 of the size wide) and 90 % of the 360 U frame.
+  static int captionLineLength(CaptionStyle style) =>
+      (324 / (style.sizeU * 0.55)).floor().clamp(12, 40);
+
+  /// Automatic captions as caption lines: listens to the video, lays the phrases out as lines that
+  /// fit the frame, gives each line its words with timing (shared by length, as the recogniser only
+  /// times whole phrases), and shows them with [template]'s look (or the standard look), revealed
+  /// word by word as the speech goes. One undo step; replaces the captions made this way before.
+  /// Returns how many lines were made (0 when cancelled or nothing was heard; see [sttError]).
+  Future<int> generateCaptionCues(String lang, {CaptionStyle? style}) async {
+    if (sttBusy) return 0;
+    sttBusy = true;
+    sttError = null;
+    sttProgress = null;
+    notifyListeners();
+    try {
+      final pieces = await _runStt(lang);
+      if (pieces == null) return 0;
+      final look = style ?? CaptionStyle.standard;
+      final dur = _project.durationMs;
+      final lines = layoutCaptions(
+        pieces,
+        maxLine: captionLineLength(look),
+        balance: true,
+      );
+      final cues = <CaptionCue>[];
+      for (final l in lines) {
+        final start = l.startMs.clamp(0, dur);
+        final end = l.endMs.clamp(0, dur);
+        if (end - start < 100 || l.text.trim().isEmpty) continue;
+        cues.add(
+          CaptionCue(
+            text: l.text.trim(),
+            startMs: start,
+            endMs: end,
+            words: CaptionCue.splitByLength(l.text, startMs: start, endMs: end),
+          ),
+        );
+      }
+      if (cues.isEmpty) {
+        sttError = 'no_speech';
+        return 0;
+      }
+      final item = TextItem(
+        id: '${autoCaptionPrefix}_${DateTime.now().microsecondsSinceEpoch}',
+        text: '',
+        startMs: 0,
+        endMs: math.max(1, dur),
+        x: look.x,
+        y: look.y,
+        cues: cues,
+        captionStyle: look,
+      );
+      final kept = _project.texts
+          .where((t) => !t.id.startsWith('${autoCaptionPrefix}_'))
+          .toList();
+      _apply(_project.copyWith(texts: kept).upsertText(item));
+      selectedId = item.id;
+      return cues.length;
     } catch (e) {
       sttError = 'error';
       return 0;

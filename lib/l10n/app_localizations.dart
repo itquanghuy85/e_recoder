@@ -3270,6 +3270,18 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Xin chào các bạn'**
   String get captionTemplateSample;
+
+  /// No description provided for @captionsCreatedCues.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo {n} dòng phụ đề. Chọn mẫu hoặc sửa từng dòng trong mục Phụ đề.'**
+  String captionsCreatedCues(int n);
+
+  /// No description provided for @captionsApplyTemplate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng mẫu TikTok có sẵn'**
+  String get captionsApplyTemplate;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

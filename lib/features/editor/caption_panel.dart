@@ -13,13 +13,17 @@ import 'editor_controller.dart';
 import 'srt.dart';
 
 /// Opens the caption panel: one row per subtitle line (text + start/end) with add / delete / turn off.
-Future<void> showCaptionPanel(BuildContext context, EditorController c) {
+Future<void> showCaptionPanel(
+  BuildContext context,
+  EditorController c, {
+  int initialTab = 0,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: true,
-    builder: (_) => CaptionPanel(controller: c),
+    builder: (_) => CaptionPanel(controller: c, initialTab: initialTab),
   );
 }
 
@@ -39,8 +43,15 @@ Future<void> importCaptionFile(BuildContext context, EditorController c) async {
 }
 
 class CaptionPanel extends StatefulWidget {
-  const CaptionPanel({super.key, required this.controller});
+  const CaptionPanel({
+    super.key,
+    required this.controller,
+    this.initialTab = 0,
+  });
   final EditorController controller;
+
+  /// Tab shown first: 0 lines, 1 templates, 2 style.
+  final int initialTab;
 
   @override
   State<CaptionPanel> createState() => _CaptionPanelState();
@@ -48,7 +59,7 @@ class CaptionPanel extends StatefulWidget {
 
 class _CaptionPanelState extends State<CaptionPanel> {
   /// 0 = the lines, 1 = ready-made templates, 2 = the look.
-  int _tab = 0;
+  late int _tab = widget.initialTab;
 
   @override
   Widget build(BuildContext context) {
@@ -304,8 +315,10 @@ class _CueRowState extends State<_CueRow> {
               child: TextField(
                 controller: _text,
                 focusNode: _focus[0],
+                // A line can have a break in it (two lines on screen): show all of them.
+                minLines: 1,
+                maxLines: 3,
                 decoration: const InputDecoration(isDense: true),
-                onSubmitted: (_) => _commit(),
               ),
             ),
           ),

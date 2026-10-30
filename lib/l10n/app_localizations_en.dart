@@ -1712,4 +1712,12 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get captionTemplateSample => 'Hello everyone';
+
+  @override
+  String captionsCreatedCues(int n) {
+    return '$n caption lines made. Pick a template or edit the lines in Captions.';
+  }
+
+  @override
+  String get captionsApplyTemplate => 'Use the TikTok template';
 }

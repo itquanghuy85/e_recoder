@@ -4,6 +4,8 @@
 /// project model. Times are SOURCE milliseconds, the same clock `TextItem.startMs/endMs` use.
 library;
 
+import 'dart:math' as math;
+
 /// One spoken word inside a caption cue.
 class WordTiming {
   const WordTiming({
@@ -104,6 +106,37 @@ class CaptionCue {
     words: words ?? this.words,
   );
 
+  /// Splits [text] on whitespace and shares the span [startMs]..[endMs] between the words in
+  /// proportion to their length (a long word takes longer to say). The speech recogniser gives the
+  /// time of a whole phrase only; this is the word timing the reveal needs. The words are
+  /// contiguous: the first starts at [startMs], the last ends at [endMs].
+  static List<WordTiming> splitByLength(
+    String text, {
+    required int startMs,
+    required int endMs,
+  }) {
+    final parts = text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return const [];
+    final span = math.max(0, endMs - startMs);
+    final total = parts.fold<int>(0, (n, w) => n + w.length);
+    final out = <WordTiming>[];
+    var from = startMs;
+    var used = 0;
+    for (var i = 0; i < parts.length; i++) {
+      used += parts[i].length;
+      final to = i == parts.length - 1
+          ? startMs + span
+          : startMs + span * used ~/ total;
+      out.add(WordTiming(text: parts[i], startMs: from, endMs: to));
+      from = to;
+    }
+    return out;
+  }
+
   /// Splits [text] on whitespace and shares [durationMs] equally between the words.
   ///
   /// Used when a cue has no word timing (typed by hand or an SRT import): every word gets an
@@ -114,7 +147,11 @@ class CaptionCue {
     int durationMs, {
     int startMs = 0,
   }) {
-    final parts = text.trim().split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    final parts = text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((e) => e.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return const [];
     final span = durationMs <= 0 ? 0 : durationMs;
     return [

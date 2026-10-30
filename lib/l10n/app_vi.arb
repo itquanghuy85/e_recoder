@@ -700,5 +700,14 @@
   "captionPosX": "Ngang",
   "captionReset": "Đặt lại kiểu",
   "captionTabTemplates": "Mẫu",
-  "captionTemplateSample": "Xin chào các bạn"
+  "captionTemplateSample": "Xin chào các bạn",
+  "captionsCreatedCues": "Đã tạo {n} dòng phụ đề. Chọn mẫu hoặc sửa từng dòng trong mục Phụ đề.",
+  "@captionsCreatedCues": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "captionsApplyTemplate": "Dùng mẫu TikTok có sẵn"
 }
