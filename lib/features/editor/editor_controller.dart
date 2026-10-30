@@ -9,6 +9,7 @@ import '../../core/native_recorder.dart';
 import '../marker/marker_spec.dart';
 import '../marker/marker_timing.dart';
 import 'auto_director.dart';
+import 'caption_models.dart';
 import 'edit_project.dart';
 import 'touch_log.dart';
 import 'captions_from_speech.dart';
@@ -764,6 +765,93 @@ class EditorController extends ChangeNotifier {
 
   void updateText(TextItem t, {bool record = true}) =>
       _apply(_project.upsertText(t), record: record);
+
+  // ---- captions (progressive subtitles) -------------------------------------------------------
+
+  /// Sets [cues] on [item] without the `Object?` cast at every call site. `null` turns captions off.
+  TextItem withCues(TextItem item, List<CaptionCue>? cues) =>
+      item.copyWith(cues: cues);
+
+  /// Sets [style] on [item] without the `Object?` cast at every call site. `null` clears it.
+  TextItem withCaptionStyle(TextItem item, CaptionStyle? style) =>
+      item.copyWith(captionStyle: style);
+
+  /// The selected text item, if one is selected.
+  TextItem? get selectedTextItem =>
+      _project.texts.where((t) => t.id == selectedId).firstOrNull;
+
+  /// The text item captions are shown / edited on: the selected text, else the first one that
+  /// already carries cues.
+  TextItem? get captionItem =>
+      selectedTextItem ??
+      _project.texts.where((t) => t.cues != null).firstOrNull;
+
+  TextItem _newCaptionItem() => TextItem(
+    id: _newId('cap'),
+    text: '',
+    startMs: 0,
+    endMs: math.max(1, _project.durationMs),
+    y: 0.85,
+    cues: const [],
+  );
+
+  static int _byStart(CaptionCue a, CaptionCue b) =>
+      a.startMs.compareTo(b.startMs);
+
+  /// Adds a cue at the playhead (3 s by default) to [on], or to the current caption item.
+  /// Creates a caption item when there is none.
+  void addCue({CaptionCue? cue, TextItem? on}) {
+    final item = on ?? captionItem ?? _newCaptionItem();
+    final dur = _project.durationMs;
+    final start = sourceMs.clamp(0, dur <= 0 ? 0 : dur - 1);
+    final from = cue?.startMs ?? start;
+    final to = cue?.endMs ?? math.min(dur, start + 3000);
+    final added =
+        cue ??
+        CaptionCue(
+          text: 'Câu mới',
+          startMs: from,
+          endMs: to <= from ? from + 1 : to,
+        );
+    selectedId = item.id;
+    updateText(withCues(item, [...?item.cues, added]..sort(_byStart)));
+  }
+
+  /// Replaces cue [index] of [on] (or the current caption item).
+  void updateCue(int index, CaptionCue cue, {TextItem? on}) {
+    final item = on ?? captionItem;
+    final cues = item?.cues;
+    if (item == null || cues == null || index < 0 || index >= cues.length) {
+      return;
+    }
+    final next = [...cues]..[index] = cue;
+    updateText(withCues(item, next..sort(_byStart)));
+  }
+
+  /// Removes cue [index] of [on] (or the current caption item).
+  void removeCue(int index, {TextItem? on}) {
+    final item = on ?? captionItem;
+    final cues = item?.cues;
+    if (item == null || cues == null || index < 0 || index >= cues.length) {
+      return;
+    }
+    updateText(withCues(item, [...cues]..removeAt(index)));
+  }
+
+  /// Replaces the cue list of the caption item. Empty keeps captions on (nothing shows);
+  /// `null` turns them off (Phase 1 look). Used by the caption panel.
+  void setCues(List<CaptionCue>? cues, {TextItem? on}) {
+    final item = on ?? captionItem ?? _newCaptionItem();
+    selectedId = item.id;
+    updateText(withCues(item, cues));
+  }
+
+  /// Style of the caption text (font, colour, position, reveal mode).
+  void setCaptionStyle(CaptionStyle? style, {TextItem? on}) {
+    final item = on ?? captionItem;
+    if (item == null) return;
+    updateText(withCaptionStyle(item, style));
+  }
 
   void addCover([CoverStyle style = CoverStyle.solid]) {
     final s = sourceMs;
