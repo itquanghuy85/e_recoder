@@ -149,6 +149,113 @@ object TouchScan {
         return changes(fractions).map { mapOf("tMs" to it, "x" to -1.0, "y" to -1.0, "durMs" to 0L, "dist" to 0.0) }
     }
 
+    /**
+     * Where each touch of [timesMs] happened, found from the picture: the screen reacts to a press at
+     * once, in the spot that was pressed (a button lights up, a ripple spreads, "show taps" draws a
+     * spot). A frame just before the touch is compared with the frames just after it, and the place is
+     * the middle of the part that changed first. When the whole screen changes (a new page, a
+     * scroll) or nothing does, the place stays unknown (-1) and only the moment is used.
+     * Returns one map per time, in the same order, shaped like a scan result.
+     */
+    fun locate(ctx: Context, uri: Uri, timesMs: List<Long>): List<Map<String, Any?>> {
+        val out = ArrayList<Map<String, Any?>>()
+        val mmr = MediaMetadataRetriever()
+        try {
+            mmr.setDataSource(ctx, uri)
+            for (t in timesMs) {
+                val before = frameLuma(mmr, (t - 90).coerceAtLeast(0))
+                val bw = lastW
+                val bh = lastH
+                var spot: DoubleArray? = null
+                if (before != null) {
+                    for (dt in LOCATE_OFFSETS) {
+                        val after = frameLuma(mmr, t + dt) ?: continue
+                        if (lastW == bw && lastH == bh) spot = reaction(before, after, bw, bh)
+                        if (spot != null) break
+                    }
+                }
+                out.add(mapOf("tMs" to t, "x" to (spot?.get(0) ?: -1.0), "y" to (spot?.get(1) ?: -1.0), "durMs" to 0L, "dist" to 0.0))
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("TouchScan", "locate failed", e)
+        } finally {
+            try { mmr.release() } catch (_: Exception) {}
+        }
+        // A reader that failed early leaves the rest without a place.
+        while (out.size < timesMs.size) {
+            out.add(mapOf("tMs" to timesMs[out.size], "x" to -1.0, "y" to -1.0, "durMs" to 0L, "dist" to 0.0))
+        }
+        return out
+    }
+
+    // A press shows for a frame or two (a faint ripple on the key), about 250 ms after the touch on a phone
+    // that records at 30 fps with encoder delay: look at every ~40 ms and take the first reaction.
+    private val LOCATE_OFFSETS = LongArray(17) { 40L * (it + 1) }
+
+    // The frame comes back with its own aspect ratio (not always exactly W x H): keep its real size.
+    private var lastW = W
+    private var lastH = H
+
+    private fun frameLuma(mmr: MediaMetadataRetriever, ms: Long): IntArray? {
+        val bmp = mmr.getScaledFrameAtTime(ms * 1000, MediaMetadataRetriever.OPTION_CLOSEST, W, H) ?: return null
+        lastW = bmp.width
+        lastH = bmp.height
+        val l = lumaOf(bmp)
+        bmp.recycle()
+        return l
+    }
+
+    /**
+     * The middle of the biggest changed area between two frames, as fractions, when that area is a
+     * part of the screen (not a page change: more than [REACT_MAX] of it) and not just noise.
+     */
+    internal fun reaction(a: IntArray, b: IntArray, w: Int = W, h: Int = H): DoubleArray? {
+        if (a.size != b.size || a.size != w * h) return null
+        val changed = BooleanArray(a.size)
+        var n = 0
+        for (i in a.indices) if (abs(a[i] - b[i]) > REACT_DIFF) { changed[i] = true; n++ }
+        val share = n.toDouble() / a.size
+        if (n < REACT_MIN || share > REACT_MAX) return null
+        // The biggest connected area wins; small flecks elsewhere (a clock, an animation) are ignored.
+        val seen = BooleanArray(a.size)
+        val stack = IntArray(a.size)
+        var bestArea = 0
+        var bx = 0.0
+        var by = 0.0
+        for (s in a.indices) {
+            if (!changed[s] || seen[s]) continue
+            var sp = 0
+            stack[sp++] = s
+            seen[s] = true
+            var area = 0
+            var sx = 0L
+            var sy = 0L
+            while (sp > 0) {
+                val p = stack[--sp]
+                val px = p % w
+                val py = p / w
+                area++
+                sx += px; sy += py
+                if (px > 0 && changed[p - 1] && !seen[p - 1]) { seen[p - 1] = true; stack[sp++] = p - 1 }
+                if (px < w - 1 && changed[p + 1] && !seen[p + 1]) { seen[p + 1] = true; stack[sp++] = p + 1 }
+                if (py > 0 && changed[p - w] && !seen[p - w]) { seen[p - w] = true; stack[sp++] = p - w }
+                if (py < h - 1 && changed[p + w] && !seen[p + w]) { seen[p + w] = true; stack[sp++] = p + w }
+            }
+            if (area > bestArea) {
+                bestArea = area
+                bx = (sx.toDouble() / area + 0.5) / w
+                by = (sy.toDouble() / area + 0.5) / h
+            }
+        }
+        return if (bestArea >= REACT_MIN) doubleArrayOf(bx, by) else null
+    }
+
+    // Low on purpose: the ripple of a pressed key is faint. The biggest connected area wins, which is the key
+    // (the digit that appears after it is small), and the first frame with a reaction decides.
+    private const val REACT_DIFF = 4
+    private const val REACT_MIN = 20
+    private const val REACT_MAX = 0.35
+
     private fun lumaOf(b: Bitmap): IntArray {
         val w = b.width
         val h = b.height

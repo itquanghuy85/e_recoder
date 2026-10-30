@@ -168,6 +168,100 @@ void main() {
     });
   });
 
+  group('automatic touches (no shake, no hidden corner)', () {
+    RecSavedEvent withTouches(List<int> times) => RecSavedEvent(
+      'content://v/9',
+      'ESR_9.mp4',
+      20000,
+      1000,
+      width: 720,
+      height: 1600,
+      touches: [for (final t in times) RawTouch(tMs: t)],
+    );
+
+    test('a start request in clean mode listens to touches, in dot mode it does not', () async {
+      final (c, fake, _) = await _make({'marker.mode': 1});
+      await c.read(recorderProvider.notifier).start();
+      expect(fake.lastRequest!.watchTouches, isTrue);
+      expect(fake.lastRequest!.toMap()['watchTouches'], true);
+      final (c2, fake2, _) = await _make({'marker.mode': 0});
+      await c2.read(recorderProvider.notifier).start();
+      expect(fake2.lastRequest!.watchTouches, isFalse);
+    });
+
+    test('the other ways of finding touches do not listen', () async {
+      for (final src in [0, 1, 2]) {
+        final (c, fake, _) = await _make({
+          'marker.mode': 1,
+          'marker.touchSourceV2': src,
+        });
+        await c.read(recorderProvider.notifier).start();
+        expect(fake.lastRequest!.watchTouches, isFalse, reason: 'source $src');
+      }
+    });
+
+    test(
+      'a choice saved before the automatic source existed does not hide it',
+      () async {
+        // the old key held "manual" for almost everyone because it was the quiet default
+        final (c, _, _) = await _make({'marker.touchSource': 2});
+        expect(c.read(markerSettingsProvider).touchSource, TouchSource.auto);
+      },
+    );
+
+    test('automatic is the default source', () async {
+      final (c, _, _) = await _make();
+      expect(c.read(markerSettingsProvider).touchSource, TouchSource.auto);
+    });
+
+    test('touches alone make a finished edit: marks where the place was found, captions elsewhere', () async {
+      final (_, fake, store) = await _make({'marker.mode': 1});
+      fake.touchPlaces[3000] = (x: 0.3, y: 0.6);
+      // 9000 has no place: a caption and a freeze only
+      fake.controller.add(withTouches([3000, 9000]));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      final p = (await store.load('content://v/9'))!;
+      expect(fake.calls, contains('locateTouches:2'));
+      expect(p.markers.length, 1);
+      expect(p.markers.single.spec.x0, closeTo(0.3, 1e-9));
+      expect(p.markers.single.spec.y0, closeTo(0.6, 1e-9));
+      expect(p.texts.length, 1); // the step caption of the touch with no place
+      expect(
+        p.segments.any((s) => s.isStill),
+        isTrue,
+      ); // the freeze at the touches
+      expect(p.zooms.length, 1); // it zooms into the touch whose place is known
+    });
+
+    test('no touches heard: no touch lookup, no project', () async {
+      final (_, fake, store) = await _make({'marker.mode': 1});
+      fake.controller.add(_saved());
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(fake.calls.where((e) => e.startsWith('locateTouches')), isEmpty);
+      expect(await store.load('content://v/9'), isNull);
+    });
+
+    test('hand-placed marks and heard touches live together', () async {
+      final (_, fake, store) = await _make({'marker.mode': 1});
+      fake.touchPlaces[5000] = (x: 0.7, y: 0.2);
+      fake.controller.add(
+        RecSavedEvent(
+          'content://v/9',
+          'ESR_9.mp4',
+          20000,
+          1000,
+          width: 720,
+          height: 1600,
+          marks: [_mark(1000)],
+          touches: [RawTouch(tMs: 5000)],
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      final p = (await store.load('content://v/9'))!;
+      expect(p.markers.length, greaterThanOrEqualTo(2));
+    });
+  });
+
   group('editor auto direct', () {
     test(
       'analyses idle stretches once and applies everything as one undo step',
@@ -286,20 +380,23 @@ void main() {
       expect(c.project.segments.length, 1);
     });
 
-    test('moments without places give captions and freezes, no marks', () async {
-      final fake = FakeRecorder();
-      addTearDown(fake.controller.close);
-      fake.touches = const [RawTouch(tMs: 4000), RawTouch(tMs: 12000)];
-      final c = make(fake);
-      await c.directFromTouches(
-        options: c.directorOptions.copyWith(pauseZoom: 1.5),
-        stepPrefix: 'Step ',
-      );
-      expect(c.lastTouches!.placed, isFalse);
-      expect(c.project.markers, isEmpty);
-      expect(c.project.zooms, isEmpty);
-      expect(c.project.texts.length, 2);
-      expect(c.project.segments.where((s) => s.isStill).length, 2);
-    });
+    test(
+      'moments without places give captions and freezes, no marks',
+      () async {
+        final fake = FakeRecorder();
+        addTearDown(fake.controller.close);
+        fake.touches = const [RawTouch(tMs: 4000), RawTouch(tMs: 12000)];
+        final c = make(fake);
+        await c.directFromTouches(
+          options: c.directorOptions.copyWith(pauseZoom: 1.5),
+          stepPrefix: 'Step ',
+        );
+        expect(c.lastTouches!.placed, isFalse);
+        expect(c.project.markers, isEmpty);
+        expect(c.project.zooms, isEmpty);
+        expect(c.project.texts.length, 2);
+        expect(c.project.segments.where((s) => s.isStill).length, 2);
+      },
+    );
   });
 }

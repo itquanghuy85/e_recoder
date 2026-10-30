@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +8,7 @@ import '../../core/permissions_gateway.dart';
 import '../editor/auto_director.dart';
 import '../editor/edit_project.dart';
 import '../editor/project_store.dart';
+import '../editor/touch_log.dart' show TouchClassifier;
 import '../library/media_repository.dart';
 import '../marker/marker_settings.dart';
 import 'rec_settings.dart';
@@ -77,7 +79,9 @@ class RecorderController extends Notifier<RecorderState> {
       case RecSavedEvent():
         state = state.copyWith(notice: SavedNotice(e.name, e.uri));
         ref.invalidate(mediaListProvider);
-        if (e.marks.isNotEmpty) unawaited(_saveDraft(e));
+        if (e.marks.isNotEmpty || e.touches.isNotEmpty) {
+          unawaited(_saveDraft(e));
+        }
       case RecErrorEvent():
         state = state.copyWith(notice: ErrorNotice(e.code));
       case ExportProgressEvent() || ExportDoneEvent() || ExportErrorEvent():
@@ -109,6 +113,38 @@ class RecorderController extends Notifier<RecorderState> {
         ),
       );
       await ref.read(projectStoreProvider).save(draft);
+      // Touches heard while recording: find where they were and build the rest of the edit from
+      // them (captions + freezes, and marks + zoom where the place is known), right now, so the
+      // video opens in the editor already edited. A failure leaves the draft as it is.
+      if (e.touches.isNotEmpty) {
+        final placed = await _native.locateTouches(e.uri, [
+          for (final t in e.touches) t.tMs,
+        ]);
+        final events = TouchClassifier.classify(placed);
+        if (events.isNotEmpty) {
+          final vi = PlatformDispatcher.instance.locale.languageCode == 'vi';
+          final options = DirectorOptions(
+            zoom: mk.autoZoom,
+            number: mk.autoNumber,
+            idle: false,
+            zoomScale: mk.zoomScale,
+            zoomRampMs: mk.zoomRampMs,
+            zoomHoldMs: mk.zoomHoldMs,
+            pauseMs: mk.pauseMs,
+            pauseZoom: mk.pauseZoom,
+            inputMode: mk.inputMode,
+          );
+          var auto = AutoDirector.fromTouches(
+            draft,
+            events,
+            options,
+            stepPrefix: vi ? 'Bước ' : 'Step ',
+          );
+          // Zoom into the touches whose place is known (fromTouches adds the marks, the freezes and the typing).
+          if (mk.autoZoom) auto = AutoDirector.autoZoom(auto, options);
+          await ref.read(projectStoreProvider).save(auto);
+        }
+      }
     } catch (_) {
       // A failed draft only means the user places the markers by hand in the editor.
     }
@@ -161,6 +197,8 @@ class RecorderController extends Notifier<RecorderState> {
         markMode: mk.mode.name,
         markCorner: mk.corner,
         armShake: mk.armShake,
+        watchTouches:
+            mk.mode == MarkMode.clean && mk.touchSource == TouchSource.auto,
       ),
     );
     return ok ? StartResult.ok : StartResult.declined;

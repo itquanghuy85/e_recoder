@@ -26,6 +26,8 @@ data class RecConfig(
     /** 0 top-left, 1 top-right, 2 bottom-left, 3 bottom-right. */
     val markCorner: Int = 2,
     val armShake: Boolean = false,
+    /** Clean mode: listen to every touch (time only) so the editor can build the edit from them. */
+    val watchTouches: Boolean = false,
 ) {
     val clean get() = markMode == "clean"
 
@@ -51,6 +53,7 @@ data class RecConfig(
             markMode = m["markMode"] as? String ?: "dot",
             markCorner = (m["markCorner"] as? Number)?.toInt() ?: 2,
             armShake = m["armShake"] as? Boolean ?: false,
+            watchTouches = m["watchTouches"] as? Boolean ?: false,
         )
     }
 }

@@ -1,0 +1,76 @@
+appId: com.huluca.escreenrecorder
+name: Clean recording finds the taps by itself - no shaking, no hidden corner
+tags:
+  - p1
+  - module-marker
+  - module-editor
+---
+# Record clean with the automatic touch source, tap a few keys of the Calculator and stop. The video
+# must open in the editor already edited from those taps. The other app is the Samsung Calculator:
+# Settings hides overlay windows (an Android rule), so nothing can be heard over it.
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_clean
+      CORNER: corner_2
+# Make sure the touch source is "Automatic" (the default).
+- tapOn:
+    text: "Cài đặt.*"
+- tapOn:
+    id: "settings_markers"
+- scrollUntilVisible:
+    element:
+      id: "touch_source_auto"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: "touch_source_auto"
+- back
+- tapOn:
+    text: "Quay.*"
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: com.sec.android.app.popupcalculator
+    stopApp: false
+- waitForAnimationToEnd:
+    timeout: 3000
+# Plain taps, a few seconds apart, with nothing armed.
+- tapOn:
+    text: "7"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    text: "5"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    text: "9"
+- waitForAnimationToEnd:
+    timeout: 2500
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 25000
+# Give the app a moment to find where the taps were and build the edit.
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 12000
+    optional: true
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- takeScreenshot: artifacts/clean_auto_editor

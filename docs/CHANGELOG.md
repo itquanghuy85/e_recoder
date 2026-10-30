@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-10-31] Quay sạch tự nhận lần bấm (không lắc, không vùng ẩn) + Cài đặt chia nhóm rõ
+- **Nghe mọi lần bấm khi quay sạch** (`overlay/TouchWatcher.kt`): cửa sổ ẩn 1x1 px dùng `FLAG_WATCH_OUTSIDE_TOUCH`, Android báo `ACTION_OUTSIDE` cho mỗi lần chạm ở bất kỳ đâu. Không vẽ gì (video vẫn sạch), không cần lắc máy, không cần chạm vùng ẩn, không quyền mới. Chỉ ghi THỜI ĐIỂM (Android giấu vị trí chạm của app khác); không ghi nội dung màn hình hay phím gõ.
+- **Tìm chỗ bấm từ hình ảnh** (`TouchScan.locate` + `reaction`): so khung ngay trước lần chạm với các khung sau (mỗi 40 ms, tới 680 ms), ngưỡng thấp (vệt sáng của phím vừa bấm rất mờ), vùng thay đổi liên thông lớn nhất, khung phản ứng đầu tiên quyết định; thay đổi gần cả màn hình (đổi trang) thì không có vị trí. Đo trên S25 Ultra bằng máy tính Samsung: phím 7 / 5 / 9 cho (0,17-0,18 ; 0,55-0,58) / (0,40 ; 0,68) / (0,62-0,66 ; 0,58).
+- **Tự dựng ngay khi quay xong** (`recorder_controller._saveDraft`): dấu số tại chỗ bấm, phóng to, dừng hình, chú thích "Bước N" cho lần bấm không biết chỗ. Nguồn phát hiện mới `TouchSource.auto` (mặc định; lưu khoá mới `marker.touchSourceV2`, lựa chọn "Thủ công" cũ không còn che mất nó). Các nguồn cũ (chấm trắng, thủ công, tắt) giữ nguyên.
+- Hạn chế đã biết: màn hình hệ thống chặn cửa sổ phủ (Cài đặt, hộp xin quyền) nên không nghe được ở đó (quy tắc Android); lần bấm vào nút "Dừng quay" của chính app cũng được tính thành một bước cuối.
+- **Cài đặt chia nhóm** (`settings/section_header.dart`): "Ứng dụng / Quay màn hình / Trợ giúp và thông tin", mỗi nhóm có một dòng mục đích và biểu tượng. Màn "Dấu đánh dấu" thành 4 nhóm đánh số: 1 Kiểu dấu, 2 Dấu hiện bao lâu, 3 Cách đánh dấu khi quay, 4 Tự động dựng sau khi quay (tách khỏi phần cách đánh dấu; khi đang ở chế độ chấm nhỏ thì nói rõ vì sao chưa dùng được và có nút bật Quay sạch). Mô tả các mục viết lại cho người mới. Có ghi chú: vài màn hình hệ thống chặn vùng ẩn.
+- Test: Flutter 345, Android 92, Maestro `clean_auto_touches`, `settings_layout` PASS trên S25 Ultra.
+
 ## [2026-10-29] Dựng từ lần chạm: phân loại chạm/bàn phím, dừng hình tại chỗ chạm, chấm trắng "Hiển thị lần chạm"
 - **Quyết định về Trợ năng: vẫn KHÔNG dùng** (Google Play chỉ chấp nhận cho app hỗ trợ người khuyết tật, và dịch vụ này đọc được cả ô mật khẩu). Vì vậy mục "Cơ bản" bị bỏ; còn **Tắt / Chấm trắng / Thủ công** (Cài đặt → Dấu → chế độ sạch → "Phát hiện lần chạm"). Hệ quả: app **không đọc nội dung gõ** và không có công tắc "đọc nội dung ô nhập" (không có nguồn dữ liệu để đọc); video chỉ hiện "Đang nhập…" / "Đã nhập".
 - **Dữ liệu mỗi lần chạm** (`RecMark`): thêm `kind` (tap/input/swipe/noise), `group`, `app`, `sensitive`, `pauseMs`, `zoom`, tùy chọn; dữ liệu cũ đọc thành `tap`. Dấu đặt tay ghi `kind=tap`.

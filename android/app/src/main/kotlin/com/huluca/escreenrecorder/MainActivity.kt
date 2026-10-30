@@ -60,6 +60,12 @@ class MainActivity : FlutterActivity() {
                     (call.argument<Number>("durationMs")!!).toLong(), call.argument<String>("mode") ?: "changes",
                 )
             }
+            "locateTouches" -> async(result) {
+                TouchScan.locate(
+                    this, Uri.parse(call.argument<String>("uri")!!),
+                    (call.argument<List<Number>>("times") ?: emptyList()).map { it.toLong() },
+                )
+            }
             // Where the user is in "show taps": developer options on, and the option itself on.
             "touchSetup" -> {
                 val dev = Settings.Global.getInt(contentResolver, Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1

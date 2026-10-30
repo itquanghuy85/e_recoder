@@ -24,6 +24,7 @@ import com.huluca.escreenrecorder.marker.MarkerSpec
 import com.huluca.escreenrecorder.overlay.CountdownOverlay
 import com.huluca.escreenrecorder.overlay.Haptics
 import com.huluca.escreenrecorder.overlay.HotCorner
+import com.huluca.escreenrecorder.overlay.TouchWatcher
 import com.huluca.escreenrecorder.overlay.MarkDot
 import com.huluca.escreenrecorder.overlay.ShakeDetector
 import com.huluca.escreenrecorder.overlay.formatClock
@@ -39,12 +40,16 @@ class RecorderService : Service(), ControlBar.Listener {
     private var layer: MarkerLayer? = null
     private var dot: MarkDot? = null
     private var corner: HotCorner? = null
+    private var watcher: TouchWatcher? = null
     private var shake: ShakeDetector? = null
     private var countdown: CountdownOverlay? = null
     private var config: RecConfig? = null
     private var pausedByPicker = false
     /** Clean mode: markers placed during the recording, saved next to the video for the editor. */
     private val marks = ArrayList<Map<String, Any?>>()
+
+    /** Touches heard while recording clean ({tMs, x, y} like a scan result; x/y -1 = place unknown). */
+    private val touches = ArrayList<Map<String, Any?>>()
     private var tempFile: File? = null
     private var startedAtMs = 0L
     private var pausedAtMs = 0L
@@ -107,6 +112,7 @@ class RecorderService : Service(), ControlBar.Listener {
         paused = false
         this.config = config
         marks.clear()
+        touches.clear()
         pausedByPicker = false
         if (config.floatingBar) {
             if (config.clean) startClean(config) else startDot(config)
@@ -164,6 +170,9 @@ class RecorderService : Service(), ControlBar.Listener {
         l.show()
         layer = l
         if (config.armShake) shake = ShakeDetector(this) { arm() }.also { it.start() }
+        if (config.watchTouches) {
+            watcher = TouchWatcher(this) { eventUptimeMs, _, _ -> addTouch(eventUptimeMs) }.also { it.show() }
+        }
         updateNotification(0)
     }
 
@@ -172,6 +181,14 @@ class RecorderService : Service(), ControlBar.Listener {
         if (paused || config?.clean != true || lay.annotating) return
         Haptics.tick(this, 25)
         lay.arm(ARM_TIMEOUT_MS)
+    }
+
+    /** A touch somewhere on screen: its video time is "now" minus how long ago the event happened. */
+    private fun addTouch(eventUptimeMs: Long) {
+        if (paused) return
+        val ago = (android.os.SystemClock.uptimeMillis() - eventUptimeMs).coerceIn(0L, 1000L)
+        val t = (elapsedMs() - ago).coerceAtLeast(0L)
+        touches.add(mapOf("tMs" to t, "x" to -1.0, "y" to -1.0, "durMs" to 0L, "dist" to 0.0))
     }
 
     private fun addMark(spec: MarkerSpec, tMs: Long) {
@@ -257,6 +274,7 @@ class RecorderService : Service(), ControlBar.Listener {
         session = null
         val cfg = config
         val savedMarks = ArrayList(marks)
+        val savedTouches = ArrayList(touches)
         Thread({
             val ok = try { s.stop() } catch (_: Exception) { false }
             val file = tempFile
@@ -266,7 +284,7 @@ class RecorderService : Service(), ControlBar.Listener {
             if (ok && file != null && file.length() > 0) {
                 saved = MediaRepo.save(this, file, durationMs)
                 if (saved == null) errorCode = "save_failed"
-                else if (cfg != null) saved = saved + mapOf("width" to cfg.width, "height" to cfg.height, "marks" to savedMarks)
+                else if (cfg != null) saved = saved + mapOf("width" to cfg.width, "height" to cfg.height, "marks" to savedMarks, "touches" to savedTouches)
             } else {
                 errorCode = "empty_recording"
             }
@@ -298,6 +316,7 @@ class RecorderService : Service(), ControlBar.Listener {
         dot?.hide(); dot = null
         layer?.hide(); layer = null
         corner?.hide(); corner = null
+        watcher?.hide(); watcher = null
     }
 
     private fun finishAndClose() {

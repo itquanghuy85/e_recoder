@@ -257,7 +257,7 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get settingsMarkersSub =>
-      'Ngón tay, mũi tên, vòng tròn… báo trước chỗ sắp bấm';
+      'Dấu báo trước chỗ sắp bấm, cách đánh dấu khi quay và tự động dựng sau khi quay';
 
   @override
   String get settingsMarkersHint =>
@@ -668,13 +668,14 @@ class AppL10nVi extends AppL10n {
   String get settingsPermissions => 'Quyền và pin';
 
   @override
-  String get settingsPermissionsSub => 'Kiểm tra các quyền cần để quay';
+  String get settingsPermissionsSub =>
+      'Kiểm tra app đã đủ quyền để quay và chạy nền chưa';
 
   @override
   String get settingsGuide => 'Hướng dẫn';
 
   @override
-  String get settingsGuideSub => 'Xem lại cách dùng dấu báo trước';
+  String get settingsGuideSub => 'Xem lại các bước dùng app lần đầu';
 
   @override
   String get settingsPrivacy => 'Quyền riêng tư';
@@ -1715,4 +1716,67 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get captionsApplyTemplate => 'Dùng mẫu TikTok có sẵn';
+
+  @override
+  String get settingsGroupApp => 'Ứng dụng';
+
+  @override
+  String get settingsGroupRecord => 'Quay màn hình';
+
+  @override
+  String get settingsGroupHelp => 'Trợ giúp và thông tin';
+
+  @override
+  String get markerSecLook => 'Kiểu dấu';
+
+  @override
+  String get markerSecLookSub =>
+      'Chọn dấu và chỉnh màu, độ dày, cỡ. Khung xem thử ở trên cho thấy ngay kết quả.';
+
+  @override
+  String get markerSecTime => 'Dấu hiện bao lâu';
+
+  @override
+  String get markerSecTimeSub =>
+      'Dấu ở lại bao lâu sau khi bạn đặt, và có tự thoát chế độ chỉ điểm hay không.';
+
+  @override
+  String get markerSecHow => 'Cách đánh dấu khi quay';
+
+  @override
+  String get markerSecHowSub =>
+      'Chọn cách đặt dấu lúc đang quay: chấm nhỏ ở góc màn hình, hoặc quay sạch rồi dựng sau.';
+
+  @override
+  String get markerSecAuto => 'Tự động dựng sau khi quay';
+
+  @override
+  String get markerSecAutoSub =>
+      'App tự phóng to vào chỗ bạn đã đánh dấu và đánh số bước ngay khi quay xong. Bạn vẫn sửa được trong trình chỉnh sửa.';
+
+  @override
+  String get markerAutoNeedsClean =>
+      'Tự động dựng chỉ có khi quay sạch, vì lúc đó video chưa có dấu nào chen vào để app dựng lại cho đẹp.';
+
+  @override
+  String get markerAutoSwitch => 'Bật Quay sạch, dựng sau';
+
+  @override
+  String get settingsGroupRecordSub =>
+      'Cách đánh dấu khi quay, tự động dựng và các quyền cần để quay';
+
+  @override
+  String get settingsGroupHelpSub =>
+      'Xem lại hướng dẫn, quyền riêng tư và thông tin ứng dụng';
+
+  @override
+  String get markCleanLimit =>
+      'Lưu ý: vài màn hình của hệ thống (như Cài đặt hay màn hình xin quyền) chặn vùng ẩn, nên không đánh dấu được ở đó. Ứng dụng thường thì dùng bình thường.';
+
+  @override
+  String get touchSourceAuto => 'Tự động';
+
+  @override
+  String get touchSourceAutoHint =>
+      'Khuyên dùng. Khi quay sạch, app tự nghe mọi lần bạn bấm vào màn hình, không cần lắc máy hay chạm vùng ẩn. Quay xong, app tự tìm chỗ bạn bấm, phóng to và đánh số các bước.';
 }

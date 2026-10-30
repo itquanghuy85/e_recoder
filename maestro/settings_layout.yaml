@@ -1,0 +1,46 @@
+appId: com.huluca.escreenrecorder
+name: Settings layout - groups with a purpose, marker settings in four steps, automatic editing switch
+tags:
+  - p1
+  - module-settings
+---
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn:
+    text: "Cài đặt.*"
+- takeScreenshot: artifacts/settings_main
+# Make sure the dot mode is on, so the "automatic editing needs clean recording" card shows.
+- tapOn:
+    id: "settings_markers"
+- scrollUntilVisible:
+    element:
+      id: "mode_dot"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: "mode_dot"
+- takeScreenshot: artifacts/settings_markers_how
+- scrollUntilVisible:
+    element:
+      id: "auto_switch_clean"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: artifacts/settings_markers_auto_needs_clean
+# One tap: clean recording on, the automatic editing options appear.
+- tapOn:
+    id: "auto_switch_clean"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: artifacts/settings_markers_auto_on
+# Put the phone back as it was: the dot mode.
+- scrollUntilVisible:
+    element:
+      id: "mode_dot"
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: "mode_dot"
+- back
+- tapOn:
+    text: "Quay.*"

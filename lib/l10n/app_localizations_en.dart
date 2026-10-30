@@ -257,7 +257,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get settingsMarkersSub =>
-      'Finger, arrow, circle… shown before the tap';
+      'Markers shown before a tap, how you mark while recording, and automatic editing afterwards';
 
   @override
   String get settingsMarkersHint =>
@@ -670,13 +670,14 @@ class AppL10nEn extends AppL10n {
   String get settingsPermissions => 'Permissions and battery';
 
   @override
-  String get settingsPermissionsSub => 'Check the permissions needed to record';
+  String get settingsPermissionsSub =>
+      'Check the app has what it needs to record and run in the background';
 
   @override
   String get settingsGuide => 'How to use';
 
   @override
-  String get settingsGuideSub => 'See how point-ahead markers work again';
+  String get settingsGuideSub => 'See the first-use steps again';
 
   @override
   String get settingsPrivacy => 'Privacy';
@@ -1720,4 +1721,66 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get captionsApplyTemplate => 'Use the TikTok template';
+
+  @override
+  String get settingsGroupApp => 'App';
+
+  @override
+  String get settingsGroupRecord => 'Screen recording';
+
+  @override
+  String get settingsGroupHelp => 'Help and information';
+
+  @override
+  String get markerSecLook => 'Marker look';
+
+  @override
+  String get markerSecLookSub =>
+      'Pick a marker and adjust its colour, thickness and size. The preview above shows the result at once.';
+
+  @override
+  String get markerSecTime => 'How long a marker shows';
+
+  @override
+  String get markerSecTimeSub =>
+      'How long a marker stays after you place it, and whether pointer mode ends by itself.';
+
+  @override
+  String get markerSecHow => 'How you mark while recording';
+
+  @override
+  String get markerSecHowSub =>
+      'Choose how you place markers during a recording: a small dot in a corner, or record clean and edit afterwards.';
+
+  @override
+  String get markerSecAuto => 'Automatic editing after recording';
+
+  @override
+  String get markerSecAutoSub =>
+      'The app zooms in on the spots you marked and numbers the steps as soon as the recording ends. You can still change it in the editor.';
+
+  @override
+  String get markerAutoNeedsClean =>
+      'Automatic editing is only available with clean recording: nothing is drawn into the video, so the app can redraw the markers properly.';
+
+  @override
+  String get markerAutoSwitch => 'Turn on clean recording';
+
+  @override
+  String get settingsGroupRecordSub =>
+      'How you mark while recording, automatic editing, and the permissions recording needs';
+
+  @override
+  String get settingsGroupHelpSub => 'The guide, privacy, and app information';
+
+  @override
+  String get markCleanLimit =>
+      'Note: a few system screens (such as Settings or permission prompts) block the hidden zone, so you cannot mark there. Normal apps work as usual.';
+
+  @override
+  String get touchSourceAuto => 'Automatic';
+
+  @override
+  String get touchSourceAutoHint =>
+      'Recommended. While you record clean, the app hears every touch on the screen, with no shaking or hidden corner needed. When you stop, it finds where you tapped, zooms in and numbers the steps.';
 }

@@ -59,6 +59,18 @@ class FakeRecorder implements NativeRecorder {
   ({bool developer, bool showTaps}) setup = (developer: false, showTaps: false);
   final opened = <String>[];
 
+  /// Places [locateTouches] hands back, by time; a time not in it has no place.
+  final Map<int, ({double x, double y})> touchPlaces = {};
+
+  @override
+  Future<List<RawTouch>> locateTouches(String uri, List<int> timesMs) async {
+    calls.add('locateTouches:${timesMs.length}');
+    return [
+      for (final t in timesMs)
+        RawTouch(tMs: t, x: touchPlaces[t]?.x, y: touchPlaces[t]?.y),
+    ];
+  }
+
   @override
   Future<List<RawTouch>> scanTouches(
     String uri,

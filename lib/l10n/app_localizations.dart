@@ -550,7 +550,7 @@ abstract class AppL10n {
   /// No description provided for @settingsMarkersSub.
   ///
   /// In vi, this message translates to:
-  /// **'Ngón tay, mũi tên, vòng tròn… báo trước chỗ sắp bấm'**
+  /// **'Dấu báo trước chỗ sắp bấm, cách đánh dấu khi quay và tự động dựng sau khi quay'**
   String get settingsMarkersSub;
 
   /// No description provided for @settingsMarkersHint.
@@ -1300,7 +1300,7 @@ abstract class AppL10n {
   /// No description provided for @settingsPermissionsSub.
   ///
   /// In vi, this message translates to:
-  /// **'Kiểm tra các quyền cần để quay'**
+  /// **'Kiểm tra app đã đủ quyền để quay và chạy nền chưa'**
   String get settingsPermissionsSub;
 
   /// No description provided for @settingsGuide.
@@ -1312,7 +1312,7 @@ abstract class AppL10n {
   /// No description provided for @settingsGuideSub.
   ///
   /// In vi, this message translates to:
-  /// **'Xem lại cách dùng dấu báo trước'**
+  /// **'Xem lại các bước dùng app lần đầu'**
   String get settingsGuideSub;
 
   /// No description provided for @settingsPrivacy.
@@ -3282,6 +3282,114 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Dùng mẫu TikTok có sẵn'**
   String get captionsApplyTemplate;
+
+  /// No description provided for @settingsGroupApp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ứng dụng'**
+  String get settingsGroupApp;
+
+  /// No description provided for @settingsGroupRecord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay màn hình'**
+  String get settingsGroupRecord;
+
+  /// No description provided for @settingsGroupHelp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trợ giúp và thông tin'**
+  String get settingsGroupHelp;
+
+  /// No description provided for @markerSecLook.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểu dấu'**
+  String get markerSecLook;
+
+  /// No description provided for @markerSecLookSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn dấu và chỉnh màu, độ dày, cỡ. Khung xem thử ở trên cho thấy ngay kết quả.'**
+  String get markerSecLookSub;
+
+  /// No description provided for @markerSecTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu hiện bao lâu'**
+  String get markerSecTime;
+
+  /// No description provided for @markerSecTimeSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu ở lại bao lâu sau khi bạn đặt, và có tự thoát chế độ chỉ điểm hay không.'**
+  String get markerSecTimeSub;
+
+  /// No description provided for @markerSecHow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách đánh dấu khi quay'**
+  String get markerSecHow;
+
+  /// No description provided for @markerSecHowSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn cách đặt dấu lúc đang quay: chấm nhỏ ở góc màn hình, hoặc quay sạch rồi dựng sau.'**
+  String get markerSecHowSub;
+
+  /// No description provided for @markerSecAuto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động dựng sau khi quay'**
+  String get markerSecAuto;
+
+  /// No description provided for @markerSecAutoSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'App tự phóng to vào chỗ bạn đã đánh dấu và đánh số bước ngay khi quay xong. Bạn vẫn sửa được trong trình chỉnh sửa.'**
+  String get markerSecAutoSub;
+
+  /// No description provided for @markerAutoNeedsClean.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động dựng chỉ có khi quay sạch, vì lúc đó video chưa có dấu nào chen vào để app dựng lại cho đẹp.'**
+  String get markerAutoNeedsClean;
+
+  /// No description provided for @markerAutoSwitch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật Quay sạch, dựng sau'**
+  String get markerAutoSwitch;
+
+  /// No description provided for @settingsGroupRecordSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách đánh dấu khi quay, tự động dựng và các quyền cần để quay'**
+  String get settingsGroupRecordSub;
+
+  /// No description provided for @settingsGroupHelpSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem lại hướng dẫn, quyền riêng tư và thông tin ứng dụng'**
+  String get settingsGroupHelpSub;
+
+  /// No description provided for @markCleanLimit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu ý: vài màn hình của hệ thống (như Cài đặt hay màn hình xin quyền) chặn vùng ẩn, nên không đánh dấu được ở đó. Ứng dụng thường thì dùng bình thường.'**
+  String get markCleanLimit;
+
+  /// No description provided for @touchSourceAuto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động'**
+  String get touchSourceAuto;
+
+  /// No description provided for @touchSourceAutoHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khuyên dùng. Khi quay sạch, app tự nghe mọi lần bạn bấm vào màn hình, không cần lắc máy hay chạm vùng ẩn. Quay xong, app tự tìm chỗ bạn bấm, phóng to và đánh số các bước.'**
+  String get touchSourceAutoHint;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

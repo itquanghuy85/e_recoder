@@ -16,7 +16,10 @@ enum MarkMode { dot, clean }
 /// [off]: not at all. [dots]: it looks for Android's "show taps" spots in the video.
 /// [manual]: only the marks placed while recording (shake / notification). The frame-change
 /// search of "Build from touches" works with every choice.
-enum TouchSource { off, dots, manual }
+/// How the editor learns where you touched. [auto] listens to every touch while recording clean (no
+/// shaking, no hidden corner) and finds the places afterwards. New values are only ever added at the
+/// end: the index is what is saved.
+enum TouchSource { off, dots, manual, auto }
 
 /// Defaults the floating tray starts with. The tray itself changes colour/tool/size per session.
 class MarkerSettings {
@@ -35,7 +38,7 @@ class MarkerSettings {
     this.zoomScale = 1.7,
     this.zoomRampMs = 350,
     this.zoomHoldMs = 0,
-    this.touchSource = TouchSource.manual,
+    this.touchSource = TouchSource.auto,
     this.pauseMs = 800,
     this.pauseZoom = 1,
     this.inputMode = InputMode.merge,
@@ -146,8 +149,8 @@ class MarkerSettingsNotifier extends Notifier<MarkerSettings> {
       zoomScale: (s.getInt('marker.zoomScale', 170) / 100).clamp(1.2, 4.0),
       zoomRampMs: s.getInt('marker.zoomRamp', 350).clamp(100, 2000),
       zoomHoldMs: s.getInt('marker.zoomHold', 0).clamp(0, 5000),
-      touchSource: TouchSource
-          .values[s.getInt('marker.touchSource', 2).clamp(0, 2)],
+      touchSource:
+          TouchSource.values[s.getInt('marker.touchSourceV2', 3).clamp(0, 3)],
       pauseMs: s.getInt('marker.pause', 800).clamp(0, 1500),
       pauseZoom: (s.getInt('marker.pauseZoom', 100) / 100).clamp(1.0, 1.5),
       inputMode: InputMode.of(s.getInt('marker.inputMode', 0)),
@@ -171,7 +174,7 @@ class MarkerSettingsNotifier extends Notifier<MarkerSettings> {
     await s.setInt('marker.zoomScale', (v.zoomScale * 100).round());
     await s.setInt('marker.zoomRamp', v.zoomRampMs);
     await s.setInt('marker.zoomHold', v.zoomHoldMs);
-    await s.setInt('marker.touchSource', v.touchSource.index);
+    await s.setInt('marker.touchSourceV2', v.touchSource.index);
     await s.setInt('marker.pause', v.pauseMs);
     await s.setInt('marker.pauseZoom', (v.pauseZoom * 100).round());
     await s.setInt('marker.inputMode', v.inputMode.index);

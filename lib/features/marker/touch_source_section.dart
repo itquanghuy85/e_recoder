@@ -22,6 +22,7 @@ class TouchSourceSection extends ConsumerWidget {
     final s = ref.watch(markerSettingsProvider);
     final n = ref.read(markerSettingsProvider.notifier);
     final labels = {
+      TouchSource.auto: t.touchSourceAuto,
       TouchSource.off: t.touchSourceOff,
       TouchSource.dots: t.touchSourceDots,
       TouchSource.manual: t.touchSourceManual,
@@ -36,19 +37,31 @@ class TouchSourceSection extends ConsumerWidget {
         Wrap(
           spacing: Space.sm,
           children: [
-            for (final src in TouchSource.values)
+            for (final src in const [
+              TouchSource.auto,
+              TouchSource.dots,
+              TouchSource.manual,
+              TouchSource.off,
+            ])
               if (src != TouchSource.dots || isAndroid)
                 Semantics(
                   identifier: 'touch_source_${src.name}',
                   child: ChoiceChip(
                     label: Text(labels[src]!),
                     selected: s.touchSource == src,
-                    onSelected: (_) =>
-                        n.update(s.copyWith(touchSource: src)),
+                    onSelected: (_) => n.update(s.copyWith(touchSource: src)),
                   ),
                 ),
           ],
         ),
+        if (s.touchSource == TouchSource.auto)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Space.xs),
+            child: Text(
+              t.touchSourceAutoHint,
+              style: tt.bodySmall?.copyWith(color: c.onSurface),
+            ),
+          ),
         Text(
           t.touchSourceHint,
           style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
@@ -59,14 +72,14 @@ class TouchSourceSection extends ConsumerWidget {
             child: Semantics(
               identifier: 'touch_guide_open',
               child: TextButton.icon(
-              key: const ValueKey('touch_guide_open'),
-              onPressed: () => showDialog<void>(
-                context: context,
-                builder: (_) => const TouchGuideDialog(),
+                key: const ValueKey('touch_guide_open'),
+                onPressed: () => showDialog<void>(
+                  context: context,
+                  builder: (_) => const TouchGuideDialog(),
+                ),
+                icon: const Icon(Icons.developer_mode),
+                label: Text(t.touchGuideTitle),
               ),
-              icon: const Icon(Icons.developer_mode),
-              label: Text(t.touchGuideTitle),
-            ),
             ),
           ),
         const SizedBox(height: Space.sm),
@@ -91,7 +104,10 @@ class TouchSourceSection extends ConsumerWidget {
         ),
         Row(
           children: [
-            SizedBox(width: 120, child: Text(t.pauseTitle, style: tt.labelLarge)),
+            SizedBox(
+              width: 120,
+              child: Text(t.pauseTitle, style: tt.labelLarge),
+            ),
             Expanded(
               child: Slider(
                 key: const ValueKey('pause_ms'),
@@ -113,7 +129,10 @@ class TouchSourceSection extends ConsumerWidget {
         ),
         Row(
           children: [
-            SizedBox(width: 120, child: Text(t.pauseZoomTitle, style: tt.labelLarge)),
+            SizedBox(
+              width: 120,
+              child: Text(t.pauseZoomTitle, style: tt.labelLarge),
+            ),
             Expanded(
               child: Slider(
                 key: const ValueKey('pause_zoom'),

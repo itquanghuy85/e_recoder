@@ -8,6 +8,7 @@ import 'marker_preview.dart';
 import 'marker_settings.dart';
 import 'marker_spec.dart';
 import 'marker_timing.dart';
+import '../settings/section_header.dart';
 import 'touch_source_section.dart';
 
 /// Demo geometry per tool, all aimed at the mock button at (0.5, 0.55).
@@ -173,7 +174,12 @@ class _MarkerSettingsScreenState extends ConsumerState<MarkerSettingsScreen> {
             ),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                Text(t.markerDefaultTool, style: tt.titleMedium),
+                SettingsSectionHeader(
+                  step: 1,
+                  title: t.markerSecLook,
+                  sub: t.markerSecLookSub,
+                ),
+                Text(t.markerDefaultTool, style: tt.titleSmall),
                 const SizedBox(height: Space.sm),
                 Wrap(
                   spacing: Space.sm,
@@ -188,9 +194,7 @@ class _MarkerSettingsScreenState extends ConsumerState<MarkerSettingsScreen> {
                       ),
                   ],
                 ),
-                const SizedBox(height: Space.xl),
-                _ModeSection(settings: s),
-                const SizedBox(height: Space.xl),
+                const SizedBox(height: Space.md),
                 MarkerInspector(
                   spec: spec,
                   onChanged: (v) {
@@ -215,6 +219,11 @@ class _MarkerSettingsScreenState extends ConsumerState<MarkerSettingsScreen> {
                   style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
                 ),
                 const SizedBox(height: Space.xl),
+                SettingsSectionHeader(
+                  step: 2,
+                  title: t.markerSecTime,
+                  sub: t.markerSecTimeSub,
+                ),
                 Row(
                   children: [
                     Expanded(child: Text(t.markerHold, style: tt.titleMedium)),
@@ -295,11 +304,32 @@ class _MarkerSettingsScreenState extends ConsumerState<MarkerSettingsScreen> {
                     style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
                   ),
                 ],
+                const SizedBox(height: Space.xl),
+                SettingsSectionHeader(
+                  step: 3,
+                  title: t.markerSecHow,
+                  sub: t.markerSecHowSub,
+                ),
+                _ModeSection(settings: s),
                 const SizedBox(height: Space.sm),
                 Text(
                   s.mode == MarkMode.dot ? t.markDotNote : t.markCleanNote,
                   style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
                 ),
+                if (s.mode == MarkMode.clean) ...[
+                  const SizedBox(height: Space.xs),
+                  Text(
+                    t.markCleanLimit,
+                    style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                  ),
+                ],
+                const SizedBox(height: Space.xl),
+                SettingsSectionHeader(
+                  step: 4,
+                  title: t.markerSecAuto,
+                  sub: t.markerSecAutoSub,
+                ),
+                _AutoDirectSection(settings: s),
               ]),
             ),
           ),
@@ -419,8 +449,6 @@ class _ModeSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(t.markModeTitle, style: tt.titleMedium),
-        const SizedBox(height: Space.sm),
         _ModeCard(
           id: 'mode_dot',
           icon: Icons.radio_button_checked,
@@ -468,18 +496,71 @@ class _ModeSection extends ConsumerWidget {
             value: settings.armShake,
             onChanged: (v) => n.update(settings.copyWith(armShake: v)),
           ),
-        if (settings.mode == MarkMode.clean) const TouchSourceSection(),
-        if (settings.mode == MarkMode.clean) ...[
-          const SizedBox(height: Space.sm),
-          Text(t.autoAfterRec, style: tt.titleSmall),
-          CheckboxListTile(
-            key: const ValueKey('auto_zoom_setting'),
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-            controlAffinity: ListTileControlAffinity.leading,
-            title: Text(t.autoZoomOpt, style: tt.bodyMedium),
-            value: settings.autoZoom,
-            onChanged: (v) => n.update(settings.copyWith(autoZoom: v ?? false)),
+      ],
+    );
+  }
+}
+
+/// "Automatic editing after recording": what the app does by itself when a clean recording ends. It is
+/// its own group (not buried in the marking options) because it is the main reason to record clean.
+class _AutoDirectSection extends ConsumerWidget {
+  const _AutoDirectSection({required this.settings});
+  final MarkerSettings settings;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppL10n.of(context);
+    final tt = Theme.of(context).textTheme;
+    final c = Theme.of(context).colorScheme;
+    final n = ref.read(markerSettingsProvider.notifier);
+    if (settings.mode != MarkMode.clean) {
+      return Container(
+        padding: const EdgeInsets.all(Space.md),
+        decoration: BoxDecoration(
+          color: c.surfaceContainer,
+          borderRadius: BorderRadius.circular(Radii.md),
+          border: Border.all(color: c.outlineVariant),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              t.markerAutoNeedsClean,
+              style: tt.bodyMedium?.copyWith(color: c.onSurfaceVariant),
+            ),
+            const SizedBox(height: Space.sm),
+            Semantics(
+              identifier: 'auto_switch_clean',
+              child: FilledButton.tonalIcon(
+                onPressed: () =>
+                    n.update(settings.copyWith(mode: MarkMode.clean)),
+                icon: const Icon(Icons.visibility_off_outlined),
+                label: Text(t.markerAutoSwitch),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // How the editor learns where you tapped, to build the edit from your touches.
+        const TouchSourceSection(),
+        const SizedBox(height: Space.sm),
+        ...[
+          Semantics(
+            identifier: 'auto_zoom_opt',
+            child: CheckboxListTile(
+              key: const ValueKey('auto_zoom_setting'),
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              controlAffinity: ListTileControlAffinity.leading,
+              title: Text(t.autoZoomOpt, style: tt.bodyMedium),
+              value: settings.autoZoom,
+              onChanged: (v) =>
+                  n.update(settings.copyWith(autoZoom: v ?? false)),
+            ),
           ),
           CheckboxListTile(
             key: const ValueKey('auto_number_setting'),
