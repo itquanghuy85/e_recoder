@@ -76,7 +76,7 @@ double? zoomShown(WidgetTester t) {
   );
   if (badge.evaluate().isEmpty) return null;
   final s = t.widget<Text>(badge.first).data!;
-  return double.parse(s.replaceAll('×', '').replaceAll(',', '.'));
+  return double.parse(s.replaceAll('×', '').replaceAll(',', '.').replaceAll('%', '')) / 100;
 }
 
 void main() {
@@ -92,6 +92,10 @@ void main() {
     if (!clip.existsSync()) {
       // ignore: avoid_print
       print('STEP need_clip ${clip.path}');
+      final src = File('/data/local/tmp/it_clip.mp4');
+      if (await src.exists()) {
+        await src.copy(clip.path);
+      }
       for (var i = 0; i < 120 && !clip.existsSync(); i++) {
         await t.runAsync(
           () => Future<void>.delayed(const Duration(milliseconds: 500)),

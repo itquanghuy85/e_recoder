@@ -3,6 +3,8 @@ package com.huluca.escreenrecorder.export
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.LinearGradient
+import android.graphics.Shader
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
@@ -52,7 +54,15 @@ object OverlayRenderers {
         val haloPad = if (clip.outline) halo.strokeWidth else 0f
         val shadowR = if (clip.shadow) size * 0.12f else 0f
         val boxPad = if (clip.box != null) size * 0.35f else 0f
-        val pad = haloPad + boxPad + shadowR * 2 + 4f * u
+        val fxPad = when (clip.fx) {
+            "glow" -> size * 0.45f
+            "extrude" -> size * 0.12f
+            "glitch" -> size * 0.07f
+            "sticker" -> size * 0.3f
+            "hollow" -> size * 0.06f
+            else -> 0f
+        }
+        val pad = haloPad + boxPad + shadowR * 2 + fxPad + 4f * u
         val widths = lines.map { fill.measureText(it) }
         val textW = widths.max()
         val w = ceil(textW + pad * 2).toInt().coerceAtLeast(8)
@@ -74,9 +84,74 @@ object OverlayRenderers {
             }
             val y = pad + lineH * i + size * 0.95f
             if (clip.outline) c.drawText(line, x, y, halo)
-            c.drawText(line, x, y, fill)
+            drawFx(c, clip, fill, line, x, y, size)
         }
         return Rendered(bmp, w, h)
+    }
+
+    private fun scaleRgb(color: Int, f: Float): Int {
+        val r = (((color shr 16) and 0xFF) * f).toInt().coerceIn(0, 255)
+        val g = (((color shr 8) and 0xFF) * f).toInt().coerceIn(0, 255)
+        val b = ((color and 0xFF) * f).toInt().coerceIn(0, 255)
+        return (0xFF shl 24) or (r shl 16) or (g shl 8) or b
+    }
+
+    /** One line of text in the look [TextClip.fx] asks for; "none" is the plain fill. */
+    private fun drawFx(c: Canvas, clip: TextClip, fill: Paint, line: String, x: Float, y: Float, size: Float) {
+        val base = clip.color or 0xFF000000.toInt()
+        when (clip.fx) {
+            "glow" -> {
+                val g = Paint(fill).apply { setShadowLayer(size * 0.4f, 0f, 0f, base) }
+                c.drawText(line, x, y, g)
+                c.drawText(line, x, y, g)
+                val core = Paint(fill).apply { color = 0xFFFFFFFF.toInt(); clearShadowLayer() }
+                core.alpha = 200
+                c.drawText(line, x, y, core)
+            }
+            "gradient" -> {
+                val p = Paint(fill).apply {
+                    shader = LinearGradient(x, y - size * 0.85f, x, y + size * 0.12f, base, 0xFFFF5F6D.toInt(), Shader.TileMode.CLAMP)
+                }
+                c.drawText(line, x, y, p)
+            }
+            "extrude" -> {
+                val step = max(1f, size * 0.018f)
+                val depth = 6
+                val dark = Paint(fill).apply { color = scaleRgb(base, 0.45f); clearShadowLayer() }
+                for (k in depth downTo 1) c.drawText(line, x + k * step, y + k * step, dark)
+                c.drawText(line, x, y, fill)
+            }
+            "hollow" -> {
+                val p = Paint(fill).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = max(2f, size * 0.06f)
+                    strokeJoin = Paint.Join.ROUND
+                    clearShadowLayer()
+                }
+                c.drawText(line, x, y, p)
+            }
+            "glitch" -> {
+                val g = size * 0.045f
+                val cyan = Paint(fill).apply { color = 0xFF00E5FF.toInt(); clearShadowLayer() }
+                val red = Paint(fill).apply { color = 0xFFFF2D55.toInt(); clearShadowLayer() }
+                c.drawText(line, x - g, y, cyan)
+                c.drawText(line, x + g, y, red)
+                c.drawText(line, x, y, fill)
+            }
+            "sticker" -> {
+                val edge = Paint(fill).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = size * 0.26f
+                    strokeJoin = Paint.Join.ROUND
+                    color = 0xFFFFFFFF.toInt()
+                    setShadowLayer(size * 0.1f, 0f, size * 0.05f, 0x88000000.toInt())
+                }
+                c.drawText(line, x, y, edge)
+                val inner = Paint(fill).apply { clearShadowLayer() }
+                c.drawText(line, x, y, inner)
+            }
+            else -> c.drawText(line, x, y, fill)
+        }
     }
 
     /** A solid rounded block that hides what is under it. */

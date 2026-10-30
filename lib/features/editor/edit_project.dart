@@ -66,7 +66,25 @@ enum TextFont { barlow, sans, condensed, serif, mono, cursive }
 enum TextAlignment { left, center, right }
 
 /// One-tap looks for a caption. Only styling changes: text, timing and position stay.
-enum TextPreset { classic, subtitle, yellow, neon, clean, label }
+enum TextPreset {
+  classic,
+  subtitle,
+  yellow,
+  neon,
+  clean,
+  label,
+  glow,
+  gradient,
+  extrude,
+  hollow,
+  glitch,
+  sticker,
+}
+
+/// Looks drawn into the text bitmap itself (so preview and export are the same picture).
+/// [glow] a soft halo of the text colour; [gradient] a two-colour fill; [extrude] a solid 3D edge;
+/// [hollow] outline only; [glitch] cyan and red copies either side; [sticker] a thick white edge.
+enum TextFx { none, glow, gradient, extrude, hollow, glitch, sticker }
 
 extension TextPresetLook on TextPreset {
   TextItem apply(TextItem t) => switch (this) {
@@ -118,6 +136,67 @@ extension TextPresetLook on TextPreset {
       bold: true,
       sizeU: 18,
     ),
+    // The looks below also pop in, like the ready-made styles of video editors.
+    TextPreset.glow => t.copyWith(
+      color: const Color(0xFFFF4FD8),
+      outline: false,
+      box: null,
+      shadow: false,
+      bold: true,
+      sizeU: 26,
+      fx: TextFx.glow,
+      motion: const ItemMotion(enter: EnterExit.pop),
+    ),
+    TextPreset.gradient => t.copyWith(
+      color: const Color(0xFFFFE259),
+      outline: true,
+      box: null,
+      shadow: true,
+      bold: true,
+      sizeU: 26,
+      fx: TextFx.gradient,
+      motion: const ItemMotion(enter: EnterExit.slideUp),
+    ),
+    TextPreset.extrude => t.copyWith(
+      color: const Color(0xFFFFD60A),
+      outline: false,
+      box: null,
+      shadow: false,
+      bold: true,
+      sizeU: 28,
+      fx: TextFx.extrude,
+      motion: const ItemMotion(enter: EnterExit.pop),
+    ),
+    TextPreset.hollow => t.copyWith(
+      color: const Color(0xFFFFFFFF),
+      outline: false,
+      box: null,
+      shadow: false,
+      bold: true,
+      sizeU: 30,
+      fx: TextFx.hollow,
+      motion: const ItemMotion(enter: EnterExit.fade),
+    ),
+    TextPreset.glitch => t.copyWith(
+      color: const Color(0xFFFFFFFF),
+      outline: false,
+      box: null,
+      shadow: false,
+      bold: true,
+      sizeU: 28,
+      fx: TextFx.glitch,
+      motion: const ItemMotion(enter: EnterExit.slideLeft),
+    ),
+    TextPreset.sticker => t.copyWith(
+      color: const Color(0xFFFF3B30),
+      outline: false,
+      box: null,
+      shadow: true,
+      bold: true,
+      sizeU: 28,
+      fx: TextFx.sticker,
+      motion: const ItemMotion(enter: EnterExit.pop),
+    ),
   };
 }
 
@@ -140,6 +219,7 @@ class TextItem {
     this.rotation = 0,
     this.opacity = 1,
     this.motion = ItemMotion.fadeOnly,
+    this.fx = TextFx.none,
   });
   final String id;
   final String text;
@@ -165,6 +245,9 @@ class TextItem {
   final double opacity;
   final ItemMotion motion;
 
+  /// A look drawn into the bitmap (glow, gradient, 3D, ...); [TextFx.none] is the plain text.
+  final TextFx fx;
+
   TextItem copyWith({
     String? text,
     Color? color,
@@ -182,6 +265,7 @@ class TextItem {
     double? rotation,
     double? opacity,
     ItemMotion? motion,
+    TextFx? fx,
   }) => TextItem(
     id: id,
     text: text ?? this.text,
@@ -200,6 +284,7 @@ class TextItem {
     rotation: rotation ?? this.rotation,
     opacity: opacity ?? this.opacity,
     motion: motion ?? this.motion,
+    fx: fx ?? this.fx,
   );
   static const Object _keepBox = Object();
 
@@ -221,11 +306,12 @@ class TextItem {
     'rotation': rotation,
     'opacity': opacity,
     'motion': motion.toJson(),
+    'fx': fx.name,
   };
 
   /// What changes the rendered bitmap (not where or when it is shown).
   String get lookKey =>
-      '$text|${color.toARGB32()}|$sizeU|$bold|${font.name}|$outline|${box?.toARGB32()}|$shadow|${align.name}';
+      '$text|${color.toARGB32()}|$sizeU|$bold|${font.name}|$outline|${box?.toARGB32()}|$shadow|${align.name}|${fx.name}';
 
   Map<String, Object> toJson() => {'id': id, ...toNative()};
   factory TextItem.fromJson(Map<String, dynamic> j) => TextItem(
@@ -252,6 +338,10 @@ class TextItem {
     rotation: (j['rotation'] as num?)?.toDouble() ?? 0,
     opacity: (j['opacity'] as num?)?.toDouble() ?? 1,
     motion: ItemMotion.fromJson(j['motion'] as Map<String, dynamic>?),
+    fx: TextFx.values.firstWhere(
+      (e) => e.name == j['fx'],
+      orElse: () => TextFx.none,
+    ),
   );
 }
 

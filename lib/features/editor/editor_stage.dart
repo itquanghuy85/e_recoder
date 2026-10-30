@@ -765,15 +765,13 @@ class _EditorStageState extends State<EditorStage> {
                     onScaleStart: _start,
                     onScaleUpdate: _update,
                     onScaleEnd: _end,
-                    child: ClipRect(
-                      child: Transform(
-                        transform: Matrix4.identity()
-                          ..translateByDouble(z.offset.dx, z.offset.dy, 0, 1)
-                          ..scaleByDouble(z.scale, z.scale, 1, 1),
-                        child: RepaintBoundary(
-                          key: widget.captureKey,
-                          child: ClipRect(child: _frame(context, p, g, cs)),
-                        ),
+                    child: Transform(
+                      transform: Matrix4.identity()
+                        ..translateByDouble(z.offset.dx, z.offset.dy, 0, 1)
+                        ..scaleByDouble(z.scale, z.scale, 1, 1),
+                      child: RepaintBoundary(
+                        key: widget.captureKey,
+                        child: _frame(context, p, g, cs),
                       ),
                     ),
                   ),
@@ -812,8 +810,9 @@ class _EditorStageState extends State<EditorStage> {
     final look = p.transitionLookAt(c.outMs);
 
     // What is drawn inside the output frame, before the colour look and the transition.
+    // Clip.none so the whole canvas (video + blank space on both sides) can be zoomed and panned.
     final content = Stack(
-      clipBehavior: Clip.hardEdge,
+      clipBehavior: Clip.none,
       children: [
         const Positioned.fill(child: ColoredBox(color: Colors.black)),
         _pictureLayer(p, g, t, blank, selected, cs),
@@ -830,7 +829,7 @@ class _EditorStageState extends State<EditorStage> {
     }
     framed = _transitioned(look, g.w, g.h, framed);
     return Stack(
-      clipBehavior: Clip.hardEdge,
+      clipBehavior: Clip.none,
       children: [
         Positioned.fill(child: framed),
         if (selected != null) ..._selection(p, selected, g, cs),
@@ -1352,7 +1351,7 @@ class _ZoomBadge extends StatelessWidget {
     return Semantics(
       identifier: 'stage_zoom_reset',
       button: true,
-      label: '${scale.toStringAsFixed(1).replaceAll('.', ',')}×',
+      label: '${(scale * 100).toStringAsFixed(0)}%',
       child: Material(
         color: cs.surfaceContainerHighest.withValues(alpha: 0.92),
         shape: const StadiumBorder(),
@@ -1369,7 +1368,7 @@ class _ZoomBadge extends StatelessWidget {
                   const Icon(Icons.fit_screen_outlined, size: 16),
                   const SizedBox(width: 4),
                   Text(
-                    '${scale.toStringAsFixed(1).replaceAll('.', ',')}×',
+                    '${(scale * 100).toStringAsFixed(0)}%',
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ],

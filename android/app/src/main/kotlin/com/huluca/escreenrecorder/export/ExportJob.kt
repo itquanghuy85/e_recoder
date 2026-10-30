@@ -91,6 +91,8 @@ data class TextClip(
     val rotation: Float = 0f,
     val opacity: Float = 1f,
     val motion: MotionSpec = MotionSpec.FADE,
+    /** none | glow | gradient | extrude | hollow | glitch | sticker: drawn into the bitmap. */
+    val fx: String = "none",
 )
 
 data class ImageClip(
@@ -306,6 +308,7 @@ data class ExportJob(
             rotation = (it["rotation"] as? Number)?.toFloat() ?: 0f,
             opacity = (it["opacity"] as? Number)?.toFloat() ?: 1f,
             motion = MotionSpec.fromMap(it["motion"] as? Map<*, *>),
+            fx = it["fx"] as? String ?: "none",
         )
 
         fun parseShape(it: Map<*, *>) = ShapeClip(

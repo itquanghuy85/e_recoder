@@ -886,7 +886,7 @@ abstract class AppL10n {
   /// No description provided for @captionsNoAudio.
   ///
   /// In vi, this message translates to:
-  /// **'Video này không có âm thanh.'**
+  /// **'Video này không có âm thanh. Khi quay hãy bật micro hoặc âm thanh hệ thống.'**
   String get captionsNoAudio;
 
   /// No description provided for @captionsNoSpeech.
@@ -3102,6 +3102,42 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Đã nhập'**
   String get typedLabel;
+
+  /// No description provided for @presetGlow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phát sáng'**
+  String get presetGlow;
+
+  /// No description provided for @presetGradient.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển màu'**
+  String get presetGradient;
+
+  /// No description provided for @presetExtrude.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chữ nổi 3D'**
+  String get presetExtrude;
+
+  /// No description provided for @presetHollow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chữ rỗng'**
+  String get presetHollow;
+
+  /// No description provided for @presetGlitch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Glitch'**
+  String get presetGlitch;
+
+  /// No description provided for @presetSticker.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sticker'**
+  String get presetSticker;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

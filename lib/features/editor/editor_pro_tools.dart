@@ -583,6 +583,12 @@ String textPresetLabel(AppL10n t, TextPreset p) => switch (p) {
   TextPreset.neon => t.presetNeon,
   TextPreset.clean => t.presetClean,
   TextPreset.label => t.presetLabel,
+  TextPreset.glow => t.presetGlow,
+  TextPreset.gradient => t.presetGradient,
+  TextPreset.extrude => t.presetExtrude,
+  TextPreset.hollow => t.presetHollow,
+  TextPreset.glitch => t.presetGlitch,
+  TextPreset.sticker => t.presetSticker,
 };
 
 /// One-tap looks, in a single row that scrolls sideways so it costs one line of the panel.

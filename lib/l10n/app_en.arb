@@ -149,7 +149,7 @@
   "captionsProgress": "Listening to phrase {done}/{total}",
   "captionsCreated": "Created {n} captions. Edit or delete each one in the Text tab.",
   "captionsCancelled": "Stopped, no captions were added.",
-  "captionsNoAudio": "This video has no sound.",
+  "captionsNoAudio": "This video has no sound. Turn on the microphone or system sound before recording.",
   "captionsNoSpeech": "No speech was heard in the video.",
   "captionsFailed": "Captions could not be created. Try again or pick another language.",
   "captionsReplaceNote": "Creating again replaces the earlier automatic captions; captions you added or imported from SRT are kept.",
@@ -529,5 +529,11 @@
   "autoTouchesNoPlace": "Only the moments were found, not the places: step captions and freezes, no zoom.",
   "autoPreviewPause": "Preview first freeze",
   "typingLabel": "Typing…",
-  "typedLabel": "Typed"
+  "typedLabel": "Typed",
+  "presetGlow": "Neon glow",
+  "presetGradient": "Gradient",
+  "presetExtrude": "3D",
+  "presetHollow": "Outline",
+  "presetGlitch": "Glitch",
+  "presetSticker": "Sticker"
 }

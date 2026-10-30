@@ -1,0 +1,45 @@
+appId: com.huluca.escreenrecorder
+name: E18 text looks - add a caption and apply a ready-made look (env PRESET)
+tags:
+  - p1
+  - module-editor
+---
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: com.android.settings
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Cài đặt"
+    timeout: 15000
+- scroll
+- scroll
+- scroll
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*"
+    timeout: 25000
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: ".*ESR_.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "add_text"
+- tapOn:
+    id: "text_preset_${PRESET}"
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/e18_${PRESET}

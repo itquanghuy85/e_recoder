@@ -213,7 +213,7 @@
     }
   },
   "captionsCancelled": "Đã dừng, chưa thêm phụ đề nào.",
-  "captionsNoAudio": "Video này không có âm thanh.",
+  "captionsNoAudio": "Video này không có âm thanh. Khi quay hãy bật micro hoặc âm thanh hệ thống.",
   "captionsNoSpeech": "Không nghe thấy lời nói nào trong video.",
   "captionsFailed": "Không tạo được phụ đề. Thử lại hoặc chọn ngôn ngữ khác.",
   "captionsReplaceNote": "Tạo lại sẽ thay các phụ đề tự động trước đó; phụ đề bạn tự thêm hoặc nhập từ SRT được giữ nguyên.",
@@ -672,5 +672,11 @@
   "autoTouchesNoPlace": "Chỉ tìm được thời điểm, không biết vị trí: có chú thích bước và dừng hình, không phóng to.",
   "autoPreviewPause": "Xem thử chỗ dừng đầu tiên",
   "typingLabel": "Đang nhập…",
-  "typedLabel": "Đã nhập"
+  "typedLabel": "Đã nhập",
+  "presetGlow": "Phát sáng",
+  "presetGradient": "Chuyển màu",
+  "presetExtrude": "Chữ nổi 3D",
+  "presetHollow": "Chữ rỗng",
+  "presetGlitch": "Glitch",
+  "presetSticker": "Sticker"
 }

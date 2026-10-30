@@ -79,8 +79,9 @@ class ViewZoom {
   /// Where a point of the stage (as touched, at 1x) lies in the content.
   Offset toContent(Offset screen) => (screen - offset) / scale;
 
-  /// The view in which content point [q] sits under [focal] at [scale]; the picture always keeps
-  /// covering the whole [box] (no empty margins when panned to an edge).
+  /// The view in which content point [q] sits under [focal] at [scale]. The picture stays
+  /// overlapping the viewport but is allowed to leave blank space around it, so zooming the
+  /// preview is no longer clamped to edge-to-edge coverage by the fixed frame.
   static ViewZoom pinch({
     required Offset q,
     required Offset focal,
@@ -92,8 +93,8 @@ class ViewZoom {
     return ViewZoom(
       s,
       Offset(
-        o.dx.clamp(box.width - box.width * s, 0.0).toDouble(),
-        o.dy.clamp(box.height - box.height * s, 0.0).toDouble(),
+        o.dx.clamp(-box.width * s, box.width).toDouble(),
+        o.dy.clamp(-box.height * s, box.height).toDouble(),
       ),
     );
   }

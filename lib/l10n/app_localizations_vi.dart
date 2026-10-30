@@ -441,7 +441,8 @@ class AppL10nVi extends AppL10n {
   String get captionsCancelled => 'Đã dừng, chưa thêm phụ đề nào.';
 
   @override
-  String get captionsNoAudio => 'Video này không có âm thanh.';
+  String get captionsNoAudio =>
+      'Video này không có âm thanh. Khi quay hãy bật micro hoặc âm thanh hệ thống.';
 
   @override
   String get captionsNoSpeech => 'Không nghe thấy lời nói nào trong video.';
@@ -1622,4 +1623,22 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get typedLabel => 'Đã nhập';
+
+  @override
+  String get presetGlow => 'Phát sáng';
+
+  @override
+  String get presetGradient => 'Chuyển màu';
+
+  @override
+  String get presetExtrude => 'Chữ nổi 3D';
+
+  @override
+  String get presetHollow => 'Chữ rỗng';
+
+  @override
+  String get presetGlitch => 'Glitch';
+
+  @override
+  String get presetSticker => 'Sticker';
 }

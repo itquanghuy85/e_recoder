@@ -48,13 +48,23 @@ enum OverlayRenderer {
         let outline = clip["outline"] as? Bool ?? false
         let shadow = clip["shadow"] as? Bool ?? false
         let hasBox = clip["box"] != nil
+        let fx = clip["fx"] as? String ?? "none"
         let f = font(clip["font"] as? String ?? "barlow", size, bold: bold)
         let lines = ((clip["text"] as? String) ?? "").components(separatedBy: "\n")
         let lineH = size * 1.2
         let haloPad: CGFloat = outline ? max(2, size * 0.16) : 0
         let shadowR: CGFloat = shadow ? size * 0.12 : 0
         let boxPad: CGFloat = hasBox ? size * 0.35 : 0
-        let pad = haloPad + boxPad + shadowR * 2 + 4 * u
+        let fxPad: CGFloat
+        switch fx {
+        case "glow": fxPad = size * 0.45
+        case "extrude": fxPad = size * 0.12
+        case "glitch": fxPad = size * 0.07
+        case "sticker": fxPad = size * 0.3
+        case "hollow": fxPad = size * 0.06
+        default: fxPad = 0
+        }
+        let pad = haloPad + boxPad + shadowR * 2 + fxPad + 4 * u
         let widths = lines.map { ($0 as NSString).size(withAttributes: [.font: f]).width }
         let textW = widths.max() ?? 0
         let w = max(8, ceil(textW + pad * 2))
@@ -86,17 +96,73 @@ enum OverlayRenderer {
                             .foregroundColor: haloColor(fill),
                         ])
                 }
-                if shadow {
+                if shadow && fx == "none" {
                     c.setShadow(
                         offset: CGSize(width: shadowR * 0.5, height: shadowR * 0.7), blur: shadowR,
                         color: UIColor(white: 0, alpha: 0.67).cgColor)
                 }
-                (line as NSString).draw(
-                    at: CGPoint(x: x, y: y), withAttributes: [.font: f, .foregroundColor: fill])
+                drawFx(c, fx, line, f, fill, CGPoint(x: x, y: y), size)
                 c.setShadow(offset: .zero, blur: 0, color: nil)
             }
         }
         return ["png": data, "w": Int(w), "h": Int(h)]
+    }
+
+    private static func darker(_ c: UIColor, _ k: CGFloat) -> UIColor {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        c.getRed(&r, green: &g, blue: &b, alpha: &a)
+        return UIColor(red: r * k, green: g * k, blue: b * k, alpha: 1)
+    }
+
+    /// One line in the look the clip asks for (glow, gradient, 3D, outline, glitch, sticker); "none" is plain.
+    private static func drawFx(
+        _ c: CGContext, _ fx: String, _ line: String, _ f: UIFont, _ fill: UIColor, _ at: CGPoint,
+        _ size: CGFloat
+    ) {
+        let ns = line as NSString
+        func draw(_ dx: CGFloat, _ dy: CGFloat, _ attrs: [NSAttributedString.Key: Any]) {
+            ns.draw(at: CGPoint(x: at.x + dx, y: at.y + dy), withAttributes: attrs)
+        }
+        switch fx {
+        case "glow":
+            c.setShadow(offset: .zero, blur: size * 0.4, color: fill.cgColor)
+            draw(0, 0, [.font: f, .foregroundColor: fill])
+            draw(0, 0, [.font: f, .foregroundColor: fill])
+            c.setShadow(offset: .zero, blur: 0, color: nil)
+            draw(0, 0, [.font: f, .foregroundColor: UIColor(white: 1, alpha: 0.78)])
+        case "gradient":
+            // A two-colour pattern image used as the text colour.
+            let h = max(2, ceil(ns.size(withAttributes: [.font: f]).height))
+            let img = UIGraphicsImageRenderer(size: CGSize(width: 2, height: h)).image { r in
+                let cols = [fill.cgColor, UIColor(red: 1, green: 0.37, blue: 0.43, alpha: 1).cgColor] as CFArray
+                if let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: cols, locations: [0, 1]) {
+                    r.cgContext.drawLinearGradient(g, start: .zero, end: CGPoint(x: 0, y: h), options: [])
+                }
+            }
+            draw(0, 0, [.font: f, .foregroundColor: UIColor(patternImage: img)])
+        case "extrude":
+            let step = max(1, size * 0.018)
+            for k in stride(from: 6, through: 1, by: -1) {
+                draw(CGFloat(k) * step, CGFloat(k) * step, [.font: f, .foregroundColor: darker(fill, 0.45)])
+            }
+            draw(0, 0, [.font: f, .foregroundColor: fill])
+        case "hollow":
+            draw(0, 0, [.font: f, .strokeColor: fill, .strokeWidth: 3, .foregroundColor: UIColor.clear])
+        case "glitch":
+            let g = size * 0.045
+            draw(-g, 0, [.font: f, .foregroundColor: UIColor(red: 0, green: 0.9, blue: 1, alpha: 1)])
+            draw(g, 0, [.font: f, .foregroundColor: UIColor(red: 1, green: 0.18, blue: 0.33, alpha: 1)])
+            draw(0, 0, [.font: f, .foregroundColor: fill])
+        case "sticker":
+            c.setShadow(
+                offset: CGSize(width: 0, height: size * 0.05), blur: size * 0.1,
+                color: UIColor(white: 0, alpha: 0.53).cgColor)
+            draw(0, 0, [.font: f, .strokeColor: UIColor.white, .strokeWidth: 18, .foregroundColor: UIColor.white])
+            c.setShadow(offset: .zero, blur: 0, color: nil)
+            draw(0, 0, [.font: f, .foregroundColor: fill])
+        default:
+            draw(0, 0, [.font: f, .foregroundColor: fill])
+        }
     }
 
     private static func haloColor(_ c: UIColor) -> UIColor {

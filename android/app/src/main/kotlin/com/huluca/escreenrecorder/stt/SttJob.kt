@@ -41,7 +41,15 @@ object SttJob {
         val app = ctx.applicationContext
         Thread {
             try {
-                val pcm = AudioDecode.decode(MAX_SOUND_MS) { it.setDataSource(app, Uri.parse(uri), null) }
+                val pcm = AudioDecode.decode(MAX_SOUND_MS) { ex ->
+                    val u = Uri.parse(uri)
+                    try {
+                        ex.setDataSource(app, u, null)
+                    } catch (e: Exception) {
+                        // Some providers refuse the uri form but hand out a file descriptor.
+                        app.contentResolver.openFileDescriptor(u, "r")!!.use { ex.setDataSource(it.fileDescriptor) }
+                    }
+                }
                 val mono = AudioDecode.toMono16k(pcm)
                 val spans = Chunker.split(mono)
                 android.util.Log.i("SttJob", "decoded ${mono.size / 16000.0} s, ${spans.size} phrases, peak ${Chunker.peak(mono)}")

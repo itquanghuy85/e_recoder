@@ -1,0 +1,28 @@
+appId: com.huluca.escreenrecorder
+name: E17 auto captions - starts on the newest video, shows a result or a clear reason
+tags:
+  - p1
+  - module-editor
+---
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- scrollUntilVisible:
+    element:
+      id: "auto_captions"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "auto_captions"
+- tapOn:
+    id: "stt_lang_vi"
+- tapOn:
+    id: "stt_start"
+- extendedWaitUntil:
+    visible: ".*(Video này không có âm thanh|Không nghe thấy lời nói|Đã thêm|Xong).*"
+    timeout: 120000
+- takeScreenshot: artifacts/e17_result

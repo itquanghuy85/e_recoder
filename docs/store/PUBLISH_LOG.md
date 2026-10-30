@@ -14,4 +14,9 @@
 | 2026-10-27 | Main store listing vi-VN: tên, mô tả ngắn, mô tả đầy đủ (lưu nháp) | Claude | Xong | Play Console, Default store listing |
 | 2026-10-27 | Upload icon 512, feature graphic 1024×500, 8 ảnh điện thoại vi-VN (lưu nháp); thứ tự hiển thị cần kiểm tra lại | Claude | Xong | Play Console, Default store listing |
 | 2026-10-27 | AAB lên Internal testing | Người dùng | Người dùng tự upload (AAB 58 MB vượt giới hạn 10 MB của công cụ Chrome) | — |
-| — | Privacy URL, App content, en-US, release notes, tester | — | Chờ `site.baseUrl` và email tester | — |
+| 2026-10-27 | Privacy policy URL = https://sites.google.com/view/escreenrecorder (có nội dung đầy đủ; phần liên hệ chỉ dẫn qua trang Play, email khai trong Store settings) | Claude | Xong, đã lưu | Play Console, App content > Privacy Policy |
+| 2026-10-27 | App content: Ads (No), Advertising ID (No), Government (No), Financial (không có), Health (không có), Content rating IARC (All Other App Types, 3+), Sign in details (No restricted), Target audience (13–15, 16–17, 18+), Data safety (không thu thập, không chia sẻ) | Claude | Xong | Play Console, App content |
+| 2026-10-27 | Store listing en-US: tên, mô tả ngắn 70/80, mô tả đầy đủ 2101/4000 (lưu nháp) | Claude | Xong | Play Console, Default store listing |
+| 2026-10-27 | Internal testing: bundle ESR 1.0.0 (versionCode 1) đã có trong thư viện, gắn vào bản nháp; release notes en-US; tên "1.0.0 (1)" | Claude | Xong, chưa publish | Play Console, Internal testing |
+| — | Tester Internal testing, publish Internal testing | — | Chờ danh sách email tester (chỉ có email chủ ứng dụng) | — |
+| — | Foreground service permissions, vi-VN release notes | — | Chưa thấy mục FGS trong App content; cần kiểm tra sau khi bản phát hành có bundle | — |

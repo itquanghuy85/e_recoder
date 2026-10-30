@@ -442,7 +442,8 @@ class AppL10nEn extends AppL10n {
   String get captionsCancelled => 'Stopped, no captions were added.';
 
   @override
-  String get captionsNoAudio => 'This video has no sound.';
+  String get captionsNoAudio =>
+      'This video has no sound. Turn on the microphone or system sound before recording.';
 
   @override
   String get captionsNoSpeech => 'No speech was heard in the video.';
@@ -1627,4 +1628,22 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get typedLabel => 'Typed';
+
+  @override
+  String get presetGlow => 'Neon glow';
+
+  @override
+  String get presetGradient => 'Gradient';
+
+  @override
+  String get presetExtrude => '3D';
+
+  @override
+  String get presetHollow => 'Outline';
+
+  @override
+  String get presetGlitch => 'Glitch';
+
+  @override
+  String get presetSticker => 'Sticker';
 }
