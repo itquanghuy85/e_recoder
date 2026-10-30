@@ -169,6 +169,16 @@ class CaptionStyle {
   final RevealMode revealMode;
   final String? templateId;
 
+  /// The look a new caption starts with: white, bold, black outline and a soft shadow, readable on
+  /// any footage.
+  static const CaptionStyle standard = CaptionStyle(
+    sizeU: 24,
+    outlineColor: 0xFF000000,
+    outlineWidth: 2,
+    shadowColor: 0x99000000,
+    shadowBlur: 3,
+  );
+
   static const Object _keep = Object();
 
   CaptionStyle copyWith({

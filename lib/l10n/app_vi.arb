@@ -683,5 +683,20 @@
   "captionPanelOff": "Tắt phụ đề",
   "captionPanelEmpty": "Chưa có câu phụ đề nào.",
   "captionPanelStart": "Bắt đầu (ms)",
-  "captionPanelEnd": "Kết thúc (ms)"
+  "captionPanelEnd": "Kết thúc (ms)",
+  "captionTabLines": "Câu",
+  "captionTabStyle": "Kiểu",
+  "captionReveal": "Hiệu ứng hiện chữ",
+  "captionRevealNone": "Hiện hết",
+  "captionRevealWord": "Từng từ",
+  "captionRevealChar": "Từng ký tự",
+  "captionRevealKaraoke": "Karaoke",
+  "captionOutlineWidth": "Dày viền",
+  "captionOutlineColor": "Màu viền",
+  "captionShadowBlur": "Nhoè bóng",
+  "captionBoxColor": "Màu nền",
+  "captionBoxRadius": "Bo góc",
+  "captionPosY": "Dọc",
+  "captionPosX": "Ngang",
+  "captionReset": "Đặt lại kiểu"
 }

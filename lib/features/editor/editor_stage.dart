@@ -1029,11 +1029,10 @@ class _EditorStageState extends State<EditorStage> {
       lifeMs: x.endMs - x.startMs,
     );
     if (x.cues != null) {
-      final cs = x.captionStyle;
       final cst = motionAt(
         x.motion,
-        x: cs?.x ?? x.x,
-        y: cs?.y ?? x.y,
+        x: x.x,
+        y: x.y,
         scale: 1,
         opacity: x.opacity,
         t: t - x.startMs,

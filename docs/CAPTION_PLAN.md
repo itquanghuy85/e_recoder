@@ -35,7 +35,7 @@ Phase 3-10 (Phase 3 đã xong, Phần 10): progressive reveal, style editor, 12 
 cues=null preview/export không đổi, 6 effect e5a9c4c nguyên, 4 RevealMode, preview=export, 12 template, style editor đủ, Whisper OK, SRT OK, timeline OK, test PASS, không dep lạ, không đổi tên cũ.
 
 ## PHẦN 7 — TRẠNG THÁI
-Phase 1, H1-3, 2a, 2b+fix: ✅. Phase 2 (2c-2g): ✅ (xem Phần 9). Phase 3 (chữ hiện dần): ✅ preview, xuất video chưa (xem Phần 10). Phase 4-10: ⬜.
+Phase 1, H1-3, 2a, 2b+fix: ✅. Phase 2 (2c-2g): ✅ (xem Phần 9). Phase 3 (chữ hiện dần): ✅ preview, xuất video chưa (xem Phần 10). Phase 4 (style editor): ✅ (Phần 11). Phase 5-10: ⬜.
 
 ## PHẦN 8 — KHÔNG LÀM
 Không CustomPainter Flutter, không đổi typedef SubtitleCue, không tự thêm dep, không iOS export đợt này, không đổi tên cũ, không gộp phase, không tải Whisper không rõ nguồn, không sửa production để test pass.
@@ -85,3 +85,25 @@ Lệnh `maestro` trong PATH (npm) không chạy được. Dùng bản trong `D:\
 - `charByChar` và `karaokeHighlight` mới được kiểm bằng unit test (đếm ink), chưa xem bằng Maestro vì chưa có giao diện đổi `revealMode` (Phase 4 style editor).
 - Xuất video: `Exporter.captionOverlays` vẫn chỉ vẽ `renderText`, CHƯA vẽ cues. Bản xuất chưa có phụ đề từ panel. Phase 7.
 - Ô số start/end trong panel chưa kiểm tra tự động cho trường hợp start >= end (tự sửa end = start+1).
+
+## PHẦN 11 — PHASE 4 (trình chỉnh kiểu phụ đề)
+
+### Đã làm
+- `caption_style_editor.dart` (MỚI): tab "Kiểu" trong panel Phụ đề. Chỉnh: hiệu ứng hiện chữ (4 kiểu), phông (6 phông có sẵn), in đậm, viền (dày + màu), đổ bóng (độ nhoè), nền (màu + bo góc), căn lề, màu chữ, cỡ chữ, vị trí dọc/ngang, "Đặt lại kiểu". Mọi thay đổi đi qua `EditorController.setCaptionStyle` và hiện ngay trên stage qua renderer native dùng chung. Kéo slider là 1 bước undo.
+- `caption_panel.dart`: thêm 2 tab "Câu | Kiểu" (tab Kiểu chỉ có khi phụ đề đang bật).
+- Kiểu mặc định cho phụ đề mới: `CaptionStyle.standard` (chữ trắng đậm 24U, viền đen 2U, bóng nhẹ) để đọc được trên mọi nền.
+- Vị trí: **x/y của TextItem là nguồn thật** (stage và xuất video đặt chữ theo đó, nên kéo trên stage hoạt động). `setCaptionStyle` đồng bộ x/y của item theo style; editor luôn đọc x/y từ item. `CaptionStyle.x/y` chỉ là bản sao để lưu mẫu (Phase 5).
+- `EditorController.turnOffCaptions`: tắt phụ đề xoá item nếu item chỉ dùng cho phụ đề (text rỗng), không để lại item rỗng trong dự án (trước đây mỗi lần tắt để lại 1 item rỗng). Item có chữ riêng thì chỉ bỏ cues.
+- Tab Chữ: item phụ đề chỉ hiện tiêu đề + nút "Phụ đề" (các điều khiển chữ thường không áp dụng cho phụ đề).
+- 15 key l10n mới `caption*` (vi + en).
+
+### Test
+- `flutter analyze` sạch; `flutter test` 295/295 (11 test mới `caption_style_editor_test.dart`: chip hiệu ứng/phông/viền/bóng/nền/căn lề, đặt lại, đồng bộ vị trí, undo, tắt phụ đề); `gradlew testDebugUnitTest` 79/79; `assembleDebug` OK.
+- Maestro S25 Ultra `maestro/caption_phase4_style.yaml`: PASS. A: karaoke + nền (ở 1.5s "Mot" sáng, các từ sau mờ). B: từng ký tự + phông có chân + căn trái (ở 3.0s đã hiện "Mot hai"). C: hiện hết + kéo slider dọc về giữa khung. Ảnh: `test-results/phase4/`.
+- Chạy lại và PASS: `caption_phase2_smoke`, `caption_phase3_reveal`, `caption_rollback_effects` (6 kiểu chữ với cues=null không đổi).
+
+### Chưa làm / lưu ý
+- Phông BeVietnam/Inter/Montserrat (QĐ-7) CHƯA thêm: cần file font bên thứ ba (giấy phép OFL, tăng dung lượng app), nên chờ bạn duyệt như một thêm tài nguyên mới. Hiện dùng 6 phông có sẵn (Barlow hỗ trợ tiếng Việt).
+- Xuất video vẫn chưa vẽ phụ đề (Phase 7). Khi làm, phải đặt chữ theo `TextItem.x/y` (không dùng `captionStyle.x/y`).
+- Flow rollback: sau mỗi vòng playhead trôi nhẹ nên nền video khác nhau giữa các lần chạy; so sánh bằng mắt vùng chữ.
+- Dữ liệu thử trên máy S25: đã dọn các item rỗng/ "Văn bản" do các lần chạy thử cũ để lại trong dự án video `media/235`.

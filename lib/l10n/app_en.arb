@@ -540,5 +540,20 @@
   "captionPanelOff": "Turn captions off",
   "captionPanelEmpty": "No caption lines yet.",
   "captionPanelStart": "Start (ms)",
-  "captionPanelEnd": "End (ms)"
+  "captionPanelEnd": "End (ms)",
+  "captionTabLines": "Lines",
+  "captionTabStyle": "Style",
+  "captionReveal": "Reveal effect",
+  "captionRevealNone": "All at once",
+  "captionRevealWord": "Word by word",
+  "captionRevealChar": "Letter by letter",
+  "captionRevealKaraoke": "Karaoke",
+  "captionOutlineWidth": "Outline",
+  "captionOutlineColor": "Outline colour",
+  "captionShadowBlur": "Shadow blur",
+  "captionBoxColor": "Box colour",
+  "captionBoxRadius": "Corners",
+  "captionPosY": "Vertical",
+  "captionPosX": "Horizontal",
+  "captionReset": "Reset style"
 }

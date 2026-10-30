@@ -926,6 +926,24 @@ class _TextPanelState extends State<_TextPanel> {
       _bound = sel.id;
       _ctl.text = sel.text;
     }
+    if (sel.cues != null) {
+      // A caption's text, look and timing live in the caption panel; the plain-text controls below
+      // would not change it.
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          inspectorHeader(context, c, t.presetSubtitle),
+          Semantics(
+            identifier: 'caption_panel',
+            child: FilledButton.tonalIcon(
+              onPressed: () => showCaptionPanel(context, c),
+              icon: const Icon(Icons.closed_caption_outlined),
+              label: Text(t.presetSubtitle),
+            ),
+          ),
+        ],
+      );
+    }
     final len = (sel.endMs - sel.startMs).toDouble();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

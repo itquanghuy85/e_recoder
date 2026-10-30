@@ -1661,4 +1661,49 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get captionPanelEnd => 'End (ms)';
+
+  @override
+  String get captionTabLines => 'Lines';
+
+  @override
+  String get captionTabStyle => 'Style';
+
+  @override
+  String get captionReveal => 'Reveal effect';
+
+  @override
+  String get captionRevealNone => 'All at once';
+
+  @override
+  String get captionRevealWord => 'Word by word';
+
+  @override
+  String get captionRevealChar => 'Letter by letter';
+
+  @override
+  String get captionRevealKaraoke => 'Karaoke';
+
+  @override
+  String get captionOutlineWidth => 'Outline';
+
+  @override
+  String get captionOutlineColor => 'Outline colour';
+
+  @override
+  String get captionShadowBlur => 'Shadow blur';
+
+  @override
+  String get captionBoxColor => 'Box colour';
+
+  @override
+  String get captionBoxRadius => 'Corners';
+
+  @override
+  String get captionPosY => 'Vertical';
+
+  @override
+  String get captionPosX => 'Horizontal';
+
+  @override
+  String get captionReset => 'Reset style';
 }

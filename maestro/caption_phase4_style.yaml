@@ -1,0 +1,102 @@
+appId: com.huluca.escreenrecorder
+name: Caption phase 4 - style editor changes how the caption looks and reveals
+tags:
+  - p1
+  - module-editor
+---
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "caption_panel"
+- runFlow:
+    when:
+      visible:
+        id: "caption_off"
+    commands:
+      - tapOn:
+          id: "caption_off"
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "cue_text_0"
+- eraseText: 40
+- inputText: "Mot hai ba bon"
+- tapOn:
+    id: "cue_end_0"
+- eraseText: 10
+- inputText: "6000"
+- tapOn:
+    id: "cue_text_0"
+- hideKeyboard
+
+# A: karaoke fill on a dark box
+- tapOn:
+    id: "cap_tab_style"
+- tapOn:
+    id: "reveal_karaokeHighlight"
+- tapOn:
+    id: "cap_box"
+- takeScreenshot: artifacts/phase4_style_tab
+- back
+- tapOn:
+    point: 50%, 14%
+- swipe:
+    start: 62%, 46%
+    end: 29%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase4_a_karaoke_box
+
+# B: letter by letter in a serif font, left aligned
+- tapOn:
+    id: "caption_panel"
+- tapOn:
+    id: "cap_tab_style"
+- tapOn:
+    id: "reveal_charByChar"
+- tapOn:
+    id: "cap_font_serif"
+- tapOn:
+    id: "cap_align_left"
+- back
+- tapOn:
+    point: 50%, 14%
+- swipe:
+    start: 62%, 46%
+    end: 29%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase4_b_char_serif_left
+
+# C: no reveal, moved to the middle of the frame with the vertical slider
+- tapOn:
+    id: "caption_panel"
+- tapOn:
+    id: "cap_tab_style"
+- tapOn:
+    id: "reveal_none"
+- scrollUntilVisible:
+    element:
+      id: "cap_y"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "cap_y"
+- back
+- tapOn:
+    point: 50%, 14%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase4_c_none_middle
+
+# Leave the project clean
+- tapOn:
+    id: "caption_panel"
+- tapOn:
+    id: "caption_off"
+- back

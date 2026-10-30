@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
 import 'caption_models.dart';
+import 'caption_style_editor.dart';
 import 'editor_controller.dart';
 
 /// Opens the caption panel: one row per subtitle line (text + start/end) with add / delete / turn off.
@@ -19,19 +20,29 @@ Future<void> showCaptionPanel(BuildContext context, EditorController c) {
   );
 }
 
-class CaptionPanel extends StatelessWidget {
+class CaptionPanel extends StatefulWidget {
   const CaptionPanel({super.key, required this.controller});
   final EditorController controller;
 
   @override
+  State<CaptionPanel> createState() => _CaptionPanelState();
+}
+
+class _CaptionPanelState extends State<CaptionPanel> {
+  /// 0 = the lines, 1 = the look.
+  int _tab = 0;
+
+  @override
   Widget build(BuildContext context) {
     final t = AppL10n.of(context);
-    final c = controller;
+    final c = widget.controller;
     return ListenableBuilder(
       listenable: c,
       builder: (context, _) {
         final item = c.captionItem;
         final cues = item?.cues ?? const <CaptionCue>[];
+        final hasStyle = item?.cues != null;
+        final tab = hasStyle ? _tab : 0;
         return SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
@@ -48,46 +59,78 @@ class CaptionPanel extends StatelessWidget {
                   t.presetSubtitle,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: Space.sm),
-                Flexible(
-                  child: cues.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: Space.lg,
-                          ),
-                          child: Text(
-                            t.captionPanelEmpty,
-                            textAlign: TextAlign.center,
-                          ),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: cues.length,
-                          itemBuilder: (_, i) => _CueRow(
-                            key: ValueKey('cue$i'),
-                            index: i,
-                            cue: cues[i],
-                            controller: c,
-                          ),
+                if (hasStyle) ...[
+                  const SizedBox(height: Space.sm),
+                  SegmentedButton<int>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: 0,
+                        label: Semantics(
+                          identifier: 'cap_tab_lines',
+                          child: Text(t.captionTabLines),
                         ),
-                ),
-                const SizedBox(height: Space.sm),
-                Semantics(
-                  identifier: 'caption_add',
-                  child: FilledButton.tonal(
-                    onPressed: () => c.addCue(),
-                    child: Text(t.captionPanelAdd),
+                      ),
+                      ButtonSegment(
+                        value: 1,
+                        label: Semantics(
+                          identifier: 'cap_tab_style',
+                          child: Text(t.captionTabStyle),
+                        ),
+                      ),
+                    ],
+                    selected: {tab},
+                    onSelectionChanged: (v) => setState(() => _tab = v.first),
                   ),
-                ),
-                if (item?.cues != null) ...[
+                ],
+                const SizedBox(height: Space.sm),
+                if (tab == 1)
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: CaptionStyleEditor(controller: c),
+                    ),
+                  )
+                else ...[
+                  Flexible(
+                    child: cues.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: Space.lg,
+                            ),
+                            child: Text(
+                              t.captionPanelEmpty,
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: cues.length,
+                            itemBuilder: (_, i) => _CueRow(
+                              key: ValueKey('cue$i'),
+                              index: i,
+                              cue: cues[i],
+                              controller: c,
+                            ),
+                          ),
+                  ),
                   const SizedBox(height: Space.sm),
                   Semantics(
-                    identifier: 'caption_off',
-                    child: OutlinedButton(
-                      onPressed: () => c.setCues(null),
-                      child: Text(t.captionPanelOff),
+                    identifier: 'caption_add',
+                    child: FilledButton.tonal(
+                      onPressed: () => c.addCue(),
+                      child: Text(t.captionPanelAdd),
                     ),
                   ),
+                  if (hasStyle) ...[
+                    const SizedBox(height: Space.sm),
+                    Semantics(
+                      identifier: 'caption_off',
+                      child: OutlinedButton(
+                        onPressed: c.turnOffCaptions,
+                        child: Text(t.captionPanelOff),
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),

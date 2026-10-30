@@ -3168,6 +3168,96 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Kết thúc (ms)'**
   String get captionPanelEnd;
+
+  /// No description provided for @captionTabLines.
+  ///
+  /// In vi, this message translates to:
+  /// **'Câu'**
+  String get captionTabLines;
+
+  /// No description provided for @captionTabStyle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểu'**
+  String get captionTabStyle;
+
+  /// No description provided for @captionReveal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiệu ứng hiện chữ'**
+  String get captionReveal;
+
+  /// No description provided for @captionRevealNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện hết'**
+  String get captionRevealNone;
+
+  /// No description provided for @captionRevealWord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từng từ'**
+  String get captionRevealWord;
+
+  /// No description provided for @captionRevealChar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từng ký tự'**
+  String get captionRevealChar;
+
+  /// No description provided for @captionRevealKaraoke.
+  ///
+  /// In vi, this message translates to:
+  /// **'Karaoke'**
+  String get captionRevealKaraoke;
+
+  /// No description provided for @captionOutlineWidth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dày viền'**
+  String get captionOutlineWidth;
+
+  /// No description provided for @captionOutlineColor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu viền'**
+  String get captionOutlineColor;
+
+  /// No description provided for @captionShadowBlur.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhoè bóng'**
+  String get captionShadowBlur;
+
+  /// No description provided for @captionBoxColor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu nền'**
+  String get captionBoxColor;
+
+  /// No description provided for @captionBoxRadius.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bo góc'**
+  String get captionBoxRadius;
+
+  /// No description provided for @captionPosY.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dọc'**
+  String get captionPosY;
+
+  /// No description provided for @captionPosX.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngang'**
+  String get captionPosX;
+
+  /// No description provided for @captionReset.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại kiểu'**
+  String get captionReset;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

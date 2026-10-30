@@ -788,6 +788,7 @@ class EditorController extends ChangeNotifier {
     endMs: math.max(1, _project.durationMs),
     y: 0.85,
     cues: const [],
+    captionStyle: CaptionStyle.standard,
   );
 
   static int _byStart(CaptionCue a, CaptionCue b) =>
@@ -841,11 +842,30 @@ class EditorController extends ChangeNotifier {
     updateText(withCues(item, cues));
   }
 
-  /// Style of the caption text (font, colour, position, reveal mode).
-  void setCaptionStyle(CaptionStyle? style, {TextItem? on}) {
+  /// Turns captions off. A caption item made only for subtitles (no text of its own) goes away, so
+  /// turning captions off leaves nothing behind; a text item that also carries cues keeps its text.
+  void turnOffCaptions({TextItem? on}) {
     final item = on ?? captionItem;
     if (item == null) return;
-    updateText(withCaptionStyle(item, style));
+    if (item.text.isEmpty) {
+      if (selectedId == item.id) selectedId = null;
+      _apply(_project.removeOverlay(item.id));
+    } else {
+      setCues(null, on: item);
+    }
+  }
+
+  /// Style of the caption text (font, colour, position, reveal mode).
+  ///
+  /// The item's own `x` / `y` are what the preview and the export place the caption by (so dragging it
+  /// on the stage works); a style with a position moves the item there. [record] false is for the
+  /// frames of a slider drag (see [beginGesture] / [flush]).
+  void setCaptionStyle(CaptionStyle? style, {TextItem? on, bool record = true}) {
+    final item = on ?? captionItem;
+    if (item == null) return;
+    var next = withCaptionStyle(item, style);
+    if (style != null) next = next.copyWith(x: style.x, y: style.y);
+    updateText(next, record: record);
   }
 
   void addCover([CoverStyle style = CoverStyle.solid]) {

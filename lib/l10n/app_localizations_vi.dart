@@ -1656,4 +1656,49 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get captionPanelEnd => 'Kết thúc (ms)';
+
+  @override
+  String get captionTabLines => 'Câu';
+
+  @override
+  String get captionTabStyle => 'Kiểu';
+
+  @override
+  String get captionReveal => 'Hiệu ứng hiện chữ';
+
+  @override
+  String get captionRevealNone => 'Hiện hết';
+
+  @override
+  String get captionRevealWord => 'Từng từ';
+
+  @override
+  String get captionRevealChar => 'Từng ký tự';
+
+  @override
+  String get captionRevealKaraoke => 'Karaoke';
+
+  @override
+  String get captionOutlineWidth => 'Dày viền';
+
+  @override
+  String get captionOutlineColor => 'Màu viền';
+
+  @override
+  String get captionShadowBlur => 'Nhoè bóng';
+
+  @override
+  String get captionBoxColor => 'Màu nền';
+
+  @override
+  String get captionBoxRadius => 'Bo góc';
+
+  @override
+  String get captionPosY => 'Dọc';
+
+  @override
+  String get captionPosX => 'Ngang';
+
+  @override
+  String get captionReset => 'Đặt lại kiểu';
 }
