@@ -154,3 +154,14 @@ Phần này thay các ghi chú "xuất video chưa" của Phần 10 và 11.
 - Nhập SRT qua hộp chọn tệp trên máy thật chưa kiểm (xem trên).
 - Ảnh xem trước ở thẻ mẫu là ảnh tĩnh cả câu; hiệu ứng hiện chữ xem ở preview và video xuất.
 - Chạy lại Maestro cần video `ESR_edit_20261030_121019` có sẵn trong thư viện; bài `caption_phase7_speed` cần nguồn thử: chạy `maestro/qa_make_test_source.yaml`, ghi tên file bằng `qa_data.ps1 -Action record`, đổi PATTERN trong flow, rồi `qa_data.ps1 -Action clean -Apply` khi xong.
+
+### STT quality thực tế (Galaxy S25 Ultra, đo 2026-10-30)
+Bộ nhận dạng đang dùng: `SpeechRecognizer.createOnDeviceSpeechRecognizer` của Android (API 33+), nhận file PCM đã cắt theo quãng nghỉ (`SttJob` + `Chunker`). Chạy trên máy, không gửi âm thanh đi.
+- Mẫu thử: 6 câu tiếng Việt (giọng tổng hợp TTS, vì không thể thu giọng người), 38 giây, nghỉ 1 giây giữa câu. Văn bản gốc ở `test-results/stt/stt_reference.json`.
+- Sạch: 88/88 từ đúng (WER 0.0%). Mốc bắt đầu của từng cụm lệch <= 40ms so với gốc. Kết thúc cụm sớm hơn lời nói 0.5-1.4s (cắt theo quãng nghỉ).
+- Chế độ máy bay: kết quả y hệt (chạy hoàn toàn trên máy).
+- Có nhiễu hồng (SNR khoảng 2-3dB, khắc nghiệt): 93.2% từ đúng (WER 6.8%), bị cắt thành 11 cụm, mất vài từ cuối cụm.
+- Mốc thời gian: chỉ ở mức cụm câu, KHÔNG có mốc từng từ. Nhận file có sẵn được (không cần micro).
+- Giới hạn trung thực: mẫu là giọng tổng hợp sạch, chưa đo giọng người thật, giọng vùng miền, nhiều người nói, nhạc nền. Độ chính xác thực tế có thể thấp hơn.
+- Quyết định: GIỮ Android STT (>= 80% đúng và có mốc thời gian theo cụm). KHÔNG dùng Whisper: không cần, tránh dependency và model 75-142MB. Từng từ chia theo tỉ lệ số ký tự trong cụm (đủ cho hiện chữ dần).
+- Cách đo lại: `maestro/qa_stt_probe.yaml -e SAMPLE=<tên file trong Download>`, rồi đọc dự án bằng `adb run-as` (chỉ bản debug).

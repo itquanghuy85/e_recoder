@@ -1,0 +1,50 @@
+appId: com.huluca.escreenrecorder
+name: QA - speech to text probe on a picked Vietnamese sample (${SAMPLE} in Download)
+tags:
+  - qa
+---
+# Measures what the automatic captions make of known speech. See docs/CAPTION_PLAN.md (STT quality).
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    id: "library_pick_video"
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      notVisible: "${SAMPLE}"
+    commands:
+      - tapOn: "Hiển thị gốc"
+      - tapOn: "Tải xuống"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- tapOn: "${SAMPLE}"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 20000
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+# The panel under the tabs scrolls on its own: drag inside it so the button leaves the navigation bar.
+- repeat:
+    times: 2
+    commands:
+      - swipe:
+          start: 50%, 88%
+          end: 50%, 66%
+          duration: 400
+- tapOn:
+    id: "auto_captions"
+- tapOn:
+    id: "stt_lang_vi"
+- takeScreenshot: artifacts/stt_sheet
+- tapOn:
+    id: "stt_start"
+- extendedWaitUntil:
+    visible: ".*(Video này không có âm thanh|Không nghe thấy lời nói|Đã thêm|Không tạo được).*"
+    timeout: 240000
+- takeScreenshot: artifacts/stt_result
