@@ -204,6 +204,10 @@ extension TextPresetLook on TextPreset {
   };
 }
 
+/// `copyWith` sentinel: a parameter left at this value keeps the current field, so an explicit
+/// `null` can clear a nullable field (`cues`, `captionStyle`).
+const Object _unset = Object();
+
 class TextItem {
   const TextItem({
     required this.id,
@@ -279,8 +283,8 @@ class TextItem {
     double? opacity,
     ItemMotion? motion,
     TextFx? fx,
-    List<CaptionCue>? cues,
-    CaptionStyle? captionStyle,
+    Object? cues = _unset,
+    Object? captionStyle = _unset,
   }) => TextItem(
     id: id,
     text: text ?? this.text,
@@ -300,8 +304,10 @@ class TextItem {
     opacity: opacity ?? this.opacity,
     motion: motion ?? this.motion,
     fx: fx ?? this.fx,
-    cues: cues ?? this.cues,
-    captionStyle: captionStyle ?? this.captionStyle,
+    cues: identical(cues, _unset) ? this.cues : cues as List<CaptionCue>?,
+    captionStyle: identical(captionStyle, _unset)
+        ? this.captionStyle
+        : captionStyle as CaptionStyle?,
   );
   static const Object _keepBox = Object();
 

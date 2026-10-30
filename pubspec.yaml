@@ -35,7 +35,8 @@ flutter:
   shaders:
     - shaders/mosaic.frag
   assets:
-    # Caption presets (schema: id, name, previewHint, style: CaptionStyle JSON). Empty until Phase 5.
+    # Caption presets: id, name, previewHint, style. Schema: see CaptionStyle.fromJson doc
+    # (lib/features/editor/caption_models.dart). Empty until Phase 5.
     - assets/caption_templates.json
   fonts:
     - family: Barlow

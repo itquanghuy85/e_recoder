@@ -224,6 +224,33 @@ class CaptionStyle {
     'templateId': templateId,
   };
 
+  /// Reads a style from JSON. Each entry of `assets/caption_templates.json` uses this shape and
+  /// is loaded into a `CaptionTemplate` in Phase 5. Every key is optional when reading; missing
+  /// keys fall back to the constructor defaults.
+  ///
+  /// ```json
+  /// {
+  ///   "id": "tiktok-white",             // String, unique preset id
+  ///   "name": "TikTok trắng đen",       // String, shown in the picker
+  ///   "previewHint": "Đậm, viền đen",   // String, one-line description
+  ///   "style": {                        // CaptionStyle.toJson()
+  ///     "fontId": "barlow",             // String: barlow | bevietnam | inter | montserrat
+  ///     "sizeU": 30,                    // double, U units (frame width / 360)
+  ///     "color": 4294967295,            // int, ARGB
+  ///     "outlineColor": 4278190080,     // int?, ARGB
+  ///     "outlineWidth": 2,              // double
+  ///     "shadowColor": 2290649224,      // int?, ARGB
+  ///     "shadowBlur": 6,                // double
+  ///     "boxColor": 3003121664,         // int?, ARGB
+  ///     "boxRadius": 8,                 // double
+  ///     "align": "center",              // String: left | center | right
+  ///     "x": 0.5,                       // double, 0..1 of the output frame
+  ///     "y": 0.85,                      // double, 0..1 of the output frame
+  ///     "revealMode": "wordByWord",     // String: none | wordByWord | charByChar | karaokeHighlight
+  ///     "templateId": "tiktok-white"    // String?
+  ///   }
+  /// }
+  /// ```
   factory CaptionStyle.fromJson(Map<String, dynamic> j) => CaptionStyle(
     fontId: j['fontId'] as String? ?? 'barlow',
     sizeU: (j['sizeU'] as num?)?.toDouble() ?? 22,

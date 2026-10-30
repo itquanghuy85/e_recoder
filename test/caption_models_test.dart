@@ -191,13 +191,53 @@ void main() {
       expect(back.lookKey, item.lookKey);
     });
 
-    test('clearing cues is possible only through a fresh TextItem', () {
+    test('copyWith without cues keeps them', () {
       final item = base.copyWith(
         cues: const [CaptionCue(text: 'a', startMs: 0, endMs: 100)],
       );
       expect(item.cues, isNotNull);
-      // copyWith without cues keeps them (same convention as every other field).
       expect(item.copyWith(text: 'b').cues, isNotNull);
+    });
+
+    test('copyWith(cues: null) turns captions off', () {
+      final item = base.copyWith(
+        cues: const [CaptionCue(text: 'a', startMs: 0, endMs: 100)],
+      );
+      expect(item.copyWith(cues: null).cues, isNull);
+      expect(item.copyWith(cues: null).toNative().containsKey('cues'), isFalse);
+    });
+
+    test('copyWith(cues: [...]) replaces the list', () {
+      final item = base.copyWith(
+        cues: const [CaptionCue(text: 'a', startMs: 0, endMs: 100)],
+      );
+      final next = item.copyWith(
+        cues: const [CaptionCue(text: 'b', startMs: 0, endMs: 100)],
+      );
+      expect(next.cues!.single.text, 'b');
+      expect(item.cues!.single.text, 'a');
+    });
+
+    test('copyWith without captionStyle keeps it', () {
+      const style = CaptionStyle(revealMode: RevealMode.charByChar);
+      final item = base.copyWith(captionStyle: style);
+      expect(item.copyWith(text: 'b').captionStyle, style);
+    });
+
+    test('copyWith(captionStyle: null) clears the style', () {
+      const style = CaptionStyle(revealMode: RevealMode.charByChar);
+      final item = base.copyWith(captionStyle: style);
+      expect(item.copyWith(captionStyle: null).captionStyle, isNull);
+      expect(
+        item.copyWith(captionStyle: null).toNative().containsKey('captionStyle'),
+        isFalse,
+      );
+    });
+
+    test('copyWith(captionStyle: ...) replaces the style', () {
+      final item = base.copyWith(captionStyle: const CaptionStyle());
+      const next = CaptionStyle(revealMode: RevealMode.karaokeHighlight);
+      expect(item.copyWith(captionStyle: next).captionStyle, next);
     });
   });
 }
