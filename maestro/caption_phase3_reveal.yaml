@@ -1,0 +1,70 @@
+appId: com.huluca.escreenrecorder
+name: Caption phase 3 - words appear one by one while the playhead moves
+tags:
+  - p1
+  - module-editor
+---
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "caption_panel"
+- runFlow:
+    when:
+      visible:
+        id: "caption_off"
+    commands:
+      - tapOn:
+          id: "caption_off"
+- tapOn:
+    id: "caption_add"
+# One cue, four words, 1.5 s each: no word timings were typed, so they are spread evenly.
+- tapOn:
+    id: "cue_text_0"
+- eraseText: 40
+- inputText: "Mot hai ba bon"
+- tapOn:
+    id: "cue_end_0"
+- eraseText: 10
+- inputText: "6000"
+- tapOn:
+    id: "cue_text_0"
+- hideKeyboard
+- back
+- tapOn:
+    point: 50%, 22%
+# Drag the timeline: about 0.9 s, 2.4 s, 3.9 s, 5.4 s. The video stays paused.
+- swipe:
+    start: 62%, 46%
+    end: 42%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase3_t09
+- swipe:
+    start: 62%, 46%
+    end: 29%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase3_t24
+- swipe:
+    start: 62%, 46%
+    end: 29%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase3_t39
+- swipe:
+    start: 62%, 46%
+    end: 29%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase3_t54
+# Leave the project clean for the next flow.
+- tapOn:
+    id: "caption_panel"
+- tapOn:
+    id: "caption_off"
+- back

@@ -29,13 +29,13 @@ Phase 1 (44e78fc), H1 (58cb2d0), H2 (c16c5c4), H3 (b401fef), 2a (8842aaf), 2b+2b
 
 ## PHẦN 5 — CÁC PHASE CÒN LẠI
 Phase 2 (2c-2g): XONG, xem Phần 9.
-Phase 3-10: progressive reveal, style editor, 12 template, SRT, Whisper, timeline, export, E2E.
+Phase 3-10 (Phase 3 đã xong, Phần 10): progressive reveal, style editor, 12 template, SRT, Whisper, timeline, export, E2E.
 
 ## PHẦN 6 — CHECKLIST CUỐI
 cues=null preview/export không đổi, 6 effect e5a9c4c nguyên, 4 RevealMode, preview=export, 12 template, style editor đủ, Whisper OK, SRT OK, timeline OK, test PASS, không dep lạ, không đổi tên cũ.
 
 ## PHẦN 7 — TRẠNG THÁI
-Phase 1, H1-3, 2a, 2b+fix: ✅. Phase 2 (2c-2g): ✅ (xem Phần 9). Phase 3-10: ⬜.
+Phase 1, H1-3, 2a, 2b+fix: ✅. Phase 2 (2c-2g): ✅ (xem Phần 9). Phase 3 (chữ hiện dần): ✅ preview, xuất video chưa (xem Phần 10). Phase 4-10: ⬜.
 
 ## PHẦN 8 — KHÔNG LÀM
 Không CustomPainter Flutter, không đổi typedef SubtitleCue, không tự thêm dep, không iOS export đợt này, không đổi tên cũ, không gộp phase, không tải Whisper không rõ nguồn, không sửa production để test pass.
@@ -66,3 +66,22 @@ Lệnh `maestro` trong PATH (npm) không chạy được. Dùng bản trong `D:\
 - Khi item chữ đang được chọn, nút "Phụ đề" nằm dưới hàng preset (cuộn xuống). Bỏ chọn thì nó nằm ngay dưới "Thêm chữ".
 - Chuỗi mới: 5 key `captionPanel*` (vi + en).
 - Phụ đề tạo ở panel là 1 TextItem chứa danh sách cues; lưu vào project như text thường.
+
+## PHẦN 10 — PHASE 3 (chữ hiện dần theo nhịp thoại, preview)
+
+### Đã làm
+- `OverlayRenderers.renderCue(cue, style, frameW, timeMs?)`: thêm tham số `timeMs` (ms nguồn tuyệt đối). Có `timeMs` thì `revealMode` quyết định vẽ gì: `wordByWord` (từ hiện khi tới giờ), `charByChar` (các ký tự chia đều trong thời lượng từ), `karaokeHighlight` (cả câu mờ, tô sáng trái→phải theo từng từ). `none` hoặc `timeMs` null: vẽ cả câu như Phase 2.
+- Kích thước bitmap luôn bằng cả câu, nên chữ không nhảy khi từ hiện ra.
+- Thời gian từng từ: lấy `cue.words` nếu số từ khớp với text; không khớp (gõ tay) thì chia đều trong [startMs, endMs).
+- Kênh `renderCue` nhận thêm `timeMs`. `EditorController.cueImage` lượng tử hoá 50ms (`cueRevealStepMs`), cache LRU 12; `revealMode == none` thì thời gian không nằm trong key.
+- `captionStyle == null` dùng mặc định `CaptionStyle()` nên `revealMode = wordByWord`: mọi phụ đề hiện từng từ.
+
+### Test
+- `flutter analyze` sạch; `flutter test` 284/284; `gradlew testDebugUnitTest` 79/79 (8 test mới `OverlayRenderersRevealTest`: lượng ink theo thời gian ở 3 chế độ, kích thước không đổi, chia đều, ký tự); `assembleDebug` OK.
+- Maestro S25 Ultra `maestro/caption_phase3_reveal.yaml`: PASS. Câu "Mot hai ba bon" (6s): ở 0.87s "Mot", 2.33s "Mot hai", 3.8s "Mot hai ba", 5.27s "Mot hai ba bon". Ảnh: `test-results/phase3/phase3_t*.png`.
+- Chạy lại `caption_phase2_smoke.yaml` (PASS) và `caption_rollback_effects.yaml` (6 kiểu chữ giống e5a9c4c, PASS).
+
+### Chưa nghiệm thu / việc còn lại
+- `charByChar` và `karaokeHighlight` mới được kiểm bằng unit test (đếm ink), chưa xem bằng Maestro vì chưa có giao diện đổi `revealMode` (Phase 4 style editor).
+- Xuất video: `Exporter.captionOverlays` vẫn chỉ vẽ `renderText`, CHƯA vẽ cues. Bản xuất chưa có phụ đề từ panel. Phase 7.
+- Ô số start/end trong panel chưa kiểm tra tự động cho trường hợp start >= end (tự sửa end = start+1).

@@ -265,7 +265,10 @@ class MainActivity : FlutterActivity() {
             "captionStyle" to call.argument<Map<String, Any?>>("style"),
         )
         val clip = ExportJob.parseText(text)
-        val r = OverlayRenderers.renderCue(clip.cues!!.first(), clip.captionStyle, call.argument<Int>("frameW")!!)
+        val r = OverlayRenderers.renderCue(
+            clip.cues!!.first(), clip.captionStyle, call.argument<Int>("frameW")!!,
+            (call.argument<Number>("timeMs"))?.toLong(),
+        )
         val bytes = png(r.bitmap)
         r.bitmap.recycle()
         return mapOf("png" to bytes, "w" to r.wPx, "h" to r.hPx)

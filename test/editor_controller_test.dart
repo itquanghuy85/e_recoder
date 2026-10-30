@@ -250,12 +250,46 @@ void main() {
       expect(fake.calls.where((e) => e == 'renderCue'), isEmpty);
     });
 
-    test('active cue renders once and then hits the cache', () async {
-      expect(await c.cueImage(withCues, 100), isNotNull);
-      expect(await c.cueImage(withCues, 900), isNotNull);
-      expect(fake.calls.where((e) => e == 'renderCue').length, 1);
-      expect(await c.cueImage(withCues, 2500), isNotNull);
-      expect(fake.calls.where((e) => e == 'renderCue').length, 2);
+    test(
+      'without a reveal the cue renders once and then hits the cache',
+      () async {
+        final still = withCues.copyWith(
+          captionStyle: const CaptionStyle(revealMode: RevealMode.none),
+        );
+        expect(await c.cueImage(still, 100), isNotNull);
+        expect(await c.cueImage(still, 900), isNotNull);
+        expect(fake.calls.where((e) => e == 'renderCue').length, 1);
+        expect(fake.cueTimes.single, isNull);
+        expect(await c.cueImage(still, 2500), isNotNull);
+        expect(fake.calls.where((e) => e == 'renderCue').length, 2);
+      },
+    );
+
+    test(
+      'a reveal is redrawn every 50 ms of playhead time, not more often',
+      () async {
+        expect(await c.cueImage(withCues, 110), isNotNull);
+        expect(await c.cueImage(withCues, 140), isNotNull);
+        expect(fake.cueTimes, [100]);
+        expect(await c.cueImage(withCues, 160), isNotNull);
+        expect(fake.cueTimes, [100, 150]);
+        expect(
+          await c.cueImage(withCues, 115),
+          isNotNull,
+        ); // back to a cached step
+        expect(fake.cueTimes.length, 2);
+      },
+    );
+
+    test('the reveal cache keeps the last 12 pictures', () async {
+      for (var i = 0; i < 13; i++) {
+        await c.cueImage(withCues, i * 50);
+      }
+      expect(fake.cueTimes.length, 13);
+      await c.cueImage(withCues, 12 * 50); // newest: still cached
+      expect(fake.cueTimes.length, 13);
+      await c.cueImage(withCues, 0); // oldest: was dropped
+      expect(fake.cueTimes.length, 14);
     });
   });
 }

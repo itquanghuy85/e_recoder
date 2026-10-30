@@ -100,8 +100,13 @@ object OverlayRenderers {
      * [frameW] is used only to convert U units to pixels and to wrap lines. A null [style] falls back
      * to [CaptionStyle] defaults. Text effects use the style's own colour/width/blur/radius; the
      * `drawFx` presets are for [TextClip.fx] only and are not used here.
+     *
+     * [timeMs] is the playhead in source milliseconds. With it, [CaptionStyle.revealMode] decides how
+     * much of the cue is drawn (word by word, character by character, karaoke fill). The bitmap keeps
+     * the size of the whole cue at every time, so the caption does not jump as words appear. Null (or
+     * [RevealMode.none]) draws the whole cue.
      */
-    fun renderCue(cue: CaptionCue, style: CaptionStyle?, frameW: Int): Rendered {
+    fun renderCue(cue: CaptionCue, style: CaptionStyle?, frameW: Int, timeMs: Long? = null): Rendered {
         val st = style ?: CaptionStyle()
         val u = frameW / 360f
         val fontSizePx = st.sizeU * u
@@ -145,6 +150,11 @@ object OverlayRenderers {
         if (shadowR > 0f) {
             fill.setShadowLayer(shadowR, shadowR * 0.5f, shadowR * 0.7f, st.shadowColor ?: 0xFF000000.toInt())
         }
+        val reveal = if (timeMs == null) RevealMode.none else st.revealMode
+        val times = if (reveal == RevealMode.none) emptyList() else cueTokenTimes(cue, lines.sumOf { l -> l.split(' ').count { it.isNotEmpty() } })
+        val dim = Paint(fill).apply { alpha = (alpha * 0.4f).toInt() }
+        val space = fill.measureText(" ")
+        var tok = 0
         lines.forEachIndexed { i, line ->
             val lw = widths[i]
             val x = when (st.align) {
@@ -153,10 +163,67 @@ object OverlayRenderers {
                 else -> (w - lw) / 2f
             }
             val y = padding + lineH * i + fontSizePx * 0.95f
-            if (halo != null) c.drawText(line, x, y, halo)
-            c.drawText(line, x, y, fill)
+            if (reveal == RevealMode.none) {
+                if (halo != null) c.drawText(line, x, y, halo)
+                c.drawText(line, x, y, fill)
+                return@forEachIndexed
+            }
+            var cursor = x
+            for (word in line.split(' ')) {
+                if (word.isEmpty()) continue
+                val (ws, we) = times[tok++]
+                val t = timeMs ?: 0L
+                val ww = fill.measureText(word)
+                when (reveal) {
+                    RevealMode.wordByWord -> if (t >= ws) {
+                        if (halo != null) c.drawText(word, cursor, y, halo)
+                        c.drawText(word, cursor, y, fill)
+                    }
+                    RevealMode.charByChar -> {
+                        val shown = shownChars(word.length, ws, we, t)
+                        if (shown > 0) {
+                            val part = word.substring(0, shown)
+                            if (halo != null) c.drawText(part, cursor, y, halo)
+                            c.drawText(part, cursor, y, fill)
+                        }
+                    }
+                    else -> {
+                        if (halo != null) c.drawText(word, cursor, y, halo)
+                        c.drawText(word, cursor, y, dim)
+                        if (t >= ws) {
+                            val f = if (we <= ws) 1f else ((t - ws).toFloat() / (we - ws)).coerceIn(0f, 1f)
+                            c.save()
+                            c.clipRect(cursor, 0f, cursor + ww * f, h.toFloat())
+                            c.drawText(word, cursor, y, fill)
+                            c.restore()
+                        }
+                    }
+                }
+                cursor += ww + space
+            }
         }
         return Rendered(bmp, w, h)
+    }
+
+    /**
+     * Start / end of every word of [cue] as laid out. Uses the cue's own word timings when they match
+     * the text word for word, otherwise shares the cue's span equally (text typed by hand).
+     */
+    internal fun cueTokenTimes(cue: CaptionCue, count: Int): List<Pair<Long, Long>> {
+        if (count <= 0) return emptyList()
+        if (cue.words.size == count) return cue.words.map { it.startMs to it.endMs }
+        val span = (cue.endMs - cue.startMs).coerceAtLeast(0L)
+        return List(count) { i -> (cue.startMs + span * i / count) to (cue.startMs + span * (i + 1) / count) }
+    }
+
+    /** How many characters of a [len]-character word are on screen at [t]; they share the word's span equally. */
+    internal fun shownChars(len: Int, start: Long, end: Long, t: Long): Int {
+        if (len <= 0 || t < start) return 0
+        if (t >= end) return len
+        val span = end - start
+        var n = 0
+        for (j in 0 until len) if (t >= start + span * j / len) n = j + 1
+        return n
     }
 
     /** Splits [text] into lines no wider than [maxWidth] px, measuring words with [paint]. */

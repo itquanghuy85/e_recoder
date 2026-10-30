@@ -203,12 +203,7 @@ class EditorController extends ChangeNotifier {
         base = AutoDirector.speedUpIdle(base, ranges);
       }
       _apply(
-        AutoDirector.fromTouches(
-          base,
-          events,
-          options,
-          stepPrefix: stepPrefix,
-        ),
+        AutoDirector.fromTouches(base, events, options, stepPrefix: stepPrefix),
       );
     } finally {
       directing = false;
@@ -1225,7 +1220,10 @@ class EditorController extends ChangeNotifier {
   }
 
   // Small LRU: a caption changes picture only when the active cue changes, so a few entries are plenty.
-  static const _cueCacheMax = 8;
+  static const _cueCacheMax = 12;
+
+  /// A reveal is redrawn at most every this many ms of playhead time.
+  static const cueRevealStepMs = 50;
   final Map<String, Future<RenderedImage>> _cueImages = {};
 
   /// The picture of the cue showing at [sourceMs] for [t], or null when no cue is active.
@@ -1237,10 +1235,20 @@ class EditorController extends ChangeNotifier {
     final cue = cues[i];
     final style = t.captionStyle;
     final w = outFrameSize.width.round();
-    final key = '${style?.toJson()}|${cue.toJson()}|$w';
+    // Without a reveal the picture is the same whatever the time, so it is not part of the key.
+    final reveals =
+        (style?.revealMode ?? const CaptionStyle().revealMode) !=
+        RevealMode.none;
+    final step = reveals ? sourceMs ~/ cueRevealStepMs * cueRevealStepMs : null;
+    final key = '${style?.toJson()}|${cue.toJson()}|$w|$step';
     var f = _cueImages.remove(key);
     f ??= () async {
-      final r = await native.renderCue(cue.toJson(), style?.toJson(), w);
+      final r = await native.renderCue(
+        cue.toJson(),
+        style?.toJson(),
+        w,
+        timeMs: step,
+      );
       return RenderedImage(r.png, r.w.toDouble(), r.h.toDouble());
     }();
     _cueImages[key] = f;

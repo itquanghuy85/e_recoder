@@ -400,16 +400,19 @@ class NativeRecorder {
     );
   }
 
-  /// One caption cue drawn natively with [style] (the same renderer the export uses).
+  /// One caption cue drawn natively with [style] (the same renderer the export uses). [timeMs] is the
+  /// playhead in source ms: with it the cue is revealed as its style asks; without it the whole cue shows.
   Future<({Uint8List png, int w, int h})> renderCue(
     Map<String, Object> cue,
     Map<String, Object?>? style,
-    int frameW,
-  ) async {
+    int frameW, {
+    int? timeMs,
+  }) async {
     final m = (await _method.invokeMapMethod<String, Object?>('renderCue', {
       'cue': cue,
       'style': style,
       'frameW': frameW,
+      'timeMs': ?timeMs,
     }))!;
     return (
       png: m['png'] as Uint8List,
@@ -484,7 +487,10 @@ class NativeRecorder {
   Future<MediaEntry?> pickVideoToEdit() async {
     final m = await _method.invokeMapMethod<String, Object?>('pickVideoToEdit');
     if (m == null) return null;
-    return MediaEntry.fromMap({...m, 'dateAdded': DateTime.now().millisecondsSinceEpoch ~/ 1000});
+    return MediaEntry.fromMap({
+      ...m,
+      'dateAdded': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    });
   }
 
   Future<PickedMedia> mediaInfo(String path) async {

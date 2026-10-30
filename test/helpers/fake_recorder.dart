@@ -120,11 +120,16 @@ class FakeRecorder implements NativeRecorder {
   Future<({Uint8List png, int w, int h})> renderCue(
     Map<String, Object> cue,
     Map<String, Object?>? style,
-    int frameW,
-  ) async {
+    int frameW, {
+    int? timeMs,
+  }) async {
     calls.add('renderCue');
+    cueTimes.add(timeMs);
     return (png: _png, w: 80, h: 30);
   }
+
+  /// `timeMs` of every renderCue call, in order.
+  final List<int?> cueTimes = [];
 
   List<({int startMs, int endMs})> idleRanges = [];
 
