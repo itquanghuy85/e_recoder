@@ -51,6 +51,11 @@ app.*.map.json
 artifacts/
 .impeccable/mocks/
 .impeccable/review/
+test-results/
+maestro-mobile/
+maestro-mobile.zip
+maestro/_tmp_*.yaml
+maestro/test_*_s*.yaml
 
 # Release signing
 android/key.properties
