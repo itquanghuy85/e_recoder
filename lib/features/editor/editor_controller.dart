@@ -1224,6 +1224,37 @@ class EditorController extends ChangeNotifier {
     });
   }
 
+  // Small LRU: a caption changes picture only when the active cue changes, so a few entries are plenty.
+  static const _cueCacheMax = 8;
+  final Map<String, Future<RenderedImage>> _cueImages = {};
+
+  /// The picture of the cue showing at [sourceMs] for [t], or null when no cue is active.
+  Future<RenderedImage?> cueImage(TextItem t, int sourceMs) async {
+    final cues = t.cues;
+    if (cues == null) return null;
+    final i = cues.indexWhere((e) => e.isActiveAt(sourceMs));
+    if (i < 0) return null;
+    final cue = cues[i];
+    final style = t.captionStyle;
+    final w = outFrameSize.width.round();
+    final key = '${style?.toJson()}|${cue.toJson()}|$w';
+    var f = _cueImages.remove(key);
+    f ??= () async {
+      final r = await native.renderCue(cue.toJson(), style?.toJson(), w);
+      return RenderedImage(r.png, r.w.toDouble(), r.h.toDouble());
+    }();
+    _cueImages[key] = f;
+    while (_cueImages.length > _cueCacheMax) {
+      _cueImages.remove(_cueImages.keys.first);
+    }
+    try {
+      return await f;
+    } catch (_) {
+      _cueImages.remove(key);
+      return null;
+    }
+  }
+
   Future<RenderedImage> coverImage(CoverItem c) {
     final key = '${c.x1 - c.x0}|${c.y1 - c.y0}|${c.color.toARGB32()}';
     return _coverImages.putIfAbsent(key, () async {

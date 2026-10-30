@@ -1,4 +1,5 @@
 import 'package:e_screen_recorder/core/native_recorder.dart';
+import 'package:e_screen_recorder/features/editor/caption_models.dart';
 import 'package:e_screen_recorder/features/editor/edit_project.dart';
 import 'package:e_screen_recorder/features/editor/editor_controller.dart';
 import 'package:e_screen_recorder/features/editor/editor_math.dart';
@@ -232,6 +233,29 @@ void main() {
       final mid = zoomAt([z], 3000);
       expect(mid.cx, closeTo(0.75, 1e-9)); // 1 - 0.5/2
       expect(mid.cy, closeTo(0.25, 1e-9)); // 0.5/2
+    });
+  });
+  group('cueImage', () {
+    const base = TextItem(id: 't', text: '', startMs: 0, endMs: 5000);
+    final withCues = base.copyWith(
+      cues: const [
+        CaptionCue(text: 'A', startMs: 0, endMs: 1000),
+        CaptionCue(text: 'B', startMs: 2000, endMs: 3000),
+      ],
+    );
+
+    test('null cues or no active cue gives null and never renders', () async {
+      expect(await c.cueImage(base, 500), isNull);
+      expect(await c.cueImage(withCues, 1500), isNull);
+      expect(fake.calls.where((e) => e == 'renderCue'), isEmpty);
+    });
+
+    test('active cue renders once and then hits the cache', () async {
+      expect(await c.cueImage(withCues, 100), isNotNull);
+      expect(await c.cueImage(withCues, 900), isNotNull);
+      expect(fake.calls.where((e) => e == 'renderCue').length, 1);
+      expect(await c.cueImage(withCues, 2500), isNotNull);
+      expect(fake.calls.where((e) => e == 'renderCue').length, 2);
     });
   });
 }

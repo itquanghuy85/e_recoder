@@ -1028,6 +1028,38 @@ class _EditorStageState extends State<EditorStage> {
       t: t - x.startMs,
       lifeMs: x.endMs - x.startMs,
     );
+    if (x.cues != null) {
+      final cs = x.captionStyle;
+      final cst = motionAt(
+        x.motion,
+        x: cs?.x ?? x.x,
+        y: cs?.y ?? x.y,
+        scale: 1,
+        opacity: x.opacity,
+        t: t - x.startMs,
+        lifeMs: x.endMs - x.startMs,
+      );
+      return FutureBuilder<RenderedImage?>(
+        future: c.cueImage(x, t),
+        builder: (context, snap) {
+          final img = snap.data;
+          if (img == null) return const SizedBox.shrink();
+          return _placed(
+            Image.memory(
+              img.png,
+              fit: BoxFit.fill,
+              gaplessPlayback: true,
+              excludeFromSemantics: true,
+            ),
+            img.w * g.kOutput,
+            img.h * g.kOutput,
+            cst,
+            x.rotation,
+            g,
+          );
+        },
+      );
+    }
     return FutureBuilder<RenderedImage>(
       future: c.textImage(x),
       builder: (context, snap) {

@@ -400,6 +400,24 @@ class NativeRecorder {
     );
   }
 
+  /// One caption cue drawn natively with [style] (the same renderer the export uses).
+  Future<({Uint8List png, int w, int h})> renderCue(
+    Map<String, Object> cue,
+    Map<String, Object?>? style,
+    int frameW,
+  ) async {
+    final m = (await _method.invokeMapMethod<String, Object?>('renderCue', {
+      'cue': cue,
+      'style': style,
+      'frameW': frameW,
+    }))!;
+    return (
+      png: m['png'] as Uint8List,
+      w: (m['w'] as num).toInt(),
+      h: (m['h'] as num).toInt(),
+    );
+  }
+
   Future<({Uint8List png, int w, int h})> renderCover(
     Map<String, Object> clip,
     int frameW,

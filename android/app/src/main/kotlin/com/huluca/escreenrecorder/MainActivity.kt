@@ -97,6 +97,7 @@ class MainActivity : FlutterActivity() {
             "alignedSize" -> result.success(alignedSize(call))
             "renderMarker" -> async(result) { renderMarker(call) }
             "renderText" -> async(result) { renderText(call) }
+            "renderCue" -> async(result) { renderCue(call) }
             "renderCover" -> async(result) { renderCover(call) }
             "renderShape" -> async(result) { renderShape(call) }
             "pickMedia" -> pickMedia(call, result)
@@ -251,6 +252,20 @@ class MainActivity : FlutterActivity() {
             "texts" to listOf(m),
         )).texts.first()
         val r = OverlayRenderers.renderText(clip, call.argument<Int>("frameW")!!)
+        val bytes = png(r.bitmap)
+        r.bitmap.recycle()
+        return mapOf("png" to bytes, "w" to r.wPx, "h" to r.hPx)
+    }
+
+    private fun renderCue(call: MethodCall): Map<String, Any> {
+        MarkerRenderer.typeface = timecodeTypeface()
+        val text = mutableMapOf<String, Any?>(
+            "text" to "", "color" to -1, "sizeU" to 1.0, "x" to 0.5, "y" to 0.5, "startMs" to 0, "endMs" to 0,
+            "cues" to listOf(call.argument<Map<String, Any?>>("cue")!!),
+            "captionStyle" to call.argument<Map<String, Any?>>("style"),
+        )
+        val clip = ExportJob.parseText(text)
+        val r = OverlayRenderers.renderCue(clip.cues!!.first(), clip.captionStyle, call.argument<Int>("frameW")!!)
         val bytes = png(r.bitmap)
         r.bitmap.recycle()
         return mapOf("png" to bytes, "w" to r.wPx, "h" to r.hPx)

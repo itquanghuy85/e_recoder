@@ -116,6 +116,16 @@ class FakeRecorder implements NativeRecorder {
     return (png: _png, w: 80, h: 30);
   }
 
+  @override
+  Future<({Uint8List png, int w, int h})> renderCue(
+    Map<String, Object> cue,
+    Map<String, Object?>? style,
+    int frameW,
+  ) async {
+    calls.add('renderCue');
+    return (png: _png, w: 80, h: 30);
+  }
+
   List<({int startMs, int endMs})> idleRanges = [];
 
   @override
