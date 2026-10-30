@@ -93,6 +93,10 @@ data class TextClip(
     val motion: MotionSpec = MotionSpec.FADE,
     /** none | glow | gradient | extrude | hollow | glitch | sticker: drawn into the bitmap. */
     val fx: String = "none",
+    /** Progressive subtitle cues; null keeps the old one-picture text. */
+    val cues: List<CaptionCue>? = null,
+    /** Look for [cues]; null means the item's own text style. */
+    val captionStyle: CaptionStyle? = null,
 )
 
 data class ImageClip(
@@ -309,6 +313,48 @@ data class ExportJob(
             opacity = (it["opacity"] as? Number)?.toFloat() ?: 1f,
             motion = MotionSpec.fromMap(it["motion"] as? Map<*, *>),
             fx = it["fx"] as? String ?: "none",
+            cues = (it["cues"] as? List<*>)?.mapNotNull { c ->
+                (c as? Map<*, *>)?.let { parseCue(it) }
+            },
+            captionStyle = (it["captionStyle"] as? Map<*, *>)?.let { parseCaptionStyle(it) },
+        )
+
+        private fun parseWord(m: Map<*, *>) = WordTiming(
+            text = m["text"] as? String ?: "",
+            startMs = (m["startMs"] as? Number)?.toLong() ?: 0L,
+            endMs = (m["endMs"] as? Number)?.toLong() ?: 0L,
+        )
+
+        private fun parseCue(m: Map<*, *>) = CaptionCue(
+            text = m["text"] as? String ?: "",
+            startMs = (m["startMs"] as? Number)?.toLong() ?: 0L,
+            endMs = (m["endMs"] as? Number)?.toLong() ?: 0L,
+            words = (m["words"] as? List<*>)?.mapNotNull { w ->
+                (w as? Map<*, *>)?.let { parseWord(it) }
+            } ?: emptyList(),
+        )
+
+        private fun parseCaptionStyle(m: Map<*, *>) = CaptionStyle(
+            fontId = m["fontId"] as? String ?: "barlow",
+            bold = m["bold"] as? Boolean ?: true,
+            sizeU = (m["sizeU"] as? Number)?.toFloat() ?: 22f,
+            color = (m["color"] as? Number)?.toInt() ?: 0xFFFFFFFF.toInt(),
+            outlineColor = (m["outlineColor"] as? Number)?.toInt(),
+            outlineWidth = (m["outlineWidth"] as? Number)?.toFloat() ?: 0f,
+            shadowColor = (m["shadowColor"] as? Number)?.toInt(),
+            shadowBlur = (m["shadowBlur"] as? Number)?.toFloat() ?: 0f,
+            boxColor = (m["boxColor"] as? Number)?.toInt(),
+            boxRadius = (m["boxRadius"] as? Number)?.toFloat() ?: 0f,
+            align = m["align"] as? String ?: "center",
+            x = (m["x"] as? Number)?.toFloat() ?: 0.5f,
+            y = (m["y"] as? Number)?.toFloat() ?: 0.85f,
+            revealMode = when (m["revealMode"] as? String) {
+                "none" -> RevealMode.none
+                "charByChar" -> RevealMode.charByChar
+                "karaokeHighlight" -> RevealMode.karaokeHighlight
+                else -> RevealMode.wordByWord
+            },
+            templateId = m["templateId"] as? String,
         )
 
         fun parseShape(it: Map<*, *>) = ShapeClip(
