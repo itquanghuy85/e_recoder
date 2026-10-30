@@ -1,0 +1,39 @@
+appId: com.huluca.escreenrecorder
+name: Caption rollback - plain text effects (cues = null) look the same as before Phase 1
+tags:
+  - p1
+  - module-editor
+---
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    point: 50%, 12%
+- runFlow:
+    file: helpers/caption_rollback_one.yaml
+    env:
+      PRESET: glow
+- runFlow:
+    file: helpers/caption_rollback_one.yaml
+    env:
+      PRESET: gradient
+- runFlow:
+    file: helpers/caption_rollback_one.yaml
+    env:
+      PRESET: extrude
+- runFlow:
+    file: helpers/caption_rollback_one.yaml
+    env:
+      PRESET: hollow
+- runFlow:
+    file: helpers/caption_rollback_one.yaml
+    env:
+      PRESET: glitch
+- runFlow:
+    file: helpers/caption_rollback_one.yaml
+    env:
+      PRESET: sticker

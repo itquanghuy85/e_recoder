@@ -1,0 +1,42 @@
+appId: com.huluca.escreenrecorder
+name: Helper - one plain text with a preset, photographed paused at about 1 s, then deleted
+tags:
+  - helper
+---
+# env: PRESET (glow | gradient | extrude | hollow | glitch | sticker)
+- tapOn:
+    id: "add_text"
+# The preset row scrolls sideways: back to its start, then forward until the chip shows.
+- repeat:
+    times: 3
+    commands:
+      - swipe:
+          start: 15%, 92%
+          end: 90%, 92%
+- repeat:
+    while:
+      notVisible:
+        id: "text_preset_${PRESET}"
+    commands:
+      - swipe:
+          start: 85%, 92%
+          end: 35%, 92%
+- tapOn:
+    id: "text_preset_${PRESET}"
+- tapOn:
+    point: 50%, 12%
+- swipe:
+    start: 62%, 46%
+    end: 41%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/rollback_${PRESET}
+- tapOn:
+    point: 50%, 25%
+- tapOn:
+    id: "overlay_delete"
+- swipe:
+    start: 41%, 46%
+    end: 62%, 46%
+- waitForAnimationToEnd:
+    timeout: 1000

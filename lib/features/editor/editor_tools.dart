@@ -947,6 +947,8 @@ class _TextPanelState extends State<_TextPanel> {
           ),
         ),
         const SizedBox(height: Space.sm),
+        TextPresetRow(c: c, item: sel),
+        const SizedBox(height: Space.sm),
         Semantics(
           identifier: 'caption_panel',
           child: OutlinedButton.icon(
@@ -955,8 +957,6 @@ class _TextPanelState extends State<_TextPanel> {
             label: Text(t.presetSubtitle),
           ),
         ),
-        const SizedBox(height: Space.sm),
-        TextPresetRow(c: c, item: sel),
         const SizedBox(height: Space.sm),
         Text(t.markerColor, style: tt.titleSmall),
         MarkerColorRow(
