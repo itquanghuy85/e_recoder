@@ -59,8 +59,8 @@ class WordTiming {
 }
 
 /// One line of subtitle: its text, when it is shown, and (when known) its word timings.
-class SubtitleCue {
-  const SubtitleCue({
+class CaptionCue {
+  const CaptionCue({
     required this.text,
     required this.startMs,
     required this.endMs,
@@ -82,7 +82,7 @@ class SubtitleCue {
     'words': words.map((e) => e.toJson()).toList(),
   };
 
-  factory SubtitleCue.fromJson(Map<String, dynamic> j) => SubtitleCue(
+  factory CaptionCue.fromJson(Map<String, dynamic> j) => CaptionCue(
     text: j['text'] as String? ?? '',
     startMs: (j['startMs'] as num?)?.toInt() ?? 0,
     endMs: (j['endMs'] as num?)?.toInt() ?? 0,
@@ -92,12 +92,12 @@ class SubtitleCue {
   );
 
   /// A copy with new text / timing; words are kept unless [words] is given.
-  SubtitleCue copyWith({
+  CaptionCue copyWith({
     String? text,
     int? startMs,
     int? endMs,
     List<WordTiming>? words,
-  }) => SubtitleCue(
+  }) => CaptionCue(
     text: text ?? this.text,
     startMs: startMs ?? this.startMs,
     endMs: endMs ?? this.endMs,

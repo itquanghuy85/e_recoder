@@ -256,7 +256,7 @@ class TextItem {
 
   /// Progressive subtitle cues drawn into this item instead of [text]; null keeps the old
   /// one-picture behaviour (the 6 static [TextFx] looks).
-  final List<SubtitleCue>? cues;
+  final List<CaptionCue>? cues;
 
   /// Font, colour, placement and reveal mode for [cues]; null means the item's own text style.
   final CaptionStyle? captionStyle;
@@ -279,7 +279,7 @@ class TextItem {
     double? opacity,
     ItemMotion? motion,
     TextFx? fx,
-    List<SubtitleCue>? cues,
+    List<CaptionCue>? cues,
     CaptionStyle? captionStyle,
   }) => TextItem(
     id: id,
@@ -369,7 +369,7 @@ class TextItem {
     cues: j['cues'] == null
         ? null
         : (j['cues'] as List)
-              .map((e) => SubtitleCue.fromJson(e as Map<String, dynamic>))
+              .map((e) => CaptionCue.fromJson(e as Map<String, dynamic>))
               .toList(),
     captionStyle: j['captionStyle'] == null
         ? null

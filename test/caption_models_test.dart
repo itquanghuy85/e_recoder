@@ -47,8 +47,8 @@ void main() {
     });
   });
 
-  group('SubtitleCue', () {
-    const cue = SubtitleCue(
+  group('CaptionCue', () {
+    const cue = CaptionCue(
       text: 'xin chào',
       startMs: 1000,
       endMs: 3000,
@@ -66,7 +66,7 @@ void main() {
     });
 
     test('survives a JSON round trip', () {
-      final back = SubtitleCue.fromJson(cue.toJson());
+      final back = CaptionCue.fromJson(cue.toJson());
       expect(back.text, cue.text);
       expect(back.startMs, cue.startMs);
       expect(back.endMs, cue.endMs);
@@ -78,7 +78,7 @@ void main() {
     });
 
     test('missing words decode as an empty list', () {
-      final back = SubtitleCue.fromJson({
+      final back = CaptionCue.fromJson({
         'text': 'a',
         'startMs': 0,
         'endMs': 500,
@@ -87,7 +87,7 @@ void main() {
     });
 
     test('splitEvenly keeps every word and the whole duration', () {
-      final words = SubtitleCue.splitEvenly('  một  hai ba ', 900, startMs: 100);
+      final words = CaptionCue.splitEvenly('  một  hai ba ', 900, startMs: 100);
       expect(words.map((e) => e.text), ['một', 'hai', 'ba']);
       expect(words.first.startMs, 100);
       expect(words.last.endMs, 1000);
@@ -98,7 +98,7 @@ void main() {
     });
 
     test('splitEvenly handles an empty text', () {
-      expect(SubtitleCue.splitEvenly('   ', 1000), isEmpty);
+      expect(CaptionCue.splitEvenly('   ', 1000), isEmpty);
     });
   });
 
@@ -170,7 +170,7 @@ void main() {
     });
 
     test('cues and style survive a JSON round trip', () {
-      const cue = SubtitleCue(
+      const cue = CaptionCue(
         text: 'xin chào',
         startMs: 0,
         endMs: 1000,
@@ -193,7 +193,7 @@ void main() {
 
     test('clearing cues is possible only through a fresh TextItem', () {
       final item = base.copyWith(
-        cues: const [SubtitleCue(text: 'a', startMs: 0, endMs: 100)],
+        cues: const [CaptionCue(text: 'a', startMs: 0, endMs: 100)],
       );
       expect(item.cues, isNotNull);
       // copyWith without cues keeps them (same convention as every other field).
