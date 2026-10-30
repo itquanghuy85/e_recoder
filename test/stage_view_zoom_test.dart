@@ -35,7 +35,7 @@ void main() {
     });
 
     test(
-      'the picture always covers the box: no margin when panned to an edge',
+      'panning is limited to one box past each edge, so blank space is allowed',
       () {
         final v = ViewZoom.pinch(
           q: const Offset(0, 0),
@@ -46,25 +46,28 @@ void main() {
           scale: 2,
           box: box,
         );
-        expect(v.offset, Offset.zero);
+        // o = focal - q * scale = (300, 700), inside the new [-w*s, w] / [-h*s, h] clamp.
+        expect(v.offset, const Offset(300, 700));
         final far = ViewZoom.pinch(
           q: const Offset(360, 800),
           focal: const Offset(-300, -700),
           scale: 2,
           box: box,
         );
-        expect(far.offset, const Offset(-360, -800));
+        // o = (-1020, -2300), clamped to one box past the edges.
+        expect(far.offset, const Offset(-720, -1600));
       },
     );
 
-    test('at 1x the offset is always zero', () {
+    test('at 1x the view does not zoom, but a drag still pans it', () {
       final v = ViewZoom.pinch(
         q: const Offset(10, 10),
         focal: const Offset(200, 200),
         scale: 1,
         box: box,
       );
-      expect(v.offset, Offset.zero);
+      // The old behaviour snapped the offset to zero at 1x; the new clamp keeps the pan.
+      expect(v.offset, const Offset(190, 190));
       expect(v.isZoomed, isFalse);
     });
   });
@@ -154,11 +157,11 @@ void main() {
         expect(badge, findsNothing);
         await pinch(tester, const Offset(180, 400), 60, 120);
         expect(badge, findsOneWidget);
-        expect(find.textContaining('×'), findsWidgets);
+        expect(find.textContaining('%'), findsWidgets);
         // a huge pinch is stopped at 5x
         await pinch(tester, const Offset(180, 400), 40, 330);
         await pinch(tester, const Offset(180, 400), 40, 330);
-        expect(find.text('5,0×'), findsOneWidget);
+        expect(find.text('500%'), findsOneWidget);
         // pinching back in to the start returns to fit and the badge goes away
         await pinch(tester, const Offset(180, 400), 330, 20);
         await pinch(tester, const Offset(180, 400), 330, 20);
@@ -219,9 +222,9 @@ void main() {
                   find.descendant(of: badge, matching: find.byType(Text)),
                 )
                 .data!)
-            .replaceAll('×', '')
-            .replaceAll(',', '.'),
-      );
+            .replaceAll('%', ''),
+      ) /
+          100;
       // the pinch started and ended around (90, 200), so that content point stays under it
       final shown =
           Offset(90, 200) +
@@ -249,9 +252,9 @@ void main() {
                   find.descendant(of: badge, matching: find.byType(Text)),
                 )
                 .data!)
-            .replaceAll('×', '')
-            .replaceAll(',', '.'),
-      );
+            .replaceAll('%', ''),
+      ) /
+          100;
       c.select(id);
       await tester.pump();
       final x0 = c.project.texts.single.x;
