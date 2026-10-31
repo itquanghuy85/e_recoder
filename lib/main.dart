@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/purpose/purpose.dart';
+import 'features/purpose/purpose_screen.dart';
 import 'features/splash/splash_overlay.dart';
 import 'app/settings_store.dart';
 import 'l10n/app_localizations.dart';
@@ -59,13 +61,35 @@ class EScreenRecorderApp extends ConsumerWidget {
   }
 }
 
-/// First run shows the short introduction; afterwards the app opens on the recorder.
-class _Root extends ConsumerWidget {
+/// First run shows the short introduction, then asks what the person wants to do; afterwards the app
+/// opens on the recorder. People who were already past the introduction are not asked again: the
+/// recorder offers the choice to them.
+class _Root extends ConsumerStatefulWidget {
   const _Root();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Root> createState() => _RootState();
+}
+
+class _RootState extends ConsumerState<_Root> {
+  // Read when the app opens, before the introduction can flip it.
+  late final bool _firstRun;
+
+  @override
+  void initState() {
+    super.initState();
+    _firstRun = !ref.read(onboardedProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final onboarded = ref.watch(onboardedProvider);
-    return onboarded ? const AppShell() : OnboardingScreen(onDone: () {});
+    if (!onboarded) {
+      return OnboardingScreen(onDone: () {});
+    }
+    if (_firstRun && ref.watch(purposeProvider) == null) {
+      return PurposeScreen(onDone: () {});
+    }
+    return const AppShell();
   }
 }

@@ -80,7 +80,7 @@ class RecorderController extends Notifier<RecorderState> {
         state = state.copyWith(notice: SavedNotice(e.name, e.uri));
         ref.invalidate(mediaListProvider);
         if (e.marks.isNotEmpty || e.touches.isNotEmpty) {
-          unawaited(_saveDraft(e));
+          draftReady = _saveDraft(e);
         }
       case RecErrorEvent():
         state = state.copyWith(notice: ErrorNotice(e.code));
@@ -88,6 +88,10 @@ class RecorderController extends Notifier<RecorderState> {
         break; // handled by the editor
     }
   }
+
+  /// Done when the automatic edit of the last recording is saved (already done when there is none).
+  /// The result screen waits for it before exporting.
+  Future<void> draftReady = Future.value();
 
   /// Touches this close to the end of a recording are the press on stop.
   static const stopTapWindowMs = 1200;

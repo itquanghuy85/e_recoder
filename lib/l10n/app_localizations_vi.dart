@@ -1786,4 +1786,127 @@ class AppL10nVi extends AppL10n {
   @override
   String get touchSourceAutoHint =>
       'Khuyên dùng. Khi quay sạch, app tự nghe mọi lần bạn bấm vào màn hình, không cần lắc máy hay chạm vùng ẩn. Quay xong, app tự tìm chỗ bạn bấm, phóng to và đánh số các bước.';
+
+  @override
+  String get purposeTitle => 'Bạn muốn làm gì?';
+
+  @override
+  String get purposeHint =>
+      'Chọn một mục. App tự cài đặt sẵn cho bạn, sau này vẫn đổi được.';
+
+  @override
+  String get purposeTutorial => 'Làm video hướng dẫn';
+
+  @override
+  String get purposeTutorialSub =>
+      'Quay xong app tự đánh số từng bước, phóng to chỗ bạn bấm. Bạn không cần làm gì thêm.';
+
+  @override
+  String get purposeGame => 'Quay game';
+
+  @override
+  String get purposeGameSub =>
+      'Quay mượt, có chấm nhỏ để bạn đánh dấu lúc cần. Không tự phóng to.';
+
+  @override
+  String get purposePlain => 'Quay thường';
+
+  @override
+  String get purposePlainSub => 'Chỉ quay màn hình, không thêm gì.';
+
+  @override
+  String get purposeSkip => 'Bỏ qua, quay thường';
+
+  @override
+  String get recordTutorial => 'Quay hướng dẫn tự động';
+
+  @override
+  String get recordGame => 'Quay game';
+
+  @override
+  String get recordPlain => 'Quay video';
+
+  @override
+  String get advancedTitle => 'Nâng cao';
+
+  @override
+  String advancedPurpose(String name) {
+    return 'Đổi mục đích: $name';
+  }
+
+  @override
+  String get purposeOffer => 'Chọn mục đích để quay nhanh hơn';
+
+  @override
+  String get purposeOfferSub =>
+      'Hướng dẫn, game hoặc quay thường: app tự cài đặt sẵn cho bạn.';
+
+  @override
+  String get readyTitle => 'Sẵn sàng quay chưa?';
+
+  @override
+  String get readyHint =>
+      'App còn thiếu vài quyền để quay đúng như bạn chọn. Bấm Bật ở từng dòng.';
+
+  @override
+  String get readyMic => 'Micro';
+
+  @override
+  String get readyMicSub =>
+      'Để thu tiếng nói của bạn. Có thể tắt tiếng trong cài đặt quay.';
+
+  @override
+  String get readyOverlay => 'Hiển thị trên ứng dụng khác';
+
+  @override
+  String get readyOverlaySub =>
+      'Để hiện nút dừng, đếm ngược và nghe lần bấm khi bạn đang ở app khác.';
+
+  @override
+  String get readyNotif => 'Thông báo (không bắt buộc)';
+
+  @override
+  String get readyNotifSub => 'Để có nút dừng quay ở thanh thông báo.';
+
+  @override
+  String get readyEnable => 'Bật';
+
+  @override
+  String get readyOn => 'Đã bật';
+
+  @override
+  String get readyGo => 'Sẵn sàng quay';
+
+  @override
+  String get readyWaiting => 'Còn thiếu quyền';
+
+  @override
+  String get resultTitle => 'Quay xong rồi';
+
+  @override
+  String get resultBuilding => 'Đang dựng tự động...';
+
+  @override
+  String get resultExport => 'Xuất ngay';
+
+  @override
+  String get resultEdit => 'Sửa thêm';
+
+  @override
+  String get resultBack => 'Quay lại';
+
+  @override
+  String get resultExporting => 'Đang xuất video...';
+
+  @override
+  String resultExported(String name) {
+    return 'Đã xuất: $name';
+  }
+
+  @override
+  String get resultExportFailed =>
+      'Xuất không được. Bạn thử lại hoặc bấm Sửa thêm.';
+
+  @override
+  String get resultPreviewError => 'Không phát được video này.';
 }

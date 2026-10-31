@@ -34,7 +34,15 @@ void main() {
 
     await tester.tap(find.text('Bắt đầu dùng'));
     await tester.pumpAndSettle();
-    expect(find.text('Bắt đầu quay'), findsOneWidget);
+    // then it asks what the person wants to do, once
+    expect(find.text('Bạn muốn làm gì?'), findsOneWidget);
+    expect(find.text('Làm video hướng dẫn'), findsOneWidget);
+    expect(find.text('Quay game'), findsOneWidget);
+    expect(find.text('Quay thường'), findsOneWidget);
+    await tester.tap(find.text('Quay thường'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bạn muốn làm gì?'), findsNothing);
+    expect(find.text('Quay video'), findsOneWidget);
   });
 
   testWidgets('skip goes straight to the recorder and is remembered', (
@@ -46,7 +54,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     await tester.tap(find.text('Bỏ qua'));
     await tester.pumpAndSettle();
-    expect(find.text('Bắt đầu quay'), findsOneWidget);
+    expect(find.text('Bạn muốn làm gì?'), findsOneWidget);
+    // "skip" on the question is a plain recording
+    await tester.tap(find.byKey(const ValueKey('purpose_skip')));
+    await tester.pumpAndSettle();
+    expect(find.text('Quay video'), findsOneWidget);
   });
 
   testWidgets('permission rows reflect what is granted', (tester) async {

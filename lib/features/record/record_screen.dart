@@ -10,6 +10,8 @@ import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import '../library/media_repository.dart';
 import '../marker/marker_settings.dart';
+import '../purpose/purpose.dart';
+import '../purpose/purpose_screen.dart';
 import '../library/media_tile.dart';
 import '../library/player_screen.dart';
 import 'rec_settings.dart';
@@ -116,10 +118,53 @@ class _IdleView extends ConsumerWidget {
     final c = Theme.of(context).colorScheme;
     final s = ref.watch(recSettingsProvider);
     final list = ref.watch(mediaListProvider);
+    final purpose = ref.watch(purposeProvider);
     final summary = t.profileSummary(
       resolutionLabel(t, s.resolution),
       s.fps,
       qualityLabel(t, s.quality),
+    );
+
+    final profileCard = Semantics(
+      identifier: 'profile_card',
+      button: true,
+      label: t.profileEdit,
+      child: InkWell(
+        key: const ValueKey('profile_card'),
+        borderRadius: BorderRadius.circular(Radii.md),
+        onTap: () => showRecSettingsSheet(context),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(
+            horizontal: Space.lg,
+            vertical: Space.md,
+          ),
+          decoration: BoxDecoration(
+            border: Border.all(color: c.outlineVariant),
+            borderRadius: BorderRadius.circular(Radii.md),
+            color: c.surfaceContainerLow,
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.tune, color: c.onSurfaceVariant),
+              const SizedBox(width: Space.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(summary, style: tt.titleSmall),
+                    const SizedBox(height: Space.xs),
+                    Text(
+                      audioLabel(t, s.audio),
+                      style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.expand_less, color: c.onSurfaceVariant),
+            ],
+          ),
+        ),
+      ),
     );
 
     // Scrolls when the content does not fit (very large system fonts, small screens); otherwise the
@@ -188,64 +233,77 @@ class _IdleView extends ConsumerWidget {
                 ),
                 const Spacer(),
                 const SizedBox(height: Space.lg),
-                Semantics(
-                  identifier: 'profile_card',
-                  button: true,
-                  label: t.profileEdit,
-                  child: InkWell(
-                    key: const ValueKey('profile_card'),
-                    borderRadius: BorderRadius.circular(Radii.md),
-                    onTap: () => showRecSettingsSheet(context),
-                    child: Ink(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Space.lg,
-                        vertical: Space.md,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: c.outlineVariant),
-                        borderRadius: BorderRadius.circular(Radii.md),
-                        color: c.surfaceContainerLow,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.tune, color: c.onSurfaceVariant),
-                          const SizedBox(width: Space.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(summary, style: tt.titleSmall),
-                                const SizedBox(height: Space.xs),
-                                Text(
-                                  audioLabel(t, s.audio),
-                                  style: tt.bodySmall?.copyWith(
-                                    color: c.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(Icons.expand_less, color: c.onSurfaceVariant),
-                        ],
+                if (purpose == null) ...[
+                  // Not chosen yet (the app was already in use): the old screen, plus an offer.
+                  _PurposeOffer(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const PurposeScreen(),
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: Space.md),
+                  profileCard,
+                ],
                 const SizedBox(height: Space.lg),
-                Center(
+                SizedBox(
+                  width: double.infinity,
                   child: FilledButton.icon(
                     key: const ValueKey('record_start'),
                     style: FilledButton.styleFrom(
                       backgroundColor: c.primary,
                       foregroundColor: c.onPrimary,
-                      minimumSize: const Size(240, 64),
-                      textStyle: tt.titleMedium,
+                      minimumSize: Size(
+                        purpose == null ? 240 : double.infinity,
+                        purpose == null ? 64 : 92,
+                      ),
+                      textStyle: purpose == null
+                          ? tt.titleMedium
+                          : tt.titleLarge,
                     ),
                     onPressed: onStart,
                     icon: const Icon(Icons.fiber_manual_record),
-                    label: Text(t.recordStart),
+                    label: Text(switch (purpose) {
+                      Purpose.tutorial => t.recordTutorial,
+                      Purpose.game => t.recordGame,
+                      Purpose.plain => t.recordPlain,
+                      null => t.recordStart,
+                    }),
                   ),
                 ),
+                if (purpose != null) ...[
+                  const SizedBox(height: Space.md),
+                  // Everything else lives here, folded away, for the people who want it.
+                  Semantics(
+                    identifier: 'record_advanced',
+                    child: Theme(
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        key: const ValueKey('record_advanced'),
+                        tilePadding: EdgeInsets.zero,
+                        title: Text(t.advancedTitle, style: tt.titleSmall),
+                        children: [
+                          profileCard,
+                          const SizedBox(height: Space.sm),
+                          ListTile(
+                            key: const ValueKey('change_purpose'),
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.swap_horiz),
+                            title: Text(
+                              t.advancedPurpose(_purposeName(t, purpose)),
+                            ),
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const PurposeScreen(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -342,6 +400,66 @@ class _LiveView extends ConsumerWidget {
             OutlinedButton(onPressed: ctl.stop, child: Text(t.cancel)),
           const SizedBox(height: Space.lg),
         ],
+      ),
+    );
+  }
+}
+
+String _purposeName(AppL10n t, Purpose p) => switch (p) {
+  Purpose.tutorial => t.purposeTutorial,
+  Purpose.game => t.purposeGame,
+  Purpose.plain => t.purposePlain,
+};
+
+/// A card that offers the purpose question to someone who was using the app before it existed.
+class _PurposeOffer extends StatelessWidget {
+  const _PurposeOffer({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppL10n.of(context);
+    final tt = Theme.of(context).textTheme;
+    final c = Theme.of(context).colorScheme;
+    return Semantics(
+      identifier: 'purpose_offer',
+      button: true,
+      child: InkWell(
+        key: const ValueKey('purpose_offer'),
+        borderRadius: BorderRadius.circular(Radii.md),
+        onTap: onTap,
+        child: Ink(
+          padding: const EdgeInsets.all(Space.md),
+          decoration: BoxDecoration(
+            color: c.secondaryContainer,
+            borderRadius: BorderRadius.circular(Radii.md),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.auto_awesome, color: c.onSecondaryContainer),
+              const SizedBox(width: Space.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      t.purposeOffer,
+                      style: tt.titleSmall?.copyWith(
+                        color: c.onSecondaryContainer,
+                      ),
+                    ),
+                    Text(
+                      t.purposeOfferSub,
+                      style: tt.bodySmall?.copyWith(
+                        color: c.onSecondaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

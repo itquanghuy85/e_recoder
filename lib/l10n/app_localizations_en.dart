@@ -1790,4 +1790,128 @@ class AppL10nEn extends AppL10n {
   @override
   String get touchSourceAutoHint =>
       'Recommended. While you record clean, the app hears every touch on the screen, with no shaking or hidden corner needed. When you stop, it finds where you tapped, zooms in and numbers the steps.';
+
+  @override
+  String get purposeTitle => 'What do you want to do?';
+
+  @override
+  String get purposeHint =>
+      'Pick one. The app sets everything up for you, and you can change it later.';
+
+  @override
+  String get purposeTutorial => 'Make a tutorial video';
+
+  @override
+  String get purposeTutorialSub =>
+      'When you stop, the app numbers every step and zooms in where you tapped. Nothing more to do.';
+
+  @override
+  String get purposeGame => 'Record a game';
+
+  @override
+  String get purposeGameSub =>
+      'Smooth recording with a small dot to mark moments. No automatic zoom.';
+
+  @override
+  String get purposePlain => 'Plain recording';
+
+  @override
+  String get purposePlainSub => 'Just records the screen, nothing added.';
+
+  @override
+  String get purposeSkip => 'Skip, plain recording';
+
+  @override
+  String get recordTutorial => 'Record tutorial automatically';
+
+  @override
+  String get recordGame => 'Record game';
+
+  @override
+  String get recordPlain => 'Record video';
+
+  @override
+  String get advancedTitle => 'Advanced';
+
+  @override
+  String advancedPurpose(String name) {
+    return 'Change purpose: $name';
+  }
+
+  @override
+  String get purposeOffer => 'Pick a purpose to record faster';
+
+  @override
+  String get purposeOfferSub =>
+      'Tutorial, game or plain: the app sets everything up for you.';
+
+  @override
+  String get readyTitle => 'Ready to record?';
+
+  @override
+  String get readyHint =>
+      'The app is missing a few permissions to record the way you chose. Tap Turn on on each line.';
+
+  @override
+  String get readyMic => 'Microphone';
+
+  @override
+  String get readyMicSub =>
+      'To record your voice. You can mute it in the recording settings.';
+
+  @override
+  String get readyOverlay => 'Display over other apps';
+
+  @override
+  String get readyOverlaySub =>
+      'To show the stop button, the countdown and to hear taps while you are in another app.';
+
+  @override
+  String get readyNotif => 'Notifications (optional)';
+
+  @override
+  String get readyNotifSub =>
+      'To have a stop button in the notification shade.';
+
+  @override
+  String get readyEnable => 'Turn on';
+
+  @override
+  String get readyOn => 'On';
+
+  @override
+  String get readyGo => 'Ready to record';
+
+  @override
+  String get readyWaiting => 'Permissions missing';
+
+  @override
+  String get resultTitle => 'Recording done';
+
+  @override
+  String get resultBuilding => 'Building the edit...';
+
+  @override
+  String get resultExport => 'Export now';
+
+  @override
+  String get resultEdit => 'Edit more';
+
+  @override
+  String get resultBack => 'Record again';
+
+  @override
+  String get resultExporting => 'Exporting video...';
+
+  @override
+  String resultExported(String name) {
+    return 'Exported: $name';
+  }
+
+  @override
+  String get resultExportFailed =>
+      'The export failed. Try again or tap Edit more.';
+
+  @override
+  String get resultPreviewError => 'This video cannot be played.';
 }

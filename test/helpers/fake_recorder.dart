@@ -393,8 +393,9 @@ Future<({Widget app, FakeRecorder fake})> buildTestApp({
   bool onboarded = true,
   FakePermissions? permissions,
   Locale locale = const Locale('vi'),
+  Map<String, Object> prefs = const {},
 }) async {
-  SharedPreferences.setMockInitialValues({'onboarded': onboarded});
+  SharedPreferences.setMockInitialValues({'onboarded': onboarded, ...prefs});
   final store = await SettingsStore.load();
   final fake = FakeRecorder(media: media);
   return (

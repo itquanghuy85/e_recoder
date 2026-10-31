@@ -3402,6 +3402,228 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Khuyên dùng. Khi quay sạch, app tự nghe mọi lần bạn bấm vào màn hình, không cần lắc máy hay chạm vùng ẩn. Quay xong, app tự tìm chỗ bạn bấm, phóng to và đánh số các bước.'**
   String get touchSourceAutoHint;
+
+  /// No description provided for @purposeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn muốn làm gì?'**
+  String get purposeTitle;
+
+  /// No description provided for @purposeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn một mục. App tự cài đặt sẵn cho bạn, sau này vẫn đổi được.'**
+  String get purposeHint;
+
+  /// No description provided for @purposeTutorial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm video hướng dẫn'**
+  String get purposeTutorial;
+
+  /// No description provided for @purposeTutorialSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay xong app tự đánh số từng bước, phóng to chỗ bạn bấm. Bạn không cần làm gì thêm.'**
+  String get purposeTutorialSub;
+
+  /// No description provided for @purposeGame.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay game'**
+  String get purposeGame;
+
+  /// No description provided for @purposeGameSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay mượt, có chấm nhỏ để bạn đánh dấu lúc cần. Không tự phóng to.'**
+  String get purposeGameSub;
+
+  /// No description provided for @purposePlain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay thường'**
+  String get purposePlain;
+
+  /// No description provided for @purposePlainSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ quay màn hình, không thêm gì.'**
+  String get purposePlainSub;
+
+  /// No description provided for @purposeSkip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ qua, quay thường'**
+  String get purposeSkip;
+
+  /// No description provided for @recordTutorial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay hướng dẫn tự động'**
+  String get recordTutorial;
+
+  /// No description provided for @recordGame.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay game'**
+  String get recordGame;
+
+  /// No description provided for @recordPlain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay video'**
+  String get recordPlain;
+
+  /// No description provided for @advancedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nâng cao'**
+  String get advancedTitle;
+
+  /// No description provided for @advancedPurpose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi mục đích: {name}'**
+  String advancedPurpose(String name);
+
+  /// No description provided for @purposeOffer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn mục đích để quay nhanh hơn'**
+  String get purposeOffer;
+
+  /// No description provided for @purposeOfferSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn, game hoặc quay thường: app tự cài đặt sẵn cho bạn.'**
+  String get purposeOfferSub;
+
+  /// No description provided for @readyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng quay chưa?'**
+  String get readyTitle;
+
+  /// No description provided for @readyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'App còn thiếu vài quyền để quay đúng như bạn chọn. Bấm Bật ở từng dòng.'**
+  String get readyHint;
+
+  /// No description provided for @readyMic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Micro'**
+  String get readyMic;
+
+  /// No description provided for @readyMicSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để thu tiếng nói của bạn. Có thể tắt tiếng trong cài đặt quay.'**
+  String get readyMicSub;
+
+  /// No description provided for @readyOverlay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiển thị trên ứng dụng khác'**
+  String get readyOverlay;
+
+  /// No description provided for @readyOverlaySub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để hiện nút dừng, đếm ngược và nghe lần bấm khi bạn đang ở app khác.'**
+  String get readyOverlaySub;
+
+  /// No description provided for @readyNotif.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông báo (không bắt buộc)'**
+  String get readyNotif;
+
+  /// No description provided for @readyNotifSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để có nút dừng quay ở thanh thông báo.'**
+  String get readyNotifSub;
+
+  /// No description provided for @readyEnable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật'**
+  String get readyEnable;
+
+  /// No description provided for @readyOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bật'**
+  String get readyOn;
+
+  /// No description provided for @readyGo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng quay'**
+  String get readyGo;
+
+  /// No description provided for @readyWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn thiếu quyền'**
+  String get readyWaiting;
+
+  /// No description provided for @resultTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay xong rồi'**
+  String get resultTitle;
+
+  /// No description provided for @resultBuilding.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dựng tự động...'**
+  String get resultBuilding;
+
+  /// No description provided for @resultExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất ngay'**
+  String get resultExport;
+
+  /// No description provided for @resultEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa thêm'**
+  String get resultEdit;
+
+  /// No description provided for @resultBack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay lại'**
+  String get resultBack;
+
+  /// No description provided for @resultExporting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xuất video...'**
+  String get resultExporting;
+
+  /// No description provided for @resultExported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xuất: {name}'**
+  String resultExported(String name);
+
+  /// No description provided for @resultExportFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất không được. Bạn thử lại hoặc bấm Sửa thêm.'**
+  String get resultExportFailed;
+
+  /// No description provided for @resultPreviewError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không phát được video này.'**
+  String get resultPreviewError;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

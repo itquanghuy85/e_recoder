@@ -404,8 +404,9 @@ abstract final class AutoDirector {
         final zs = math.max(0, e.tMs - zoomLeadMs);
         final ze = math.min(dur, e.tMs + 1200);
         if (ze - zs < 800) continue;
-        if (out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100))
+        if (out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100)) {
           continue;
+        }
         out = out.upsertZoom(
           ZoomItem(
             id: 'zt_${e.tMs}',
