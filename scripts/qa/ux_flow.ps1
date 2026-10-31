@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$Serial = "R5CY6323KMX",
   [string]$Package = "com.huluca.escreenrecorder",
   [string]$OutDir = "test-results\ux_flow",
@@ -36,7 +36,7 @@ $env:JAVA_TOOL_OPTIONS = "-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"
 Remove-Item $OutDir -Recurse -Force -ErrorAction SilentlyContinue
 $before = (adb -s $Serial shell "ls '/sdcard/Movies/E Screen Recorder/'") -join "`n"
 try {
-  $button = @{ tutorial = "Quay hướng dẫn tự động"; game = "Quay game"; plain = "Quay video" }[$Purpose]
+  $button = @{ tutorial = "Quay h.*ng d.*n.*"; game = "Quay game"; plain = "Quay video" }[$Purpose]
   & $maestro --device $Serial test -e "PURPOSE=$Purpose" -e "BUTTON=$button" --test-output-dir $OutDir maestro\ux_simple_flow.yaml
   $code = $LASTEXITCODE
 } finally {

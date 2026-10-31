@@ -87,6 +87,11 @@ tags:
 - extendedWaitUntil:
     visible: "Xuất ngay"
     timeout: 10000
+- assertVisible:
+    id: "result_quality_original"
+- tapOn:
+    id: "result_quality_p720"
+- takeScreenshot: ux_4b_quality
 - tapOn: "Xuất ngay"
 - extendedWaitUntil:
     visible: "Đã xuất: .*"

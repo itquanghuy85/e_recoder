@@ -33,6 +33,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   double _progress = 0;
   String? _exportedName;
   EditorController? _export;
+  ExportQuality _quality = ExportQuality.original;
 
   @override
   void initState() {
@@ -91,7 +92,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       _phase = _Phase.exporting;
       _progress = 0;
     });
-    await c.startExport(ExportQuality.original);
+    await c.startExport(_quality);
   }
 
   void _onExport() {
@@ -112,6 +113,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         break;
     }
   }
+
+  String _qualityLabel(AppL10n t, ExportQuality q) => switch (q) {
+    ExportQuality.original => t.qualityOriginal,
+    ExportQuality.p1080 => t.resolution1080,
+    ExportQuality.p720 => t.resolution720,
+    ExportQuality.p480 => t.resolution480,
+  };
 
   void _edit() {
     _v.pause();
@@ -217,6 +225,26 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                     ),
                     _Phase.idle => const SizedBox.shrink(),
                   },
+                ),
+                const SizedBox(height: Space.sm),
+                Wrap(
+                  spacing: Space.sm,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(t.exportQuality, style: tt.bodyMedium),
+                    for (final q in ExportQuality.values)
+                      Semantics(
+                        identifier: 'result_quality_${q.name}',
+                        child: ChoiceChip(
+                          key: ValueKey('result_quality_${q.name}'),
+                          label: Text(_qualityLabel(t, q)),
+                          selected: _quality == q,
+                          onSelected: _phase == _Phase.exporting
+                              ? null
+                              : (_) => setState(() => _quality = q),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: Space.sm),
                 Semantics(

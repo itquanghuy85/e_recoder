@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-10-31] Màn kết quả: chọn chất lượng xuất
+- `result_screen.dart`: thêm hàng chọn chất lượng (Gốc / 1080p / 720p / 480p) trên nút "Xuất ngay"; mặc định Gốc, dùng lại nhãn đã có. Chọn xong "Xuất ngay" xuất đúng mức đó.
+- `maestro/ux_simple_flow.yaml`: chọn 720p trước khi xuất. `scripts/qa/ux_flow.ps1`: chữ nút "hướng dẫn" đổi sang regex ASCII (dòng lệnh Windows làm hỏng chữ có dấu) và thêm BOM cho file.
+- Nghiệm thu S25 (RUNTIME_VERIFIED): `ux_flow.ps1 -Purpose tutorial` đạt; file xuất rộng 720 px (720x1560). Flutter 368/368, analyze sạch. Video thử đã dọn bằng `qa_data.ps1`; hai video thật 093649 và 094748 còn nguyên.
+- Sự cố khi nghiệm thu: `flutter install` đã gỡ bản app cũ trên S25 (mất cài đặt và dự án sửa dở; video không mất). Cài đặt khôi phục từ bản sao lưu cũ. Lần sau dùng `adb install -r`, không dùng `flutter install`.
+- Chưa làm: dựng sẵn xem trước theo mẫu; trình chỉnh sửa Cơ bản / Nâng cao; quyền micro bị từ chối trên máy thật; dấu tự động trên app khác.
+
 ## [2026-10-31] UX đơn giản: chọn mục đích, một nút Quay, kiểm quyền, màn kết quả
 - **Bước 1** `features/purpose/purpose.dart`, `purpose_screen.dart`: lần đầu mở app (sau phần giới thiệu) hỏi "Bạn muốn làm gì?": Làm video hướng dẫn / Quay game / Quay thường (có "Bỏ qua, quay thường"). Lưu khoá `purpose` (0/1/2, không có = chưa chọn) trong SharedPreferences hiện có, và áp bộ cài đặt sẵn qua `applyPurposeToMarkers`: hướng dẫn = quay sạch + nghe lần bấm + dấu số + phóng to; game = chấm tay, không phóng to; thường = tắt hết. Màu, kiểu, độ dày dấu của người dùng giữ nguyên.
 - **Bước 2** `record_screen.dart`: một nút lớn, chữ theo mục đích ("Quay hướng dẫn tự động" / "Quay game" / "Quay video"). Thẻ cấu hình quay và "Đổi mục đích" nằm trong mục gập "Nâng cao". Người đã dùng app từ trước (chưa chọn mục đích) vẫn thấy màn cũ y nguyên, kèm một thẻ mời chọn mục đích.
