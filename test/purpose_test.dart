@@ -148,4 +148,84 @@ void main() {
       expect(find.byKey(const ValueKey('purpose_offer')), findsOneWidget);
     });
   });
+
+  group('ready to record?', () {
+    Future<FakeRecorder> open(
+      WidgetTester tester, {
+      bool overlay = true,
+      bool mic = true,
+    }) async {
+      _phone(tester);
+      final perms = FakePermissions()..mic = mic;
+      final (:app, :fake) = await buildTestApp(
+        prefs: {'purpose': Purpose.tutorial.index},
+        permissions: perms,
+      );
+      fake.overlayGranted = overlay;
+      await tester.pumpWidget(app);
+      await tester.pumpAndSettle();
+      return fake;
+    }
+
+    testWidgets('nothing missing: recording starts at once', (tester) async {
+      final fake = await open(tester);
+      await tester.tap(find.byKey(const ValueKey('record_start')));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Sẵn sàng quay chưa?'), findsNothing);
+      expect(fake.calls, contains('start'));
+    });
+
+    testWidgets('a missing permission is listed, not a silent failure', (
+      tester,
+    ) async {
+      final fake = await open(tester, overlay: false, mic: false);
+      await tester.tap(find.byKey(const ValueKey('record_start')));
+      await tester.pumpAndSettle();
+      expect(find.text('Sẵn sàng quay chưa?'), findsOneWidget);
+      expect(fake.calls, isNot(contains('start')));
+      expect(find.byKey(const ValueKey('ready_mic')), findsOneWidget);
+      expect(find.byKey(const ValueKey('ready_overlay')), findsOneWidget);
+      // the way in is shut until everything needed is on
+      final go = tester.widget<FilledButton>(
+        find.byKey(const ValueKey('ready_go')),
+      );
+      expect(go.onPressed, isNull);
+    });
+
+    testWidgets('the Turn on button goes to the place, and Ready opens', (
+      tester,
+    ) async {
+      final fake = await open(tester, overlay: false);
+      await tester.tap(find.byKey(const ValueKey('record_start')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('ready_mic')), findsNothing); // mic is on
+      await tester.tap(find.byKey(const ValueKey('ready_overlay')));
+      await tester.pumpAndSettle();
+      expect(fake.calls, contains('requestOverlay'));
+      // the person comes back from the system settings with it switched on
+      fake.overlayGranted = true;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('ready_overlay_on')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('ready_go')));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(fake.calls, contains('start'));
+    });
+
+    testWidgets('the old way keeps its old behaviour (no screen)', (
+      tester,
+    ) async {
+      _phone(tester);
+      final (:app, :fake) = await buildTestApp();
+      fake.overlayGranted = false;
+      await tester.pumpWidget(app);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('record_start')));
+      await tester.pumpAndSettle();
+      expect(find.text('Sẵn sàng quay chưa?'), findsNothing);
+      expect(fake.calls, contains('requestOverlay')); // as before
+    });
+  });
 }

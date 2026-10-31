@@ -12,6 +12,7 @@ import '../library/media_repository.dart';
 import '../marker/marker_settings.dart';
 import '../purpose/purpose.dart';
 import '../purpose/purpose_screen.dart';
+import '../purpose/ready_check_screen.dart';
 import '../library/media_tile.dart';
 import '../library/player_screen.dart';
 import 'rec_settings.dart';
@@ -30,6 +31,24 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   Future<void> _start() async {
     final t = AppL10n.of(context);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    // With a purpose chosen, a missing permission is explained on its own screen before recording
+    // starts, instead of failing after the tap.
+    if (ref.read(purposeProvider) != null) {
+      final rec = ref.read(recSettingsProvider);
+      final needs = ReadyNeeds(
+        mic: rec.mic || rec.system,
+        overlay: rec.floatingBar || rec.countdown > 0,
+      );
+      if (await ReadyCheckScreen.missingAnything(ref, needs)) {
+        if (!mounted) return;
+        final go = await Navigator.of(context).push<bool>(
+          MaterialPageRoute<bool>(
+            builder: (_) => ReadyCheckScreen(needs: needs),
+          ),
+        );
+        if (go != true || !mounted) return;
+      }
+    }
     final r = await ref.read(recorderProvider.notifier).start();
     if (!mounted) return;
     final msg = switch (r) {
@@ -373,26 +392,31 @@ class _LiveView extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                FilledButton.tonalIcon(
-                  key: const ValueKey('live_pause'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(148, 56),
+                // Flexible: on a narrow phone the two buttons share the row instead of overflowing it.
+                Flexible(
+                  child: FilledButton.tonalIcon(
+                    key: const ValueKey('live_pause'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(120, 56),
+                    ),
+                    onPressed: paused ? ctl.resume : ctl.pause,
+                    icon: Icon(paused ? Icons.play_arrow : Icons.pause),
+                    label: Text(paused ? t.recordResume : t.recordPause),
                   ),
-                  onPressed: paused ? ctl.resume : ctl.pause,
-                  icon: Icon(paused ? Icons.play_arrow : Icons.pause),
-                  label: Text(paused ? t.recordResume : t.recordPause),
                 ),
-                const SizedBox(width: Space.lg),
-                FilledButton.icon(
-                  key: const ValueKey('live_stop'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: c.primary,
-                    foregroundColor: c.onPrimary,
-                    minimumSize: const Size(148, 56),
+                const SizedBox(width: Space.md),
+                Flexible(
+                  child: FilledButton.icon(
+                    key: const ValueKey('live_stop'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: c.primary,
+                      foregroundColor: c.onPrimary,
+                      minimumSize: const Size(120, 56),
+                    ),
+                    onPressed: ctl.stop,
+                    icon: const Icon(Icons.stop),
+                    label: Text(t.recordStop),
                   ),
-                  onPressed: ctl.stop,
-                  icon: const Icon(Icons.stop),
-                  label: Text(t.recordStop),
                 ),
               ],
             )
