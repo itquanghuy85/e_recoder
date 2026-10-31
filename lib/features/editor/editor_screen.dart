@@ -114,6 +114,21 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         _driver = PlaybackDriver(controller: c, player: VideoPlayerPort(v));
         _extras = ExtraPlayers(c);
       });
+      // Something already built (marks, text, zooms, several clips): show all of it at once, so it can be
+      // seen and picked without hunting along a zoomed-in timeline.
+      final p = c.project;
+      if (p.segments.length > 1 ||
+          p.markers.isNotEmpty ||
+          p.texts.isNotEmpty ||
+          p.zooms.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _timelineKey.currentState?.zoomToFit(
+            MediaQuery.sizeOf(context).width,
+            share: 0.46,
+          );
+        });
+      }
       await v.seekTo(Duration.zero);
     } catch (_) {
       if (mounted) setState(() => _failed = true);

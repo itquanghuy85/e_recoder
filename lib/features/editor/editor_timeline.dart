@@ -81,12 +81,14 @@ class EditorTimelineState extends State<EditorTimeline> {
   }
 
   void zoomBy(double f) =>
-      setState(() => pxPerMs = (pxPerMs * f).clamp(0.01, 0.6));
+      setState(() => pxPerMs = (pxPerMs * f).clamp(0.003, 0.6));
 
   /// Fits the whole edited video in the width (the "zoom to fit" button).
-  void zoomToFit(double width) {
+  /// [share] is how much of the width the whole video should fill. The playhead stays in the middle, so
+  /// at the start only the right half shows the video: 0.46 puts all of it in view.
+  void zoomToFit(double width, {double share = 0.9}) {
     final total = math.max(1, c.project.outDurationMs);
-    setState(() => pxPerMs = ((width * 0.9) / total).clamp(0.01, 0.6));
+    setState(() => pxPerMs = ((width * share) / total).clamp(0.003, 0.6));
   }
 
   List<int> _rows(EditProject p) => [
@@ -364,7 +366,7 @@ class EditorTimelineState extends State<EditorTimeline> {
   void _onUpdate(ScaleUpdateDetails d, double w) {
     if (_reIdx != null) return;
     if (d.pointerCount >= 2) {
-      setState(() => pxPerMs = (_basePx * d.horizontalScale).clamp(0.01, 0.6));
+      setState(() => pxPerMs = (_basePx * d.horizontalScale).clamp(0.003, 0.6));
       return;
     }
     final dx = d.focalPointDelta.dx;

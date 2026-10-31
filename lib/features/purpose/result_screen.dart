@@ -224,18 +224,22 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 ),
               ),
               Positioned.fill(
-                child: GestureDetector(
-                  key: const ValueKey('result_preview'),
-                  behavior: HitTestBehavior.opaque,
-                  onTap: busy ? null : () => _driver?.toggle(),
-                  child: Center(
-                    child: ctl.playing
-                        ? const SizedBox.shrink()
-                        : Icon(
-                            Icons.play_circle_fill,
-                            size: 64,
-                            color: c.onSurface.withValues(alpha: 0.7),
-                          ),
+                child: Semantics(
+                  identifier: 'result_preview',
+                  button: true,
+                  child: GestureDetector(
+                    key: const ValueKey('result_preview'),
+                    behavior: HitTestBehavior.opaque,
+                    onTap: busy ? null : () => _driver?.toggle(),
+                    child: Center(
+                      child: ctl.playing
+                          ? const SizedBox.shrink()
+                          : Icon(
+                              Icons.play_circle_fill,
+                              size: 64,
+                              color: c.onSurface.withValues(alpha: 0.7),
+                            ),
+                    ),
                   ),
                 ),
               ),

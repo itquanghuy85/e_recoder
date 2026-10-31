@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-10-31] Làm thử như người dùng thật (quay có bấm, xem kết quả, sửa)
+- `maestro/ux_real_user.yaml` + `scripts/qa/ux_real.ps1`: bắt đầu như người mới (file cài đặt được sao lưu vào `test-results/prefs_backup_real.xml`, không trả lại), chọn "Quay hướng dẫn tự động", quay máy tính Samsung và bấm 7/5/9, dừng, xem kết quả, mở editor, mở "Đổi tất cả dấu". Video thử được GIỮ để người dùng tự xem và tự xoá; script không xoá gì.
+- Thấy được khi chạy thật (RUNTIME_VERIFIED trên S25 Ultra): màn kết quả phát đúng kèm dấu số 2 và zoom vào phím; editor mở ra có 4 clip, 3 dấu, 3 đoạn tăng tốc.
+- Sửa sau khi xem như người dùng: vùng xem trước ở màn kết quả thiếu mã nhận diện (`result_preview`); editor mở ra phóng timeline quá gần nên không thấy dấu và clip, nay tự thu vừa cả video khi đã có dấu/chữ/zoom/nhiều đoạn (`zoomToFit(share: 0.46)`), giới hạn thu nhỏ timeline hạ từ 0,01 xuống 0,003 px/ms để video 30 giây vừa màn hình.
+
 ## [2026-10-31] Chọn nhanh bằng ô tick, xem trước có dấu, đổi dấu hàng loạt, chọn nhiều trên timeline
 - **Chọn nhanh** (`features/purpose/quick_options.dart`, dưới nút Quay to): ô tick Micro / Âm thanh máy, chọn Độ nét; Hướng dẫn thêm: Ghi mọi lần bấm, Đánh số bước, Phóng to vào chỗ bấm và chọn dấu tự động; Game: chọn dấu khi chạm. Mỗi lần tick lưu ngay qua `recSettingsProvider` / `markerSettingsProvider` (test `purpose_test` kiểm khoá `rec.audio` đã ghi). Nút Quay lên trước phần này để luôn thấy không cần cuộn; khi đã chọn mục đích chỉ hiện 1 video gần đây.
 - **Màn kết quả** (`result_screen.dart`): xem trước dùng chính `EditorStage` + `PlaybackDriver` của editor nên thấy dấu, zoom, số bước của bản dựng tự động; chạm để phát/tạm dừng, có thanh tua. Xem trước lỗi vẫn xuất được.
