@@ -40,7 +40,7 @@ tags:
       CORNER: corner_2
 - runFlow: helpers/start_recording.yaml
 - launchApp:
-    appId: com.android.settings
+    appId: ${OTHER_APP || 'com.android.settings'}
     stopApp: false
 - extendedWaitUntil:
     visible: "Vùng đánh dấu ẩn"
@@ -131,7 +131,7 @@ tags:
       CORNER: corner_2
 - runFlow: helpers/start_recording.yaml
 - launchApp:
-    appId: com.android.settings
+    appId: ${OTHER_APP || 'com.android.settings'}
     stopApp: false
 - extendedWaitUntil:
     visible: "Bật chế độ chỉ điểm"

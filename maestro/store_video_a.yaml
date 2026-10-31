@@ -17,14 +17,15 @@ tags:
       visible: "Cho phép"
     commands:
       - tapOn: "Cho phép"
+# AOSP says "Bắt đầu ngay"; Samsung One UI (Android 14+) says "Chia sẻ màn hình" (default: whole screen).
 - extendedWaitUntil:
-    visible: "Bắt đầu ngay"
+    visible: "Bắt đầu ngay|Chia sẻ màn hình"
     timeout: 8000
 - waitForAnimationToEnd:
     timeout: 1200
-- tapOn: "Bắt đầu ngay"
+- tapOn: "Bắt đầu ngay|Chia sẻ màn hình"
 - launchApp:
-    appId: com.android.settings
+    appId: ${OTHER_APP || 'com.android.settings'}
     stopApp: false
 - extendedWaitUntil:
     visible: "Bật chế độ chỉ điểm"

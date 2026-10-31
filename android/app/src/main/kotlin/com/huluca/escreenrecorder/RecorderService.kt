@@ -98,6 +98,9 @@ class RecorderService : Service(), ControlBar.Listener {
         val proj = projection ?: return
         countdown = null
         val dir = File(cacheDir, "rec").also { it.mkdirs() }
+        // A recording cut off by the app being killed never gets its index written: the file left here cannot
+        // be played or saved. Nothing else records now, so clear such leftovers before starting.
+        dir.listFiles()?.forEach { it.delete() }
         val file = File(dir, "rec_${System.currentTimeMillis()}.mp4")
         tempFile = file
         try {

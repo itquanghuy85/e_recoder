@@ -134,4 +134,5 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - Giết app giữa lúc dựng bản tự động: `scripts/qa/ux_draft_kill.ps1` (cần chế độ quay sạch, `marker.mode = 1`).
 - Lưu ý: Maestro `stopApp` không giết dịch vụ xuất nền; muốn giết hẳn dùng `adb shell am force-stop`. Maestro tự cấp mọi quyền khi `launchApp`.
 - Báo cáo: `docs/NGHIEM_THU_2026-10-31.md`.
+- Lượt QA cuối: giết app trong lúc quay `scripts/qa/ux_kill_recording.ps1`. `helpers/panel_find.yaml` (env `ID`) vuốt trong bảng công cụ đến khi thấy điều khiển: bảng mở ở đầu mỗi khi đổi công cụ. `run_flows18.ps1` tự đánh thức màn hình, tự đặt/khôi phục tiếng Anh cho store_en và chạy store_video_a trước store_video_b. Editor mở từ màn phát: lùi một lần về màn phát, lùi tiếp về màn chính.
 

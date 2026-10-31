@@ -30,6 +30,8 @@ tags:
 - tapOn:
     id: "tool_cover"
 - takeScreenshot: artifacts/s1_editor_cover
+# Back from the editor lands on the player it was opened from (by design), back again to the main screen.
+- back
 - back
 - tapOn:
     text: "Cài đặt.*"

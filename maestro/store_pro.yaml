@@ -127,6 +127,10 @@ tags:
 - takeScreenshot: store/pro_transition
 - tapOn:
     id: "tool_overlay"
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: "add_shape_bubble"
 - tapOn:
     id: "add_shape_bubble"
 - tapOn:

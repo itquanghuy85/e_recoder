@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-10-31] Lượt QA cuối
+- Sửa: bảng công cụ của editor cuộn về đầu khi đổi công cụ hoặc mục chọn (trước đó giữ vị trí cuộn của công cụ trước, che các điều khiển đầu bảng).
+- Sửa: `RecorderService` dọn tệp tạm của bản ghi bị giết (`cache/rec`) khi bắt đầu quay.
+- Độ bền: giết app trong lúc quay làm mất toàn bộ bản ghi (video chỉ hoàn tất khi Dừng); ghi nhận là giới hạn, chưa sửa (cần đổi cách ghi tệp).
+- Kịch bản Maestro: e16, g7, s1_icon_audit, store_vi, store_en, store_video_a/b, e2_overlays, e3_motion, store_pro; flow phụ `panel_find`; flow + script `ux_kill_recording`.
+- 18 flow: 14 PASS, 4 FAIL (đã có sửa kịch bản, chưa chạy lại vì S25 mất kết nối). Flutter test 387/387, analyze sạch. Chi tiết: `docs/NGHIEM_THU_2026-10-31.md`, mục "Lượt QA cuối".
+
 ## [2026-10-31] Nghiệm thu tồn đọng: app bên thứ ba, 18 flow, phục hồi khi dựng/xuất dài
 - Báo cáo đầy đủ (PASS / FAIL / BLOCKED): `docs/NGHIEM_THU_2026-10-31.md`.
 - Sửa `Exporter.kt`: bắt đầu xuất thì dọn tệp tạm của lần xuất bị giết (`cache/export`, `export_rev`, `export_pip`).

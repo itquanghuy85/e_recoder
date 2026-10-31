@@ -1,6 +1,6 @@
 ﻿param(
   [string]$Serial = "R5CY6323KMX",
-  [string[]]$Flows = @("e1_edit_core","e2_overlays","e2_pick_probe","e2_pip_s25","e2b_crop_rotate","e3_motion","e8_tools_zoom","e10_regions","e11_region_motion","e14_pip_portrait","e16_build_from_touches","g3_editor","g7_auto_direct","s1_icon_audit","store_vi","store_en","store_pro","store_video_b"),
+  [string[]]$Flows = @("e1_edit_core","e2_overlays","e2_pick_probe","e2_pip_s25","e2b_crop_rotate","e3_motion","e8_tools_zoom","e10_regions","e11_region_motion","e14_pip_portrait","e16_build_from_touches","g3_editor","g7_auto_direct","s1_icon_audit","store_vi","store_en","store_pro","store_video_a","store_video_b"),
   [string]$OutDir = "test-results\flows18",
   [int]$TimeoutMin = 12,
   # Android hides overlay windows over Samsung Settings: flows that record "another app" use this one.
@@ -27,6 +27,8 @@ foreach ($f in $Flows) {
   foreach ($pkg in "com.google.android.documentsui","com.android.documentsui","com.sec.android.app.myfiles","com.google.android.apps.photos","com.android.settings","com.sec.android.app.popupcalculator") { adb -s $Serial shell am force-stop $pkg | Out-Null }
   adb -s $Serial shell input keyevent KEYCODE_HOME | Out-Null
   adb -s $Serial shell cmd statusbar collapse | Out-Null
+  # store_en is the English store run: the app language is switched for it and put back after.
+  if ($f -eq "store_en") { adb -s $Serial shell cmd locale set-app-locales com.huluca.escreenrecorder --locales en-US | Out-Null }
   $log = Join-Path $OutDir "$f.log"
   $p = Start-Process -FilePath $maestro -ArgumentList @("--device", $Serial, "test", "-e", "OTHER_APP=$OtherApp", "--test-output-dir", "$OutDir\$f", "maestro\$f.yaml") -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru -NoNewWindow
   $null = $p.Handle
@@ -36,10 +38,12 @@ foreach ($f in $Flows) {
     $m = Select-String -Path $log -Pattern "FAILED|Assertion is false|not found" -SimpleMatch:$false | Select-Object -First 1
     if ($m) { $fail = ($m.Line -replace ",", ";").Trim() } elseif ($code -eq 124) { $fail = "timeout" }
   }
+  if ($f -eq "store_en") { adb -s $Serial shell cmd locale set-app-locales com.huluca.escreenrecorder --locales '""' | Out-Null }
   "$f,$code,$fail" | Add-Content $csv -Encoding UTF8
   Write-Output "$f exit=$code $fail"
 }
 adb -s $Serial shell am force-stop com.huluca.escreenrecorder | Out-Null
+
 
 
 

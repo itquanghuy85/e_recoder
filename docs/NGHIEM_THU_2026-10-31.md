@@ -54,3 +54,54 @@ Dự án thử riêng: `QA_long_5min.mp4` (hình thử 5 phút, tạo bằng ffm
 ## Trạng thái máy sau nghiệm thu
 - Đã cài Google Calculator (Play). Tệp thử: `Download/esr_rot.mp4`, `Download/QA_long_5min.mp4`, `Movies/E Screen Recorder/QA_long_5min.mp4` (lần đẩy thử đầu). Video thử giữ nguyên, không xoá.
 - Cài đặt app: mục đích Hướng dẫn, chế độ quay sạch, editor Cơ bản. Sao lưu cài đặt trước lượt flow: `test-results/prefs_backup_flows18.xml`.
+
+
+## Lượt QA cuối (sau commit 4ff8a29)
+
+### Sửa sản phẩm (đã xác nhận lỗi)
+- **Bảng công cụ giữ vị trí cuộn của công cụ trước** (`editor_tools.dart`): đổi công cụ hay đổi mục chọn thì bảng mới mở ở giữa, các điều khiển đầu bảng (ví dụ ô chữ khung chú thích, vốn đã ở đầu) bị khuất. Nay bảng cuộn về đầu mỗi khi đổi công cụ hoặc mục chọn. Đây là nguyên nhân thật của e2_overlays (không phải ô chữ nằm sâu).
+- **Tệp tạm của bản ghi bị giết nằm lại** (`RecorderService.kt`): giết app trong lúc quay để lại `cache/rec/rec_*.mp4` không phát được ("moov atom not found"); đã tích 3 tệp, khoảng 13 MB. Nay bắt đầu quay là dọn. Xác nhận trên S25: sau một lần quay mới `cache/rec` trống, quay vẫn ra 4 dấu đúng phím và xuất được.
+
+### Độ bền: giết app sau khi tạo dấu, trước khi bản ghi được lưu
+`scripts/qa/ux_kill_recording.ps1` + `maestro/ux_kill_recording.yaml` (máy tính Samsung, bấm 7 và 5 trong lúc quay, rồi `am force-stop`):
+- Thư viện không có video mới; tệp tạm không phát được. **Mất toàn bộ bản ghi** (không chỉ thao tác cuối): video chỉ được hoàn tất khi bấm Dừng, còn dấu và lần bấm nằm trong bộ nhớ của dịch vụ quay.
+- Khắc phục được trong phạm vi: dọn tệp tạm (đã làm). Giữ được bản ghi khi bị giết cần ghi theo kiểu MP4 phân mảnh hoặc chia đoạn: thay đổi lớn, chưa làm.
+- Cửa sổ rủi ro nhỏ còn lại: giữa lúc video đã vào thư viện và lúc Flutter nhận sự kiện "đã lưu" (vài phần nghìn giây), nếu bị giết thì video còn nhưng lần bấm mất. Chưa tái hiện được, chưa kiểm.
+
+### Kịch bản Maestro (theo hành vi đúng thiết kế)
+- e16, g7: ghi nhãn timeline trước khi chạy rồi so sau khi hoàn tác (`copyTextFrom` + `${maestro.copiedText}`), thay giả định dự án trống; g7 kiểm "có dấu và phóng to từ bản quay".
+- s1_icon_audit, store_video_b: editor mở từ màn phát nên lùi về màn phát trước (đúng thiết kế, có từ khi flow được viết); thêm lần lùi / lùi đến khi thấy tab Thư viện.
+- store_vi, store_video_a: quay `OTHER_APP` (máy tính Samsung, không dữ liệu cá nhân) thay app Cài đặt; store_video_a nhận cả "Chia sẻ màn hình" của One UI.
+- store_en: script đặt ngôn ngữ app `en-US` trước và khôi phục sau.
+- Flow phụ mới `helpers/panel_find.yaml`: vuốt trong bảng công cụ đến khi thấy điều khiển; dùng ở e2_overlays, e3_motion, store_pro.
+- `run_flows18.ps1`: đánh thức và mở khoá màn hình trước mỗi flow.
+
+### Kết quả 18 flow (lượt chạy toàn bộ `test-results/flows18_final`)
+| Flow | Kết quả | Ghi chú |
+|---|---|---|
+| e1_edit_core | PASS | |
+| e2_overlays | FAIL | Sau khi bảng cuộn về đầu, nút thêm khung chú thích nằm dưới mép bảng. Đã thêm `panel_find`, **chưa chạy lại được** (S25 mất kết nối USB) |
+| e2_pick_probe | PASS | |
+| e2_pip_s25 | PASS | |
+| e2b_crop_rotate | PASS | |
+| e3_motion | FAIL | Như e2_overlays (nút `speed_ramp`); đã thêm `panel_find`, chưa chạy lại |
+| e8_tools_zoom | PASS | |
+| e10_regions | PASS | Theo log: 0 bước thất bại, bước cuối `export_view` hoàn tất (dòng CSV không được ghi) |
+| e11_region_motion | PASS | |
+| e14_pip_portrait | PASS | |
+| e16_build_from_touches | PASS | |
+| g3_editor | PASS | |
+| g7_auto_direct | PASS | |
+| s1_icon_audit | PASS | |
+| store_vi | PASS | |
+| store_en | PASS | |
+| store_pro | FAIL | Như e2_overlays (nút thêm khung chú thích); đã thêm `panel_find`, chưa chạy lại |
+| store_video_b | FAIL | Điều kiện "chưa thấy Quay thì lùi" bị chữ "Quay lại" đánh lừa; đã sửa, chưa chạy lại |
+
+Tổng: **14 PASS · 4 FAIL · 0 BLOCKED** (store_video_a, điều kiện của b: PASS). 4 FAIL đều đã có bản sửa kịch bản nhưng chưa chạy lại: lượt chạy lại bị dừng vì màn hình S25 tự tắt (đã thêm bước đánh thức), rồi máy mất kết nối USB và không kết nối lại trong 5 phút.
+
+### Kiểm thử kỹ thuật
+- Flutter test 387/387, `flutter analyze` sạch (sau các thay đổi Dart của lượt này).
+
+### Trạng thái máy
+- Khoá `purpose` đang bị bỏ để chạy flow "đường cũ"; chưa khôi phục được vì máy mất kết nối. Bản sao lưu: `test-results/prefs_backup_final.xml`. Ngôn ngữ app đã trả về mặc định sau store_en.

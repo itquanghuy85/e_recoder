@@ -23,19 +23,12 @@ tags:
 - takeScreenshot: artifacts/e2_picture
 - tapOn:
     id: "tool_overlay"
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: "add_shape_bubble"
 - tapOn:
     id: "add_shape_bubble"
-# S25 is tall: the bubble text comes after four sliders, below the fold of the tool panel; scroll the panel.
-- repeat:
-    times: 6
-    while:
-      notVisible:
-        id: "bubble_text"
-    commands:
-      - swipe:
-          start: 50%,94%
-          end: 50%,88%
-          duration: 1500
 - tapOn:
     id: "bubble_text"
 - eraseText: 30

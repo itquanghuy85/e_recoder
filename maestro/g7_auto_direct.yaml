@@ -52,7 +52,11 @@ tags:
     visible:
       id: "editor_play"
     timeout: 30000
-- assertVisible: "Dòng thời gian: 1 đoạn, 2 dấu, 0 chữ, 0 khối che, 2 phóng to"
+# The two hidden-corner marks and their zooms come from the recording; since clean recording also hears the
+# taps, the automatic edit adds its own steps on top, so only "marks and zooms are there" is checked.
+- assertVisible: "Dòng thời gian: [0-9]+ đoạn, [2-9] dấu, [0-9]+ chữ, 0 khối che, [2-9] phóng to"
+- copyTextFrom:
+    text: "Dòng thời gian: .*"
 # Automatic direction: the zooms came from the recording; the still stretch is found now.
 - runFlow: helpers/editor_advanced.yaml
 - tapOn:
@@ -64,11 +68,11 @@ tags:
       id: "auto_result"
     timeout: 90000
 - takeScreenshot: artifacts/g7_auto_done
-- assertVisible: "Dòng thời gian: [3-9] đoạn.*"
+- assertVisible: "Dòng thời gian: ([3-9]|[1-9][0-9]) đoạn.*"
 # Everything is one undo step.
 - tapOn:
     id: "editor_undo"
-- assertVisible: "Dòng thời gian: 1 đoạn.*"
+- assertVisible: ${maestro.copiedText}
 - tapOn:
     id: "editor_redo"
 - tapOn:

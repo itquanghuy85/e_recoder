@@ -173,16 +173,19 @@ class EditorTools extends StatelessWidget {
                 210.0,
               ),
             ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                Space.lg,
-                Space.sm,
-                Space.lg,
-                Space.sm,
-              ),
-              child: ListenableBuilder(
-                listenable: controller,
-                builder: (context, _) => switch (tool) {
+            // A new tool or a new selection opens its panel at the top: the scroll of the previous panel
+            // would otherwise hide the first controls (e.g. the text of a speech bubble).
+            child: ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) => SingleChildScrollView(
+                key: ValueKey('${tool.name}/${controller.selectedId}'),
+                padding: const EdgeInsets.fromLTRB(
+                  Space.lg,
+                  Space.sm,
+                  Space.lg,
+                  Space.sm,
+                ),
+                child: switch (tool) {
                   EditorTool.cut => _CutPanel(c: controller),
                   EditorTool.speed => _SpeedPanel(c: controller),
                   EditorTool.transition => _TransitionPanel(c: controller),
