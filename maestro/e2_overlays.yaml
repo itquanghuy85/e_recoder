@@ -44,15 +44,22 @@ tags:
     id: "tool_text"
 - tapOn:
     id: "add_text"
-- runFlow: helpers/scroll_panel.yaml
-- runFlow: helpers/scroll_panel.yaml
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: font_serif
 - tapOn:
     id: "font_serif"
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: text_box
 - tapOn:
     id: "text_box"
-- runFlow: helpers/scroll_panel.yaml
-- runFlow: helpers/scroll_panel.yaml
-- runFlow: helpers/scroll_panel.yaml
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: text_motion_enter_pop
 - tapOn:
     id: "text_motion_enter_pop"
 - takeScreenshot: artifacts/e2_text

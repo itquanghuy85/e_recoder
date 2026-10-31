@@ -104,4 +104,28 @@ Tổng: **14 PASS · 4 FAIL · 0 BLOCKED** (store_video_a, điều kiện của 
 - Flutter test 387/387, `flutter analyze` sạch (sau các thay đổi Dart của lượt này).
 
 ### Trạng thái máy
-- Khoá `purpose` đang bị bỏ để chạy flow "đường cũ"; chưa khôi phục được vì máy mất kết nối. Bản sao lưu: `test-results/prefs_backup_final.xml`. Ngôn ngữ app đã trả về mặc định sau store_en.
+- Ngôn ngữ app đã trả về mặc định sau store_en.
+
+### Chạy lại 4 flow sau khi S25 kết nối lại (`test-results/flows18_final2`)
+ADB thấy 3 máy; S25 là `R5CY6323KMX` (SM-S938B). `run_flows18.ps1` ghim cả adb và Maestro vào số máy này.
+
+| Flow | Kết quả | Nguyên nhân (bằng chứng) |
+|---|---|---|
+| e2_overlays | FAIL (kịch bản) | Đã qua bước khung chú thích. Hỏng ở `font_serif`: bảng Chữ nay mở ở đầu, nhưng kịch bản còn 2 lần vuốt cố định viết cho kiểu cũ (giữ vị trí cuộn), nên vuốt quá, `font_serif` trôi lên trên (ảnh `step-046`). Đã thay 3 chỗ vuốt cố định (`font_serif`, `text_box`, `text_motion_enter_pop`) bằng `panel_find`. **Chưa chạy lại.** |
+| e3_motion | BLOCKED (môi trường) | Đã qua `speed_ramp`, đảo chiều, chuyển cảnh, bấm Xuất. Chờ `export_view` 400 giây thì màn hình tắt và máy khoá (ảnh đen, `mWakefulness=Dozing`). Không có tệp xuất mới trong Movies, nhưng lúc đó pin S25 còn 4%→2% và không sạc, nên chưa kết luận được là lỗi sản phẩm. |
+| store_pro | BLOCKED (môi trường) | Máy đang ở màn khoá (ảnh: màn đen, thẻ "Now brief"), `isKeyguardShowing=true`. |
+| store_video_a | BLOCKED (môi trường) | Như store_pro, không tới được nút "Bắt đầu quay". |
+| store_video_b | BLOCKED (môi trường) | Như trên. |
+
+Nguyên nhân chung: `dumpsys battery` báo pin **2%**, `USB powered: false`, `AC powered: false` (cáp đang nối PC chỉ truyền dữ liệu, không sạc). Thời gian tắt màn hình 30 giây, "luôn sáng khi cắm sạc" không có tác dụng vì máy không nhận nguồn. Sắp hết pin nên không thể chạy tiếp.
+
+**Kết quả cuối 18 flow hiện tại: 14 PASS · 1 FAIL (kịch bản, đã sửa, chưa chạy lại) · 3 BLOCKED (môi trường).** Nghiệm thu **chưa hoàn tất**: các flow e2_overlays, e3_motion, store_pro, store_video_b vẫn chưa chạy lại thành công (store_video_a bị chặn cùng lý do).
+
+Để chạy lại: sạc S25 (cắm sạc nguồn hoặc cổng có cấp điện), mở khoá màn hình, rồi chạy
+`powershell -File scripts\qa\run_flows18.ps1 -OutDir test-results\flows18_final3 -Flows e2_overlays,e3_motion,store_pro,store_video_a,store_video_b`
+(trước đó bỏ khoá `purpose` như các lượt "đường cũ", sau đó khôi phục).
+
+### Khôi phục khoá `purpose` (đã làm, đã kiểm)
+- Giá trị lấy từ `test-results/prefs_backup_final.xml`: `<long name="flutter.purpose" value="0" />`.
+- Cách làm: dừng app, sao tệp prefs hiện tại ra `cache/` của app, thêm đúng dòng này, ghi lại. So với bản sao: **chỉ khác đúng một dòng thêm vào**, 31 khoá còn lại giữ nguyên.
+- Sự cố trong lúc làm: lần ghi đầu qua Git Bash bị đổi đường dẫn trên máy nên tệp prefs bị ghi rỗng. Đã ghi lại ngay từ bản đã chuẩn bị. App bị dừng suốt quá trình, không được mở khi tệp rỗng, nên không mất dữ liệu. Đã xoá bản sao tạm trong `cache/`. Không xoá video hay dữ liệu nào khác.
