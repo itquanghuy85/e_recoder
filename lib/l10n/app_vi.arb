@@ -782,5 +782,6 @@
   "batchFromHere": "Từ đây đến hết",
   "batchKind": "Loại dấu",
   "batchColor": "Màu",
-  "batchThickness": "Độ dày"
+  "batchThickness": "Độ dày",
+  "readyNoMic": "Quay không thu tiếng"
 }

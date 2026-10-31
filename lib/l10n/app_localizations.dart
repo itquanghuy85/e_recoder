@@ -3696,6 +3696,12 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Độ dày'**
   String get batchThickness;
+
+  /// No description provided for @readyNoMic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay không thu tiếng'**
+  String get readyNoMic;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

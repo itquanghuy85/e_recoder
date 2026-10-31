@@ -639,5 +639,6 @@
   "batchFromHere": "From here to the end",
   "batchKind": "Mark kind",
   "batchColor": "Colour",
-  "batchThickness": "Thickness"
+  "batchThickness": "Thickness",
+  "readyNoMic": "Record without sound"
 }

@@ -5,6 +5,7 @@ import '../../core/permissions_gateway.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
 import '../record/recorder_controller.dart' show nativeRecorderProvider;
+import '../record/rec_settings.dart';
 
 /// What the recorder needs, as the screen asks for it: [mic] when sound is recorded, [overlay] for the
 /// floating bar, the countdown and listening to taps. Notifications are only a convenience.
@@ -83,6 +84,14 @@ class _ReadyCheckScreenState extends ConsumerState<ReadyCheckScreen>
       await perms.requestMic();
     }
     await _refresh();
+  }
+
+  Future<void> _recordWithoutSound() async {
+    final n = ref.read(recSettingsProvider.notifier);
+    await n.update(
+      ref.read(recSettingsProvider).copyWith(audio: AudioMode.none),
+    );
+    if (mounted) Navigator.of(context).pop(true);
   }
 
   Future<void> _enableNotif() async {
@@ -220,6 +229,19 @@ class _ReadyCheckScreenState extends ConsumerState<ReadyCheckScreen>
                   ),
                 ),
               ),
+              // Someone who does not want to give the microphone is not stuck: record without sound.
+              if (n.mic && !_mic)
+                SizedBox(
+                  width: double.infinity,
+                  child: Semantics(
+                    identifier: 'ready_no_sound',
+                    child: TextButton(
+                      key: const ValueKey('ready_no_sound'),
+                      onPressed: _recordWithoutSound,
+                      child: Text(t.readyNoMic),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

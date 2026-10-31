@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-10-31] Quyền micro bị từ chối: nghiệm thu và lối thoát "Quay không thu tiếng"
+- Nghiệm thu S25 (RUNTIME_VERIFIED, `scripts/qa/ux_mic.ps1` + `maestro/ux_mic_denied.yaml`): thu hồi quyền micro, bấm Quay -> "Sẵn sàng quay chưa?" liệt kê Micro với nút Bật, nút chính xám "Còn thiếu quyền"; bấm Bật rồi "Không cho phép" -> vẫn ở màn đó, chưa quay.
+- Thêm nút "Quay không thu tiếng" (`ready_check_screen.dart`, chỉ hiện khi thiếu micro): đặt âm thanh = Không rồi quay tiếp, người từ chối micro không bị kẹt. Test `purpose_test` +1 (Flutter 378).
+- Lưu ý khi kiểm thử: Maestro tự cấp mọi quyền khi `launchApp`, nên flow phải khai `permissions: android.permission.RECORD_AUDIO: deny`; hộp "Chia sẻ màn hình" bị bỏ lại từ lần chạy trước làm kết quả sai. Script trả lại quyền và xoá khoá `rec.audio` (về mặc định Micro) sau khi chạy.
+
 ## [2026-10-31] Sửa lỗi: chỉnh sửa trong "Sửa thêm" không vào bản "Xuất ngay"
 - Lỗi tìm ra khi làm thử như người dùng: quay, bấm Sửa thêm, đổi dấu, quay lại, bấm Xuất ngay thì video xuất vẫn là bản cũ. Nguyên nhân: màn kết quả giữ bộ điều khiển cũ; đóng nó (khi rời màn hoặc xuất) tự lưu bản cũ đè lên bản editor vừa lưu.
 - Sửa (`result_screen.dart`): đóng bộ điều khiển TRƯỚC khi mở editor (chưa có thay đổi nào nên lưu vô hại), quay về thì chờ 0,8 giây cho editor ghi xong rồi nạp lại dự án; xem trước và xuất dùng bản mới.

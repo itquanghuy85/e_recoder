@@ -220,6 +220,23 @@ void main() {
       expect(go.onPressed, isNull);
     });
 
+    testWidgets('no microphone: "Record without sound" starts without it', (
+      tester,
+    ) async {
+      final fake = await open(tester, mic: false);
+      await tester.tap(find.byKey(const ValueKey('record_start')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('ready_mic')), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('ready_no_sound')));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+      final c = ProviderScope.containerOf(
+        tester.element(find.byType(Scaffold).first),
+      );
+      expect(c.read(recSettingsProvider).audio, AudioMode.none);
+      expect(fake.calls, contains('start'));
+    });
+
     testWidgets('the Turn on button goes to the place, and Ready opens', (
       tester,
     ) async {

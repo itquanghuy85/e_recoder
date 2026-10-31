@@ -1,0 +1,41 @@
+appId: com.huluca.escreenrecorder
+name: Microphone refused - the Ready check lists it, a way out exists, nothing fails silently
+tags:
+  - p1
+  - module-ux
+---
+# Run by scripts/qa/ux_mic.ps1, which revokes the microphone permission first and puts everything back after.
+# The purpose is already chosen. Record -> "Ready to record?" with Microphone listed -> Turn on -> the
+# person refuses -> still on that screen, nothing started -> "Record without sound" -> recording goes on
+# to the system's screen-share question (cancelled here).
+# Maestro grants every permission when it launches an app; keep the microphone refused.
+- launchApp:
+    stopApp: true
+    permissions:
+      android.permission.RECORD_AUDIO: deny
+- runFlow:
+    when:
+      visible: "Bỏ qua"
+    commands:
+      - tapOn: "Bỏ qua"
+- tapOn: "Quay hướng dẫn tự động"
+- extendedWaitUntil:
+    visible: "Sẵn sàng quay chưa."
+    timeout: 10000
+- takeScreenshot: mic_1_ready_check
+- assertVisible: "Micro.*"
+- assertVisible: "Còn thiếu quyền"
+- tapOn:
+    id: "ready_mic"
+- tapOn: "Không cho phép"
+- takeScreenshot: mic_2_after_refusal
+- assertVisible: "Sẵn sàng quay chưa."
+- assertVisible: "Còn thiếu quyền"
+- assertVisible: "Quay không thu tiếng"
+- tapOn:
+    id: "ready_no_sound"
+- extendedWaitUntil:
+    visible: "Chia sẻ màn hình.*"
+    timeout: 10000
+- takeScreenshot: mic_3_share_question
+- tapOn: "Thoát"

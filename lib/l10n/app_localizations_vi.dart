@@ -1949,4 +1949,7 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get batchThickness => 'Độ dày';
+
+  @override
+  String get readyNoMic => 'Quay không thu tiếng';
 }

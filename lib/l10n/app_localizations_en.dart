@@ -1954,4 +1954,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get batchThickness => 'Thickness';
+
+  @override
+  String get readyNoMic => 'Record without sound';
 }
