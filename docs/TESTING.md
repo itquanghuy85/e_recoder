@@ -112,3 +112,10 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - `settings_layout` PASS, Android `testDebugUnitTest` 92/92, Flutter 347/347.
 - Lưu ý: nếu lần chạy trước kẹt ở màn phát video, `am force-stop com.huluca.escreenrecorder` trước khi chạy flow tiếp theo.
 
+## Nghiệm thu UX đơn giản (2026-10-31)
+- `scripts/qa/ux_flow.ps1` chạy `maestro/ux_simple_flow.yaml`: cần trạng thái "lần đầu mở app", nên script sao lưu file cài đặt của app (`adb run-as`, bản debug), bỏ riêng hai khoá `onboarded` và `purpose`, chạy flow, kiểm file `ESR_edit_*` đã xuất, rồi trả file cài đặt về như cũ. Ảnh từng màn nằm trong `test-results/ux_flow/` (`ux_1_purpose` ... `ux_6_back_to_record`). Video thử xoá bằng `qa_data.ps1` (ghi tên vào danh sách rồi `clean -Apply`).
+- Flow: chọn mục đích → nút Quay hướng dẫn tự động → quay ~5 s → Dừng → màn kết quả → Sửa thêm → back → Xuất ngay → "Đã xuất: ESR_edit_..." → Quay lại.
+- Khi quay, app tự thu xuống nền, flow phải `launchApp` lại (stopApp false) trước khi bấm Dừng. Maestro khớp chữ theo cả nhãn gộp của thẻ, nên chọn thẻ mục đích bằng id `purpose_tutorial|game|plain` và mục gập bằng id `record_advanced`.
+- Kết quả trên S25 Ultra: flow đạt, file xuất tồn tại; `clean_auto_touches` và `settings_layout` (đường cũ) vẫn đạt; Flutter 368 đạt.
+- Chưa kiểm trên máy thật: màn "Sẵn sàng quay chưa?" (máy test đã cấp đủ quyền nên bước bị bỏ qua; có widget test), mục đích Quay game / Quay thường.
+

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-10-31] UX đơn giản: chọn mục đích, một nút Quay, kiểm quyền, màn kết quả
+- **Bước 1** `features/purpose/purpose.dart`, `purpose_screen.dart`: lần đầu mở app (sau phần giới thiệu) hỏi "Bạn muốn làm gì?": Làm video hướng dẫn / Quay game / Quay thường (có "Bỏ qua, quay thường"). Lưu khoá `purpose` (0/1/2, không có = chưa chọn) trong SharedPreferences hiện có, và áp bộ cài đặt sẵn qua `applyPurposeToMarkers`: hướng dẫn = quay sạch + nghe lần bấm + dấu số + phóng to; game = chấm tay, không phóng to; thường = tắt hết. Màu, kiểu, độ dày dấu của người dùng giữ nguyên.
+- **Bước 2** `record_screen.dart`: một nút lớn, chữ theo mục đích ("Quay hướng dẫn tự động" / "Quay game" / "Quay video"). Thẻ cấu hình quay và "Đổi mục đích" nằm trong mục gập "Nâng cao". Người đã dùng app từ trước (chưa chọn mục đích) vẫn thấy màn cũ y nguyên, kèm một thẻ mời chọn mục đích.
+- **Bước 3** `ready_check_screen.dart`: chỉ khi đã chọn mục đích; bấm Quay mà thiếu micro / hiển thị trên ứng dụng khác thì hiện "Sẵn sàng quay chưa?" liệt kê quyền, mỗi dòng nút Bật (micro hỏi lần đầu, sau đó mở cài đặt app; quyền hiển thị mở trang hệ thống; tự kiểm lại khi quay về app). Nút "Sẵn sàng quay" chỉ mở khi đủ. Thông báo chỉ là gợi ý.
+- **Bước 4** `result_screen.dart`: khi đã chọn mục đích, quay xong hiện "Quay xong rồi" (video xem trước + Xuất ngay / Sửa thêm / Quay lại) thay cho thanh báo. "Xuất ngay" đợi bản dựng tự động của lần quay (`RecorderController.draftReady`) rồi xuất chất lượng gốc. "Sửa thêm" mở trình chỉnh sửa đầy đủ như cũ. Màn mở lại danh sách video vài lần nếu file mới chưa có trong danh sách (trước đó nút Xem cũng có thể im lặng).
+- Sửa kèm: hai nút Tạm dừng / Dừng ở màn đang quay co lại được trên máy hẹp (trước đó tràn 8 px ở 360 dp).
+- Đường cũ không đổi: chưa chọn mục đích thì màn Quay, thanh báo "Đã lưu ... Xem", báo thiếu quyền đều như trước. 6 hiệu ứng chữ và phụ đề tự động không bị đụng.
+- Test: Flutter 368; Maestro `ux_simple_flow` (qua `scripts/qa/ux_flow.ps1`), `clean_auto_touches`, `settings_layout` đạt trên S25 Ultra.
+
 ## [2026-10-31] Bỏ lần bấm "Dừng quay" khỏi các bước tự dựng
 - `RecorderController.stopTapWindowMs = 1200`: các lần bấm trong 1,2 giây cuối video là bấm nút dừng nên không đưa vào dựng tự động. Test: Flutter 349. S25 Ultra: quay sạch bấm 7/5/9 rồi Dừng cho đúng 3 dấu (trước đó 4).
 

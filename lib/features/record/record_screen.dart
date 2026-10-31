@@ -77,13 +77,23 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
   /// [result]: the three-choice screen shown after a recording; otherwise the plain player.
   Future<void> _openSaved(String uri, {bool result = false}) async {
-    final list = await ref.read(mediaListProvider.future);
-    final entry = list.where((e) => e.uri == uri).firstOrNull;
+    // The list may still be the one from before the recording (or the phone's media index may not have
+    // the new file yet): look again a few times instead of silently showing nothing.
+    MediaEntry? entry;
+    for (var i = 0; i < 8 && entry == null && mounted; i++) {
+      if (i > 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        ref.invalidate(mediaListProvider);
+      }
+      final list = await ref.read(mediaListProvider.future);
+      entry = list.where((e) => e.uri == uri).firstOrNull;
+    }
     if (entry != null && mounted) {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) =>
-              result ? ResultScreen(entry: entry) : PlayerScreen(entry: entry),
+          builder: (_) => result
+              ? ResultScreen(entry: entry!)
+              : PlayerScreen(entry: entry!),
         ),
       );
     }

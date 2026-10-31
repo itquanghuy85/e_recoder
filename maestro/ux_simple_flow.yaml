@@ -1,0 +1,96 @@
+appId: com.huluca.escreenrecorder
+name: Simple UX - first run asks the purpose, one big button, result screen, export
+tags:
+  - p1
+  - module-ux
+---
+# Needs the first-run state (no "onboarded" / "purpose" in the settings): scripts/qa/ux_flow.ps1 sets it up
+# and puts the phone's own settings back afterwards. Choose "tutorial", record 5 s, stop, look at the result
+# screen, open the editor and come back, export. The file is checked by the script.
+- launchApp:
+    stopApp: true
+- runFlow:
+    when:
+      visible: "Bỏ qua"
+    commands:
+      - tapOn: "Bỏ qua"
+- assertVisible: "Bạn muốn làm gì?"
+- assertVisible:
+    id: "purpose_tutorial"
+- assertVisible:
+    id: "purpose_game"
+- assertVisible:
+    id: "purpose_plain"
+- takeScreenshot: ux_1_purpose
+- tapOn:
+    id: "purpose_tutorial"
+- assertVisible: "Quay hướng dẫn tự động"
+- assertVisible:
+    id: "record_advanced"
+- takeScreenshot: ux_2_record_screen
+- tapOn: "Quay hướng dẫn tự động"
+# A missing permission is listed on its own screen; with everything granted this block is skipped.
+- runFlow:
+    when:
+      visible: "Sẵn sàng quay chưa."
+    commands:
+      - takeScreenshot: ux_2b_ready_check
+      - tapOn: "Sẵn sàng quay"
+- retry:
+    maxRetries: 3
+    commands:
+      - runFlow:
+          when:
+            visible: "Quay hướng dẫn tự động"
+          commands:
+            - tapOn: "Quay hướng dẫn tự động"
+      - runFlow:
+          when:
+            visible: "Trong khi dùng ứng dụng"
+          commands:
+            - tapOn: "Trong khi dùng ứng dụng"
+      - extendedWaitUntil:
+          visible: "Bắt đầu ngay|Chia sẻ màn hình|Dừng quay"
+          timeout: 8000
+- runFlow:
+    when:
+      visible: "Bắt đầu ngay|Chia sẻ màn hình"
+    commands:
+      - tapOn: "Bắt đầu ngay|Chia sẻ màn hình"
+# Recording starts and the app steps aside; record about 5 seconds, then come back and stop.
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 5000
+    optional: true
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Dừng quay"
+    timeout: 15000
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Quay xong rồi"
+    timeout: 40000
+- assertVisible: "Xuất ngay"
+- assertVisible: "Sửa thêm"
+- assertVisible: "Quay lại"
+- takeScreenshot: ux_3_result
+- tapOn: "Sửa thêm"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- takeScreenshot: ux_4_editor
+- back
+- extendedWaitUntil:
+    visible: "Xuất ngay"
+    timeout: 10000
+- tapOn: "Xuất ngay"
+- extendedWaitUntil:
+    visible: "Đã xuất: .*"
+    timeout: 120000
+- takeScreenshot: ux_5_exported
+- tapOn: "Quay lại"
+- assertVisible: "Quay hướng dẫn tự động"
+- takeScreenshot: ux_6_back_to_record

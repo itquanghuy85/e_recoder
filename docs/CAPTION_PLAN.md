@@ -195,3 +195,10 @@ Bộ nhận dạng đang dùng: `SpeechRecognizer.createOnDeviceSpeechRecognizer
 - Dòng phụ đề thêm tay vào item tự động sẽ mất khi "Tạo phụ đề tự động" chạy lại (item `autocap_*` bị thay). Phụ đề tạo bằng "+ Thêm câu" khi KHÔNG chọn item tự động là item riêng, được giữ.
 - Chưa làm: xuất SRT, timeline riêng cho phụ đề, "tạo lại" chỉ một đoạn.
 - `caption_auto_flow` không dùng `clearState` (sẽ xoá toàn bộ cơ sở dữ liệu dự án của app trên máy dùng chung); tự dọn bằng `helpers/caption_cleanup.yaml` và `qa_data.ps1`.
+
+## PHẦN 14 — UX REFACTOR: CHỌN MỤC ĐÍCH, MỘT NÚT QUAY, KIỂM QUYỀN, MÀN KẾT QUẢ
+Mục tiêu: người dùng chỉ chọn mục đích, không phải hiểu "quay sạch", "nguồn phát hiện"... Chi tiết: `docs/CHANGELOG.md` (2026-10-31, UX đơn giản).
+- Mục đích (`Purpose`: tutorial/game/plain, khoá `purpose`) quyết định bộ cài đặt sẵn và chữ nút Quay. Chưa chọn = đường cũ (không đổi gì), nên người đang dùng và các flow Maestro cũ không bị ảnh hưởng.
+- Màn Quay: một nút lớn; mọi thứ cũ gom vào "Nâng cao". Kiểm quyền trước khi quay. Quay xong: "Xuất ngay" / "Sửa thêm" / "Quay lại".
+- Phụ đề tự động và 6 hiệu ứng chữ giữ nguyên. Việc để sau: dựng sẵn xem trước theo mẫu ở màn kết quả; trình chỉnh sửa hai chế độ Cơ bản / Nâng cao; đổi tên các mục khó hiểu.
+
