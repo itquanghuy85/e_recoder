@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-10-31] Build và kiểm thử iOS qua Mac (SSH)
+- iOS build được: Simulator Debug và máy thật `--no-codesign` (22 MB). Trên Mac: Flutter test 387/387, analyze sạch. App mở trên iPhone 17 Simulator, không crash.
+- BLOCKED: smoke test Maestro (Mac thiếu Java), kiểm trên iPhone thật (chưa có máy và chứng chỉ ký).
+- Phát hiện chưa sửa: `Info.plist` trùng 3 khoá quyền; repo chưa ghi phần tích hợp CocoaPods.
+- Thêm `scripts/qa/ios_qa.sh` (chạy trên Mac) và `maestro/ios_smoke.yaml`. Báo cáo: `docs/IOS_BUILD_TEST_REPORT.md`.
+
 ## [2026-10-31] Lượt QA cuối
 - Sửa: bảng công cụ của editor cuộn về đầu khi đổi công cụ hoặc mục chọn (trước đó giữ vị trí cuộn của công cụ trước, che các điều khiển đầu bảng).
 - Sửa: `RecorderService` dọn tệp tạm của bản ghi bị giết (`cache/rec`) khi bắt đầu quay.
