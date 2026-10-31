@@ -105,3 +105,10 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - `maestro/caption_srt_import.yaml`: cần `test.srt` (3 dòng) trong Download; chọn qua hộp chọn tệp thật.
 - Dọn video test chọn từ Download: `scripts\qa\qa_data.ps1 -Action clean -Apply -PickedProject "<đuôi uri dự án>"`.
 - Không dùng `clearState` trong flow: nó xoá cả cơ sở dữ liệu dự án của app.
+
+## Nghiệm thu dựng tự động dùng đúng dấu đã chọn (2026-10-31)
+- `maestro/clean_auto_touches.yaml`: quay sạch không lắc, bấm 7/5/9 của máy tính Samsung, chọn dấu tự động "Vòng tròn" (`auto_marker_circle`), mở trình chỉnh sửa rồi tua mỗi 3 giây và chụp 9 ảnh (`test-results/clean_auto_N`). Chạy với `--test-output-dir <thư mục>` thì ảnh mới được lưu; không có cờ này ảnh chụp không ghi ra file.
+- Kết quả trên S25 Ultra: vòng tròn nằm quanh phím 5 và 9 kèm phóng to; thử `auto_marker_arrow` thì mũi tên chỉ vào phím 9. Vòng lệch nhẹ sang phải so với tâm phím (chỗ bấm tìm từ hình, xem CHANGELOG). Bước cuối là dấu ở nút "Dừng quay" (đã ghi ở hạn chế).
+- `settings_layout` PASS, Android `testDebugUnitTest` 92/92, Flutter 347/347.
+- Lưu ý: nếu lần chạy trước kẹt ở màn phát video, `am force-stop com.huluca.escreenrecorder` trước khi chạy flow tiếp theo.
+

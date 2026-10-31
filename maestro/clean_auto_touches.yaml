@@ -81,4 +81,53 @@ tags:
     visible:
       id: "editor_play"
     timeout: 30000
-- takeScreenshot: artifacts/clean_auto_editor
+- takeScreenshot: test-results/clean_auto_0
+# Walk through the video: the marks must be on the picture where the taps were.
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: "seek_fwd"
+- takeScreenshot: test-results/clean_auto_1
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: "seek_fwd"
+- takeScreenshot: test-results/clean_auto_2
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: "seek_fwd"
+- takeScreenshot: test-results/clean_auto_3
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: "seek_fwd"
+- takeScreenshot: test-results/clean_auto_4
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: "seek_fwd"
+- takeScreenshot: test-results/clean_auto_5
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: "seek_fwd"
+- takeScreenshot: test-results/clean_auto_6
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: "seek_fwd"
+- takeScreenshot: test-results/clean_auto_7
+- repeat:
+    times: 3
+    commands:
+      - tapOn:
+          id: "seek_fwd"
+- takeScreenshot: test-results/clean_auto_8
