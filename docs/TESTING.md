@@ -126,3 +126,12 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - Editor mở ở Cơ bản: flow cần công cụ nâng cao gọi `runFlow: helpers/editor_advanced.yaml` trước khi bấm `tool_cover`, `tool_zoom`, `tool_transition`...
 - `scripts/qa/marks_of_latest.py <projects.db>` in các dấu của dự án lưu gần nhất (loại, số bước, vị trí); lấy `projects.db` bằng `adb exec-out run-as com.huluca.escreenrecorder cat databases/projects.db`.
 - Mic bị từ chối: `scripts/qa/ux_mic.ps1`. Làm thử như người dùng: `scripts/qa/ux_real.ps1`.
+
+## Nghiệm thu 31/10/2026 (S25)
+- 18 flow editor: `scripts/qa/run_flows18.ps1 [-Flows a,b] [-OutDir ...]` (app nguội từng flow, dọn trình chọn tệp/Cài đặt giữa các flow, `OTHER_APP` = máy tính Samsung). Chạy ở "đường cũ": bỏ khoá `purpose` trước (các flow viết cho màn Quay cũ). Kết quả: `results.csv`.
+- App bên thứ ba: `scripts/qa/ux_third_party.ps1` (Google Calculator cài từ Play; in các dấu của dự án).
+- Xuất video dài: `scripts/qa/ux_long.ps1` (nền + mở lại), `scripts/qa/ux_long_kill.ps1` (giết hẳn tiến trình giữa lúc xuất). Tệp thử `QA_long_5min.mp4` trong Download, mở bằng "Chọn video".
+- Giết app giữa lúc dựng bản tự động: `scripts/qa/ux_draft_kill.ps1` (cần chế độ quay sạch, `marker.mode = 1`).
+- Lưu ý: Maestro `stopApp` không giết dịch vụ xuất nền; muốn giết hẳn dùng `adb shell am force-stop`. Maestro tự cấp mọi quyền khi `launchApp`.
+- Báo cáo: `docs/NGHIEM_THU_2026-10-31.md`.
+

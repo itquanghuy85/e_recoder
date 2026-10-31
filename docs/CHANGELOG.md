@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-10-31] Nghiệm thu tồn đọng: app bên thứ ba, 18 flow, phục hồi khi dựng/xuất dài
+- Báo cáo đầy đủ (PASS / FAIL / BLOCKED): `docs/NGHIEM_THU_2026-10-31.md`.
+- Sửa `Exporter.kt`: bắt đầu xuất thì dọn tệp tạm của lần xuất bị giết (`cache/export`, `export_rev`, `export_pip`).
+- Sửa `recorder_controller.dart`: việc dựng bản tự động từ lần bấm được ghi lại trước khi dựng (`draft.pending`) và làm tiếp ở lần mở app sau nếu bị giết giữa chừng (tối đa 2 lần). `SettingsStore` thêm `getString/setString/remove`. Test mới `draft_resume_test` (5).
+- Kịch bản Maestro (không đổi kỳ vọng sản phẩm): e2_pick_probe, e2_pip_s25 chọn tệp theo tên; e2_overlays, e8_tools_zoom, store_pro thêm bước vuốt bảng trên S25. Flow mới: `ux_third_party`, `ux_long_export`, `ux_long_kill_a/b`. Script mới: `run_flows18.ps1`, `ux_third_party.ps1`, `ux_long.ps1`, `ux_long_kill.ps1`, `ux_draft_kill.ps1`.
+- Flutter test 387/387, analyze sạch.
+
 ## [2026-10-31] Trình chỉnh sửa hai chế độ Cơ bản / Nâng cao
 - **Cơ bản (mặc định):** 6 tab: Cắt, Dấu, Chữ, Tốc độ, Âm thanh, Xuất (tab Xuất mở hộp xuất, giống nút Xuất ở trên). **Nâng cao** thêm hàng thứ hai: Chuyển cảnh, Hình ảnh, Chèn hình, Che vùng, Phóng to, Dựng tự động. Hai nút chọn chế độ kèm một dòng giải thích ngay dưới các tab; chế độ được nhớ giữa các lần mở (`editor.advanced`).
 - **Chuyển chế độ chỉ đổi cái hiện ra**, không đụng dữ liệu bản dựng (dấu, chữ, zoom, tốc độ, vùng che...). Chọn một clip của công cụ nâng cao trên timeline khi đang ở Cơ bản thì tự hiện Nâng cao trong phiên đó (không ghi nhớ). Về Cơ bản từ một công cụ nâng cao thì rơi về Cắt.

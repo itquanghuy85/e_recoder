@@ -9,6 +9,10 @@ tags:
 - runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_picture"
+# On a tall phone (S25) the aspect chips are below the fold of the tool panel: scroll the panel, not the timeline.
+- swipe:
+    start: 50%,94%
+    end: 50%,80%
 - tapOn:
     id: "aspect_r1x1"
 - tapOn:
@@ -21,6 +25,17 @@ tags:
     id: "tool_overlay"
 - tapOn:
     id: "add_shape_bubble"
+# S25 is tall: the bubble text comes after four sliders, below the fold of the tool panel; scroll the panel.
+- repeat:
+    times: 6
+    while:
+      notVisible:
+        id: "bubble_text"
+    commands:
+      - swipe:
+          start: 50%,94%
+          end: 50%,88%
+          duration: 1500
 - tapOn:
     id: "bubble_text"
 - eraseText: 30

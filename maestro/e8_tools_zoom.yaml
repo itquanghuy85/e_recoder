@@ -43,6 +43,10 @@ tags:
     id: "tool_zoom"
 - tapOn:
     id: "add_zoom"
+# S25 is tall: the next control is below the fold of the tool panel; scroll the panel (not the timeline).
+- swipe:
+    start: 50%,94%
+    end: 50%,84%
 - assertVisible:
     id: "zoom_in_ms"
 - assertVisible:

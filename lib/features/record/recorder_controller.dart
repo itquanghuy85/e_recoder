@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui' show Color, PlatformDispatcher;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/settings_store.dart';
 import '../../core/native_recorder.dart';
 import '../../core/permissions_gateway.dart';
 import '../editor/auto_director.dart';
@@ -69,6 +71,8 @@ class RecorderController extends Notifier<RecorderState> {
   RecorderState build() {
     _sub = _native.events.listen(_onEvent);
     ref.onDispose(() => _sub?.cancel());
+    // A build cut short by the app being killed is finished now, in the background.
+    draftReady = Future<void>.microtask(resumeDraft);
     return const RecorderState();
   }
 
@@ -126,12 +130,35 @@ class RecorderController extends Notifier<RecorderState> {
       // The press on the app's own stop button is heard too: it is not a step of what was recorded.
       final heard = [
         for (final t in e.touches)
-          if (t.tMs <= e.durationMs - stopTapWindowMs) t,
+          if (t.tMs <= e.durationMs - stopTapWindowMs) t.tMs,
       ];
-      if (heard.isNotEmpty) {
-        final placed = await _native.locateTouches(e.uri, [
-          for (final t in heard) t.tMs,
-        ]);
+      await _buildFromTouches(draft, e.uri, heard);
+    } catch (_) {
+      // A failed draft only means the user places the markers by hand in the editor.
+    }
+  }
+
+  static const _pendingKey = 'draft.pending';
+
+  /// The touches are only in memory until the edit is built from them, and finding where they were
+  /// (looking at the frames) takes a while on a long recording. So the job is written down first and
+  /// crossed out when done: if the app is killed in between, the next launch finishes it ([resumeDraft]).
+  Future<void> _buildFromTouches(
+    EditProject draft,
+    String uri,
+    List<int> heard, {
+    int tries = 0,
+  }) async {
+    if (heard.isEmpty) return;
+    final mk = ref.read(markerSettingsProvider);
+    final store = ref.read(settingsStoreProvider);
+    await store.setString(
+      _pendingKey,
+      jsonEncode({'uri': uri, 'touches': heard, 'tries': tries}),
+    );
+    try {
+      {
+        final placed = await _native.locateTouches(uri, heard);
         final events = TouchClassifier.classify(placed);
         if (events.isNotEmpty) {
           final vi = PlatformDispatcher.instance.locale.languageCode == 'vi';
@@ -161,8 +188,33 @@ class RecorderController extends Notifier<RecorderState> {
           await ref.read(projectStoreProvider).save(auto);
         }
       }
+    } finally {
+      await store.remove(_pendingKey);
+    }
+  }
+
+  /// Finishes the automatic edit of a recording whose build was cut short (the app was killed while it
+  /// ran). Done at launch; a job whose project or touches are gone is just dropped.
+  Future<void> resumeDraft() async {
+    final store = ref.read(settingsStoreProvider);
+    final raw = store.getString(_pendingKey);
+    if (raw == null) return;
+    try {
+      final j = jsonDecode(raw) as Map<String, dynamic>;
+      final uri = j['uri'] as String;
+      final touches = [
+        for (final t in j['touches'] as List) (t as num).toInt(),
+      ];
+      final tries = (j['tries'] as num?)?.toInt() ?? 0;
+      final draft = await ref.read(projectStoreProvider).load(uri);
+      // Twice is enough: a video that keeps killing the app while it is looked at is left as it is.
+      if (draft == null || tries >= 2) {
+        await store.remove(_pendingKey);
+        return;
+      }
+      await _buildFromTouches(draft, uri, touches, tries: tries + 1);
     } catch (_) {
-      // A failed draft only means the user places the markers by hand in the editor.
+      await store.remove(_pendingKey);
     }
   }
 

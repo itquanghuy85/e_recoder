@@ -1,0 +1,43 @@
+appId: com.huluca.escreenrecorder
+name: Long video - start an export and leave it running (the script then kills the app)
+tags:
+  - p1
+  - module-editor
+---
+# Part A of the kill test (scripts/qa/ux_long_kill.ps1): open the long test video, start an export.
+- launchApp:
+    stopApp: true
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    id: "library_pick_video"
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      notVisible: "QA_long_5min.mp4"
+    commands:
+      - tapOn: "Hiển thị gốc"
+      - tapOn: "Tải xuống"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- tapOn: "QA_long_5min.mp4"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- tapOn:
+    id: "tool_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_progress"
+    timeout: 20000
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 6000
+    optional: true
+- takeScreenshot: kill_a_exporting

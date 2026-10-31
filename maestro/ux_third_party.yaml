@@ -1,0 +1,96 @@
+appId: com.huluca.escreenrecorder
+name: Automatic marks on a third-party app (Google Calculator) - taps in several places
+tags:
+  - p1
+  - module-ux
+---
+# Records Google Calculator (not a Samsung app, nothing personal in it), taps the keys 7, 5, 3, 9 (four different places), stops, waits for
+# the automatic edit and looks at the result. scripts/qa/ux_third_party.ps1 reads the saved project after.
+- launchApp:
+    stopApp: true
+- runFlow:
+    when:
+      visible: "Bỏ qua"
+    commands:
+      - tapOn: "Bỏ qua"
+- tapOn: "Quay hướng dẫn tự động"
+- runFlow:
+    when:
+      visible: "Sẵn sàng quay chưa."
+    commands:
+      - tapOn: "Sẵn sàng quay"
+- retry:
+    maxRetries: 3
+    commands:
+      - runFlow:
+          when:
+            visible: "Quay hướng dẫn tự động"
+          commands:
+            - tapOn: "Quay hướng dẫn tự động"
+      - runFlow:
+          when:
+            visible: "Trong khi dùng ứng dụng"
+          commands:
+            - tapOn: "Trong khi dùng ứng dụng"
+      - extendedWaitUntil:
+          visible: "Bắt đầu ngay|Chia sẻ màn hình|Dừng quay"
+          timeout: 8000
+- runFlow:
+    when:
+      visible: "Bắt đầu ngay|Chia sẻ màn hình"
+    commands:
+      - tapOn: "Bắt đầu ngay|Chia sẻ màn hình"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 4000
+    optional: true
+- launchApp:
+    appId: com.google.android.calculator
+    stopApp: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: third_0_calculator
+- tapOn:
+    text: "7"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    text: "5"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    text: "3"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    text: "9"
+- waitForAnimationToEnd:
+    timeout: 2500
+- takeScreenshot: third_1_calculator_done
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Dừng quay"
+    timeout: 15000
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Quay xong rồi"
+    timeout: 40000
+# The automatic edit takes a few seconds: wait until the building line is gone.
+- extendedWaitUntil:
+    notVisible: "Đang dựng tự động.*"
+    timeout: 120000
+- takeScreenshot: third_2_result
+- tapOn:
+    id: "result_preview"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 5000
+    optional: true
+- takeScreenshot: third_3_playing
+- tapOn: "Xuất ngay"
+- extendedWaitUntil:
+    visible: "Đã xuất: .*"
+    timeout: 120000
+- takeScreenshot: third_4_exported

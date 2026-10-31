@@ -26,6 +26,9 @@ class SettingsStore {
 
   int getInt(String key, int fallback) => _prefs.getInt(key) ?? fallback;
   Future<void> setInt(String key, int v) => _prefs.setInt(key, v);
+  String? getString(String key) => _prefs.getString(key);
+  Future<void> setString(String key, String v) => _prefs.setString(key, v);
+  Future<void> remove(String key) => _prefs.remove(key);
   bool getBool(String key, bool fallback) => _prefs.getBool(key) ?? fallback;
   Future<void> setBool(String key, bool v) => _prefs.setBool(key, v);
 }
