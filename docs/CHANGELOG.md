@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-10-31] Sửa lỗi: chỉnh sửa trong "Sửa thêm" không vào bản "Xuất ngay"
+- Lỗi tìm ra khi làm thử như người dùng: quay, bấm Sửa thêm, đổi dấu, quay lại, bấm Xuất ngay thì video xuất vẫn là bản cũ. Nguyên nhân: màn kết quả giữ bộ điều khiển cũ; đóng nó (khi rời màn hoặc xuất) tự lưu bản cũ đè lên bản editor vừa lưu.
+- Sửa (`result_screen.dart`): đóng bộ điều khiển TRƯỚC khi mở editor (chưa có thay đổi nào nên lưu vô hại), quay về thì chờ 0,8 giây cho editor ghi xong rồi nạp lại dự án; xem trước và xuất dùng bản mới.
+- Nghiệm thu S25 (RUNTIME_VERIFIED): `ux_real.ps1` quay + bấm 7/5/9, "Chọn tất cả" dấu, đổi sang Vòng tròn, quay lại, Xuất ngay. Dự án trong cơ sở dữ liệu: 3 dấu `circle`; video xuất (`ESR_edit_20261031_161052`) có vòng tròn ở phím 7, 5, 9, không còn số. Trước khi sửa cùng quy trình ra 3 dấu số.
+- Chọn riêng một dấu trên timeline rồi đổi: dự án chỉ đổi dấu đó (`circle`, `number`, `number`), xác nhận bằng cơ sở dữ liệu.
+
 ## [2026-10-31] Làm thử như người dùng thật (quay có bấm, xem kết quả, sửa)
 - `maestro/ux_real_user.yaml` + `scripts/qa/ux_real.ps1`: bắt đầu như người mới (file cài đặt được sao lưu vào `test-results/prefs_backup_real.xml`, không trả lại), chọn "Quay hướng dẫn tự động", quay máy tính Samsung và bấm 7/5/9, dừng, xem kết quả, mở editor, mở "Đổi tất cả dấu". Video thử được GIỮ để người dùng tự xem và tự xoá; script không xoá gì.
 - Thấy được khi chạy thật (RUNTIME_VERIFIED trên S25 Ultra): màn kết quả phát đúng kèm dấu số 2 và zoom vào phím; editor mở ra có 4 clip, 3 dấu, 3 đoạn tăng tốc.

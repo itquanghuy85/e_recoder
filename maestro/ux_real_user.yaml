@@ -107,3 +107,23 @@ tags:
 - tapOn:
     id: "marker_batch"
 - takeScreenshot: real_6_batch_open
+# Pick every mark with "Select all" in the batch section and turn them into circles.
+- tapOn:
+    id: "marker_select_all"
+- takeScreenshot: real_7_all_markers_picked
+- swipe:
+    start: 50%,92%
+    end: 50%,78%
+- tapOn:
+    id: "batch_kind_circle"
+- takeScreenshot: real_8_markers_changed
+# Back to the result screen and export: the exported video must carry the marks as they are now.
+- back
+- extendedWaitUntil:
+    visible: "Xuất ngay"
+    timeout: 10000
+- tapOn: "Xuất ngay"
+- extendedWaitUntil:
+    visible: "Đã xuất: .*"
+    timeout: 120000
+- takeScreenshot: real_9_exported

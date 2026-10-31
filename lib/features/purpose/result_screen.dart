@@ -105,11 +105,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
   @override
   void dispose() {
-    _driver?.dispose();
-    _extras?.dispose();
-    _ctl?.removeListener(_onController);
-    _ctl?.dispose();
-    _v?.dispose();
+    _disposePreview();
     super.dispose();
   }
 
@@ -190,13 +186,36 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     ExportQuality.p480 => t.resolution480,
   };
 
-  void _edit() {
+  Future<void> _edit() async {
     _driver?.pause();
-    Navigator.of(context).push(
+    // Closing a controller saves its edit. This one has not changed anything, so closing it now is
+    // harmless; closing it after the editor, it would save the old edit over the person's changes.
+    _disposePreview();
+    setState(() => _lastSeek = -1);
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => EditorScreen(entry: widget.entry),
       ),
     );
+    if (!mounted) return;
+    // The editor writes its changes when it closes, a moment after the route is gone. Give the write time
+    // to land, then load the edit again, so the preview and "Export now" use what was just changed.
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+    setState(() => _playerFailed = false);
+    await _initPreview();
+  }
+
+  void _disposePreview() {
+    _driver?.dispose();
+    _extras?.dispose();
+    _ctl?.removeListener(_onController);
+    _ctl?.dispose();
+    _v?.dispose();
+    _driver = null;
+    _extras = null;
+    _ctl = null;
+    _v = null;
   }
 
   Widget _preview(AppL10n t, ColorScheme c, bool busy) {
