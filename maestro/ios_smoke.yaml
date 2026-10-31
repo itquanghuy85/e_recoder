@@ -24,7 +24,7 @@ tags:
 - takeScreenshot: ios_library
 - tapOn: "Settings|Cài đặt"
 - assertVisible:
-    id: settings_markers
+    id: settings_reset_modes
 - takeScreenshot: ios_settings
 - tapOn: "Record|Quay"
 - assertVisible:

@@ -14,7 +14,11 @@ tags:
       visible: "Bỏ qua"
     commands:
       - tapOn: "Bỏ qua"
-- tapOn: "Quay hướng dẫn tự động"
+- tapOn:
+    id: "purpose_tutorial"
+- tapOn:
+    id: "quick_marks_auto"
+- tapOn: "Bắt đầu quay"
 - runFlow:
     when:
       visible: "Sẵn sàng quay chưa."
@@ -25,9 +29,9 @@ tags:
     commands:
       - runFlow:
           when:
-            visible: "Quay hướng dẫn tự động"
+            visible: "Bắt đầu quay"
           commands:
-            - tapOn: "Quay hướng dẫn tự động"
+            - tapOn: "Bắt đầu quay"
       - runFlow:
           when:
             visible: "Trong khi dùng ứng dụng"

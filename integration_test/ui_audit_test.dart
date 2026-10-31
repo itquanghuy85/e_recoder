@@ -8,7 +8,6 @@ import 'dart:io';
 import 'package:e_screen_recorder/app/settings_store.dart';
 import 'package:e_screen_recorder/core/native_recorder.dart';
 import 'package:e_screen_recorder/features/editor/editor_screen.dart';
-import 'package:e_screen_recorder/features/marker/marker_settings_screen.dart';
 import 'package:e_screen_recorder/l10n/app_localizations.dart';
 import 'package:e_screen_recorder/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -104,9 +103,5 @@ void main() {
       await step(t, 'editor_$id');
     }
 
-    // Marker settings.
-    await t.pumpWidget(host(settings, const MarkerSettingsScreen()));
-    await settle(t, 2000);
-    await step(t, 'marker_settings');
   });
 }

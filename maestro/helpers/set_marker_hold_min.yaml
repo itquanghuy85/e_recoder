@@ -1,26 +1,35 @@
 appId: com.huluca.escreenrecorder
-name: Helper - set the marker effect time to its shortest (0,5 s)
+name: Helper - set the marker effect time to its shortest (0.5 s)
 tags:
   - helper
 ---
-# Ends back on the Record tab. (The swipe direction cannot come from an env variable.)
+# Tutorial purpose, marks by hand, More options. Ends on the Record tab. (The swipe direction cannot come
+# from an env variable.)
 - launchApp:
     appId: com.huluca.escreenrecorder
     stopApp: false
 - tapOn:
-    text: "Cài đặt.*"
+    text: 'Quay\sTab.*'
 - tapOn:
-    id: "settings_markers"
+    id: "purpose_tutorial"
+- tapOn:
+    id: "quick_marks_live"
 - scrollUntilVisible:
     element:
-      id: "marker_hold"
+      id: "record_more"
     direction: DOWN
-    timeout: 20000
+    timeout: 15000
+- tapOn:
+    id: "record_more"
+- scrollUntilVisible:
+    element:
+      id: "more_hold"
+    direction: DOWN
+    timeout: 15000
 - swipe:
     from:
-      id: "marker_hold"
+      id: "more_hold"
     direction: LEFT
     duration: 800
-- back
 - tapOn:
-    text: "Quay.*"
+    id: "record_more"

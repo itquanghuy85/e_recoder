@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:e_screen_recorder/features/purpose/purpose.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/fake_recorder.dart';
 
@@ -34,15 +36,13 @@ void main() {
 
     await tester.tap(find.text('Bắt đầu dùng'));
     await tester.pumpAndSettle();
-    // then it asks what the person wants to do, once
-    expect(find.text('Bạn muốn làm gì?'), findsOneWidget);
-    expect(find.text('Làm video hướng dẫn'), findsOneWidget);
-    expect(find.text('Quay game'), findsOneWidget);
-    expect(find.text('Quay thường'), findsOneWidget);
-    await tester.tap(find.text('Quay thường'));
-    await tester.pumpAndSettle();
+    // straight to the recorder: no purpose question, "tutorial" is picked and can be changed on top
     expect(find.text('Bạn muốn làm gì?'), findsNothing);
-    expect(find.text('Quay video'), findsOneWidget);
+    expect(find.text('Hướng dẫn'), findsOneWidget);
+    expect(find.text('Quay thường'), findsOneWidget);
+    expect(find.text('Bắt đầu quay'), findsOneWidget);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getInt('purpose'), Purpose.tutorial.index);
   });
 
   testWidgets('skip goes straight to the recorder and is remembered', (
@@ -54,11 +54,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     await tester.tap(find.text('Bỏ qua'));
     await tester.pumpAndSettle();
-    expect(find.text('Bạn muốn làm gì?'), findsOneWidget);
-    // "skip" on the question is a plain recording
-    await tester.tap(find.byKey(const ValueKey('purpose_skip')));
-    await tester.pumpAndSettle();
-    expect(find.text('Quay video'), findsOneWidget);
+    expect(find.text('Bạn muốn làm gì?'), findsNothing);
+    expect(find.text('Bắt đầu quay'), findsOneWidget);
   });
 
   testWidgets('permission rows reflect what is granted', (tester) async {

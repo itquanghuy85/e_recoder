@@ -68,5 +68,64 @@ Giới hạn còn lại:
 - Hai lần bấm cách nhau 0,3–0,8 giây: bóng mờ (22%) của dấu sau có thể chồng lên dấu trước đang mờ dần, tối đa 0,3 giây. Không bao giờ có hai dấu đậm cùng lúc.
 - Mốc "màn hình đổi" chỉ có ở bản dựng ngay sau khi quay sạch. Nút "Dựng tự động" trong trình sửa dò lần bấm theo cách khác, nên chỉ được quy tắc "một dấu mỗi lúc".
 
-### Phần B
-Chưa làm.
+### Phần B: RUNTIME_VERIFIED trên S25
+**Cách làm** (không đổi tên khoá cũ):
+- Các khoá `rec.*` và `marker.*` vẫn là bộ cài đặt đang dùng mà cả app đọc.
+- Mỗi chế độ có một bản lưu riêng `purpose.profile.<tên chế độ>` (JSON).
+- Đổi chế độ: chụp bộ đang dùng vào bản lưu của chế độ cũ, rồi nạp bản lưu của chế độ mới. Chế độ dùng lần đầu lấy bộ đang dùng, cộng thiết lập sẵn của chế độ.
+- Máy chưa từng chọn mục đích: tự chọn "Hướng dẫn", giữ nguyên các cài đặt cũ.
+- "Đưa các chế độ quay về mặc định": xoá các bản lưu và bộ đang dùng, rồi áp thiết lập sẵn của chế độ hiện tại.
+- Mã: `lib/features/purpose/purpose.dart` (`PurposeNotifier.choose/resetAll`, `profileKeys`), `quick_options.dart` (`QuickOptions`, `MoreOptions`, `MarkWhen`), `record_screen.dart`, `settings_screen.dart`, `SettingsStore.getRaw/setRaw`.
+
+**Bỏ đi:**
+- Màn chọn mục đích lúc mới cài (`purpose_screen.dart`).
+- Trang Dấu (`marker_settings_screen.dart`, `touch_source_section.dart`).
+- Bảng cài đặt quay (`showRecSettingsSheet`).
+- Thẻ cài đặt, "Nâng cao", "Đổi mục đích" trên màn Quay.
+- Thông báo "Đã lưu… Xem": sau khi quay luôn mở màn kết quả.
+
+Các mục từng chỉ có trên trang Dấu giờ không còn chỗ chỉnh và giữ giá trị đã lưu: góc chấm, lắc để đánh dấu, tự thoát và thời gian chờ sau khi đặt dấu, độ phóng và tốc độ phóng to, cách xử lý khi gõ phím. Đúng phạm vi phương án đã chốt.
+
+**Test tự động:** `test/purpose_test.dart` viết lại cho hành vi mới:
+- mỗi chế độ nhớ riêng;
+- người dùng cũ giữ cài đặt;
+- "Thêm tuỳ chọn" khác nhau theo chế độ;
+- đưa về mặc định;
+- ba kiểu dấu bấm.
+
+Các test khác cập nhật: `onboarding_test`, `l10n_test`, `settings_layout_test`, `widget_test`. Flutter test 394/394, analyze sạch.
+
+**Maestro:** `bash scripts/qa/ux_modes_record.sh` + `maestro/ux_modes_record.yaml`, PASS (exit 0) ở lượt 4. Ba lượt trước hỏng đều do kịch bản:
+- Maestro không đọc được trạng thái "đang chọn" của chip theo id;
+- mục "Thêm tuỳ chọn" phải tìm theo id `record_more`;
+- sau khi bắt đầu quay, app tự lùi xuống nền, phải mở lại app để bấm Dừng.
+
+Kết quả đo:
+- Bản lưu riêng:
+  - Hướng dẫn: `resolution=0` (720p), `fps=30`, `marker.mode=1`, `touchSource=3` (quay sạch, dấu tự động).
+  - Game: `resolution=2` (gốc), `fps=60`, `marker.mode=0` (dấu bấm tay).
+- Mở lại app (dừng hẳn rồi mở) vẫn đúng chế độ và cài đặt. Ảnh: `test-results/ux_modes_record/maestro/.../modes_3c_after_restart.png`.
+- Hai video quay thật (ffprobe):
+  - Game: **1440×3120** (độ nét gốc).
+  - Hướng dẫn: **720×1560** (720p).
+- Cài đặt không còn trang Dấu, có "Đưa các chế độ quay về mặc định".
+- Cài đặt của app được trả lại y hệt bản sao lưu (`cmp` giống hệt).
+
+**Chưa chứng minh được bằng video:** số khung hình/giây. Bản quay màn hình chỉ sinh khung khi màn hình đổi (đo được khoảng 26 khung/giây ở cả hai bản). Mức 60/30 chỉ xác nhận qua cài đặt đã lưu.
+
+**Ghi nhận theo thiết kế:** chế độ dùng lần đầu lấy cài đặt đang dùng. Ví dụ ở lượt test, "Quay thường" mở lần đầu ngay sau Game nên nhận luôn 60 hình/giây và độ nét gốc của Game.
+
+**Kịch bản Maestro cập nhật theo giao diện mới:**
+- Flow phụ `after_stop.yaml` (mới) thay cho chờ "Đã lưu ESR_…" ở 17 chỗ. Cập nhật thêm các flow phụ `record_clip`, `reset_rec_settings` (dùng "Đưa các chế độ quay về mặc định"), `set_mark_mode` (Hướng dẫn + Tự động/Bấm tay; `CORNER` bỏ qua), `set_marker_hold_max/min`.
+- Bấm tab Quay bằng mẫu `'Quay\sTab.*'`, vì "Quay.*" khớp nhầm nút "Quay thường".
+- Sửa `g1_no_bar`, `s1_icon_audit`, `store_vi`, `store_en`, `ios_smoke` và các flow `ux_*` (nút "Bắt đầu quay").
+- Bỏ các flow chỉ kiểm giao diện đã bỏ: `clean_auto_touches`, `e15_touch_settings`, `g2c_exit_delay`, `g2d_marker_preview_sticky`, `g2e_hold_stay`, `settings_layout`, `ux_simple_flow`, cùng script `ux_flow.ps1`.
+
+### Hồi quy sau Phần B (S25, 01/11/2026)
+- 19 flow (`run_flows18.ps1`, `test-results/flows18_modes`): **19/19 PASS**.
+  - Gồm 18 flow chính và `store_video_a`.
+  - Có cả 4 flow trước đây còn FAIL: e2_overlays, e3_motion, store_pro, store_video_b.
+- Lượt đầu bị dừng giữa chừng vì lỗi kịch bản do mình sửa: chờ chữ "Quay" / bấm "Cài đặt" khớp chính xác, trong khi nhãn tab thật có hậu tố "Tab 1 trong tổng số 3". Đã sửa, rồi chạy lại toàn bộ.
+- Phần A chạy lại trên giao diện mới (`ux_mark_timing.sh`, flow chọn "Tự động sau khi quay" bằng giao diện): PASS, 6 dấu, "never two full marks: PASS".
+- Cài đặt của app trên S25 đã trả về đúng bản sao lưu trước khi chạy (`test-results/prefs_backup_flows18_modes.xml`, so `cmp` giống hệt). Video thử để lại trên máy, không xoá.
+

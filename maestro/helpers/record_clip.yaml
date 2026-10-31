@@ -23,6 +23,15 @@ tags:
 - launchApp:
     appId: com.huluca.escreenrecorder
     stopApp: false
+# After a recording the app shows what came out (Export now / Edit more / Record again): go back to
+# the recorder, the flows go on from its tabs.
 - extendedWaitUntil:
-    visible: "Đã lưu ESR_.*"
+    visible: "Đã lưu ESR_.*|Quay xong rồi"
     timeout: 25000
+- runFlow:
+    when:
+      visible:
+        id: "result_back"
+    commands:
+      - tapOn:
+          id: "result_back"

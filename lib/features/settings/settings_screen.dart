@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/settings_store.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
-import '../marker/marker_settings_screen.dart';
+import '../purpose/purpose.dart';
 import '../onboarding/onboarding_screen.dart';
 import 'about_screens.dart';
 import 'permissions_panel.dart';
@@ -47,23 +47,18 @@ class SettingsScreen extends ConsumerWidget {
           sub: t.settingsGroupRecordSub,
         ),
         Semantics(
-          identifier: 'settings_markers',
+          identifier: 'settings_reset_modes',
           child: ListTile(
-            key: const ValueKey('settings_markers'),
+            key: const ValueKey('settings_reset_modes'),
             contentPadding: EdgeInsets.zero,
             minVerticalPadding: Space.md,
-            leading: Icon(Icons.ads_click, color: c.primary),
-            title: Text(t.settingsMarkers, style: tt.titleMedium),
+            leading: Icon(Icons.restart_alt, color: c.primary),
+            title: Text(t.settingsResetModes, style: tt.titleMedium),
             subtitle: Text(
-              t.settingsMarkersSub,
+              t.settingsResetModesSub,
               style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
             ),
-            trailing: Icon(Icons.chevron_right, color: c.onSurfaceVariant),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const MarkerSettingsScreen(),
-              ),
-            ),
+            onTap: () => _resetModes(context, ref),
           ),
         ),
         _SettingsTile(
@@ -103,6 +98,36 @@ class SettingsScreen extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// Asks first: every purpose's settings go back to the first ones.
+Future<void> _resetModes(BuildContext context, WidgetRef ref) async {
+  final t = AppL10n.of(context);
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      content: Text(t.resetModesConfirm),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: Text(t.cancel),
+        ),
+        Semantics(
+          identifier: 'reset_modes_ok',
+          child: FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(t.resetModesAction),
+          ),
+        ),
+      ],
+    ),
+  );
+  if (ok != true) return;
+  await ref.read(purposeProvider.notifier).resetAll();
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(t.resetModesDone)),
+  );
 }
 
 class _SettingsTile extends StatelessWidget {

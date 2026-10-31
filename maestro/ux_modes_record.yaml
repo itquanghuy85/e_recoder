@@ -1,0 +1,134 @@
+appId: com.huluca.escreenrecorder
+name: Recording modes - each purpose keeps its own settings, and a recording uses the chosen purpose's
+tags:
+  - p1
+  - module-ux
+---
+# scripts/qa/ux_modes_record.sh backs the settings up, runs this, reads the saved copies and measures the two
+# recordings (game: full size at 60 fps; tutorial: 720p at 30 fps), then puts the settings back.
+- launchApp:
+    stopApp: true
+- runFlow:
+    when:
+      visible: "Bỏ qua"
+    commands:
+      - tapOn: "Bỏ qua"
+- extendedWaitUntil:
+    visible:
+      id: "purpose_tutorial"
+    timeout: 20000
+# The old controls are gone: no settings card, no "Advanced", no "Change purpose".
+- assertNotVisible: "Nâng cao"
+- assertNotVisible: "Đổi mục đích.*"
+- assertNotVisible:
+    id: "profile_card"
+# Tutorial: marks added after recording, 720p.
+- tapOn:
+    id: "purpose_tutorial"
+- tapOn:
+    id: "quick_marks_auto"
+- tapOn:
+    id: "quick_res_p720"
+- assertVisible:
+    id: "quick_auto_zoom"
+- takeScreenshot: modes_1_tutorial
+# Game: other choices; full size and smooth.
+- tapOn:
+    id: "purpose_game"
+- assertVisible:
+    id: "quick_smooth"
+- assertNotVisible:
+    id: "quick_marks_auto"
+- tapOn:
+    id: "quick_res_native"
+- tapOn:
+    id: "quick_smooth"
+- takeScreenshot: modes_2_game
+# Plain: only the basics.
+- tapOn:
+    id: "purpose_plain"
+- assertNotVisible:
+    id: "quick_smooth"
+- assertNotVisible:
+    id: "quick_marks_auto"
+- takeScreenshot: modes_3_plain
+# Back to tutorial: still 720p (the chip state is not readable by id: checked on the screenshots and in
+# the saved copies by the script).
+- tapOn:
+    id: "purpose_tutorial"
+- takeScreenshot: modes_3b_tutorial_again
+# The app closed and opened again remembers the purpose and its settings.
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible:
+      id: "quick_res_p720"
+    timeout: 20000
+- takeScreenshot: modes_3c_after_restart
+- assertVisible:
+    id: "quick_auto_zoom"
+- scrollUntilVisible:
+    element:
+      id: "record_more"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "record_more"
+- scrollUntilVisible:
+    element:
+      id: "more_hold"
+    direction: DOWN
+    timeout: 15000
+- assertVisible:
+    id: "quick_mark_number"
+- takeScreenshot: modes_4_tutorial_more
+- tapOn:
+    id: "record_more"
+- scrollUntilVisible:
+    element:
+      id: "purpose_game"
+    direction: UP
+    timeout: 15000
+# A game recording (about 4 s).
+- tapOn:
+    id: "purpose_game"
+- takeScreenshot: modes_3d_game_again
+- runFlow: helpers/start_recording.yaml
+# Recording starts with the app moved out of the way (by design): let it run, then come back to stop.
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 6000
+    optional: true
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Dừng quay"
+    timeout: 15000
+- tapOn: "Dừng quay"
+- runFlow: helpers/after_stop.yaml
+# A tutorial recording (about 4 s).
+- tapOn:
+    id: "purpose_tutorial"
+- runFlow: helpers/start_recording.yaml
+# Recording starts with the app moved out of the way (by design): let it run, then come back to stop.
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 6000
+    optional: true
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Dừng quay"
+    timeout: 15000
+- tapOn: "Dừng quay"
+- runFlow: helpers/after_stop.yaml
+# Settings: no marker page any more; the reset of the modes is there.
+- tapOn:
+    text: "Cài đặt.*"
+- assertNotVisible:
+    id: "settings_markers"
+- assertVisible:
+    id: "settings_reset_modes"
+- takeScreenshot: modes_5_settings

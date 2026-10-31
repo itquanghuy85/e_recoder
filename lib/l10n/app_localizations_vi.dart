@@ -1770,7 +1770,7 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get settingsGroupRecordSub =>
-      'Cách đánh dấu khi quay, tự động dựng và các quyền cần để quay';
+      'Quyền cần để quay và cài đặt của các chế độ quay';
 
   @override
   String get settingsGroupHelpSub =>
@@ -1969,4 +1969,47 @@ class AppL10nVi extends AppL10n {
   @override
   String get editorModeHintAdvanced =>
       'Hiện đủ công cụ. Về Cơ bản vẫn giữ mọi thứ đã làm.';
+
+  @override
+  String get modeTutorial => 'Hướng dẫn';
+
+  @override
+  String get modeGame => 'Game';
+
+  @override
+  String get modePlain => 'Quay thường';
+
+  @override
+  String get moreOptions => 'Thêm tuỳ chọn';
+
+  @override
+  String get markWhenTitle => 'Dấu bấm';
+
+  @override
+  String get markWhenAuto => 'Tự động sau khi quay';
+
+  @override
+  String get markWhenLive => 'Bấm tay khi quay';
+
+  @override
+  String get markWhenNone => 'Không dấu';
+
+  @override
+  String get optSmooth => 'Mượt (60 hình/giây)';
+
+  @override
+  String get settingsResetModes => 'Đưa các chế độ quay về mặc định';
+
+  @override
+  String get settingsResetModesSub =>
+      'Cài đặt của Hướng dẫn, Game và Quay thường trở về ban đầu';
+
+  @override
+  String get resetModesConfirm => 'Đưa cả ba chế độ quay về cài đặt ban đầu?';
+
+  @override
+  String get resetModesAction => 'Đưa về mặc định';
+
+  @override
+  String get resetModesDone => 'Đã đưa các chế độ quay về mặc định';
 }

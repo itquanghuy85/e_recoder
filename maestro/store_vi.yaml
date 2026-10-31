@@ -10,28 +10,24 @@ tags:
 - tapOn:
     text: "Quay.*"
 - takeScreenshot: store/vi_01_record
-# Marker settings: the water-style markers and the two ways to mark.
+# Each purpose's own options on the Record tab: the tutorial ones, then More options.
 - tapOn:
-    text: "Cài đặt.*"
+    id: "purpose_tutorial"
 - tapOn:
-    id: "settings_markers"
-- tapOn: "Chạm"
-- waitForAnimationToEnd:
-    timeout: 900
+    id: "quick_marks_auto"
 - takeScreenshot: store/vi_02_markers
 - scrollUntilVisible:
     element:
-      id: "corner_2"
+      id: "record_more"
     direction: DOWN
-    timeout: 20000
+    timeout: 15000
+- tapOn:
+    id: "record_more"
+- waitForAnimationToEnd:
+    timeout: 900
 - takeScreenshot: store/vi_03_modes
-- scrollUntilVisible:
-    element:
-      text: "Ngón tay"
-    direction: UP
-    timeout: 20000
-- tapOn: "Ngón tay"
-- back
+- tapOn:
+    id: "record_more"
 # Clean recording with three hidden-corner markers.
 - runFlow:
     file: helpers/set_mark_mode.yaml
@@ -64,9 +60,7 @@ tags:
     appId: com.huluca.escreenrecorder
     stopApp: false
 - tapOn: "Dừng quay"
-- extendedWaitUntil:
-    visible: "Đã lưu ESR_.*"
-    timeout: 25000
+- runFlow: helpers/after_stop.yaml
 - tapOn:
     text: "Thư viện.*"
 # Maestro turns accessibility on, which keeps snackbars up: swipe it away.
@@ -145,9 +139,7 @@ tags:
 - launchApp:
     appId: com.huluca.escreenrecorder
     stopApp: false
-- extendedWaitUntil:
-    visible: "Đã lưu ESR_.*"
-    timeout: 25000
+- runFlow: helpers/after_stop.yaml
 # Dark theme.
 - tapOn:
     text: "Cài đặt.*"

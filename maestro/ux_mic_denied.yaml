@@ -18,7 +18,7 @@ tags:
       visible: "Bỏ qua"
     commands:
       - tapOn: "Bỏ qua"
-- tapOn: "Quay hướng dẫn tự động"
+- tapOn: "Bắt đầu quay"
 - extendedWaitUntil:
     visible: "Sẵn sàng quay chưa."
     timeout: 10000

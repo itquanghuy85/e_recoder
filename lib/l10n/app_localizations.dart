@@ -3376,7 +3376,7 @@ abstract class AppL10n {
   /// No description provided for @settingsGroupRecordSub.
   ///
   /// In vi, this message translates to:
-  /// **'Cách đánh dấu khi quay, tự động dựng và các quyền cần để quay'**
+  /// **'Quyền cần để quay và cài đặt của các chế độ quay'**
   String get settingsGroupRecordSub;
 
   /// No description provided for @settingsGroupHelpSub.
@@ -3732,6 +3732,90 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Hiện đủ công cụ. Về Cơ bản vẫn giữ mọi thứ đã làm.'**
   String get editorModeHintAdvanced;
+
+  /// No description provided for @modeTutorial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn'**
+  String get modeTutorial;
+
+  /// No description provided for @modeGame.
+  ///
+  /// In vi, this message translates to:
+  /// **'Game'**
+  String get modeGame;
+
+  /// No description provided for @modePlain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay thường'**
+  String get modePlain;
+
+  /// No description provided for @moreOptions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm tuỳ chọn'**
+  String get moreOptions;
+
+  /// No description provided for @markWhenTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu bấm'**
+  String get markWhenTitle;
+
+  /// No description provided for @markWhenAuto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động sau khi quay'**
+  String get markWhenAuto;
+
+  /// No description provided for @markWhenLive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm tay khi quay'**
+  String get markWhenLive;
+
+  /// No description provided for @markWhenNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không dấu'**
+  String get markWhenNone;
+
+  /// No description provided for @optSmooth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mượt (60 hình/giây)'**
+  String get optSmooth;
+
+  /// No description provided for @settingsResetModes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa các chế độ quay về mặc định'**
+  String get settingsResetModes;
+
+  /// No description provided for @settingsResetModesSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt của Hướng dẫn, Game và Quay thường trở về ban đầu'**
+  String get settingsResetModesSub;
+
+  /// No description provided for @resetModesConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa cả ba chế độ quay về cài đặt ban đầu?'**
+  String get resetModesConfirm;
+
+  /// No description provided for @resetModesAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa về mặc định'**
+  String get resetModesAction;
+
+  /// No description provided for @resetModesDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đưa các chế độ quay về mặc định'**
+  String get resetModesDone;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

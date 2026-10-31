@@ -13,27 +13,24 @@ tags:
 - waitForAnimationToEnd:
     timeout: 1200
 - takeScreenshot: store/en_01_record
+# Each purpose's own options on the Record tab: the tutorial ones, then More options.
 - tapOn:
-    text: "Settings.*"
+    id: "purpose_tutorial"
 - tapOn:
-    id: "settings_markers"
-- tapOn: "Tap"
-- waitForAnimationToEnd:
-    timeout: 900
+    id: "quick_marks_auto"
 - takeScreenshot: store/en_02_markers
 - scrollUntilVisible:
     element:
-      id: "corner_2"
+      id: "record_more"
     direction: DOWN
-    timeout: 20000
+    timeout: 15000
+- tapOn:
+    id: "record_more"
+- waitForAnimationToEnd:
+    timeout: 900
 - takeScreenshot: store/en_03_modes
-- scrollUntilVisible:
-    element:
-      text: "Finger"
-    direction: UP
-    timeout: 20000
-- tapOn: "Finger"
-- back
+- tapOn:
+    id: "record_more"
 - tapOn:
     text: "Library.*"
 - waitForAnimationToEnd:

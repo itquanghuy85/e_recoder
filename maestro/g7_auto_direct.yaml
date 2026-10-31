@@ -38,9 +38,7 @@ tags:
     appId: com.huluca.escreenrecorder
     stopApp: false
 - tapOn: "Dừng quay"
-- extendedWaitUntil:
-    visible: "Đã lưu ESR_.*"
-    timeout: 25000
+- runFlow: helpers/after_stop.yaml
 - tapOn:
     text: "Thư viện.*"
 - tapOn:

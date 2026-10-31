@@ -12,13 +12,11 @@ import '../library/media_repository.dart';
 import '../marker/marker_settings.dart';
 import '../purpose/purpose.dart';
 import '../purpose/quick_options.dart';
-import '../purpose/purpose_screen.dart';
 import '../purpose/ready_check_screen.dart';
 import '../purpose/result_screen.dart';
 import '../library/media_tile.dart';
 import '../library/player_screen.dart';
 import 'rec_settings.dart';
-import 'rec_settings_sheet.dart';
 import 'recorder_controller.dart';
 import 'tally_rim.dart';
 
@@ -33,23 +31,21 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   Future<void> _start() async {
     final t = AppL10n.of(context);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    // With a purpose chosen, a missing permission is explained on its own screen before recording
-    // starts, instead of failing after the tap.
-    if (ref.read(purposeProvider) != null) {
-      final rec = ref.read(recSettingsProvider);
-      final needs = ReadyNeeds(
-        mic: rec.mic || rec.system,
-        overlay: rec.floatingBar || rec.countdown > 0,
+    // A missing permission is explained on its own screen before recording starts, instead of failing
+    // after the tap.
+    final rec = ref.read(recSettingsProvider);
+    final needs = ReadyNeeds(
+      mic: rec.mic || rec.system,
+      overlay: rec.floatingBar || rec.countdown > 0,
+    );
+    if (await ReadyCheckScreen.missingAnything(ref, needs)) {
+      if (!mounted) return;
+      final go = await Navigator.of(context).push<bool>(
+        MaterialPageRoute<bool>(
+          builder: (_) => ReadyCheckScreen(needs: needs),
+        ),
       );
-      if (await ReadyCheckScreen.missingAnything(ref, needs)) {
-        if (!mounted) return;
-        final go = await Navigator.of(context).push<bool>(
-          MaterialPageRoute<bool>(
-            builder: (_) => ReadyCheckScreen(needs: needs),
-          ),
-        );
-        if (go != true || !mounted) return;
-      }
+      if (go != true || !mounted) return;
     }
     final r = await ref.read(recorderProvider.notifier).start();
     if (!mounted) return;
@@ -109,17 +105,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       final n = next.notice;
       if (n == null) return;
       switch (n) {
-        case SavedNotice() when ref.read(purposeProvider) != null:
-          // A purpose was chosen: show what came out, with Export now / Edit more / Record again.
-          _openSaved(n.uri, result: true);
         case SavedNotice():
-          _snack(
-            t.savedSnack(n.name),
-            action: SnackBarAction(
-              label: t.actionView,
-              onPressed: () => _openSaved(n.uri),
-            ),
-          );
+          // Show what came out, with Export now / Edit more / Record again.
+          _openSaved(n.uri, result: true);
         case ErrorNotice():
           _snack(switch (n.code) {
             'low_storage' => t.errLowStorage,
@@ -154,200 +142,105 @@ class _IdleView extends ConsumerWidget {
     final t = AppL10n.of(context);
     final tt = Theme.of(context).textTheme;
     final c = Theme.of(context).colorScheme;
-    final s = ref.watch(recSettingsProvider);
     final list = ref.watch(mediaListProvider);
     final purpose = ref.watch(purposeProvider);
-    final summary = t.profileSummary(
-      resolutionLabel(t, s.resolution),
-      s.fps,
-      qualityLabel(t, s.quality),
-    );
 
-    final profileCard = Semantics(
-      identifier: 'profile_card',
-      button: true,
-      label: t.profileEdit,
-      child: InkWell(
-        key: const ValueKey('profile_card'),
-        borderRadius: BorderRadius.circular(Radii.md),
-        onTap: () => showRecSettingsSheet(context),
-        child: Ink(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Space.lg,
-            vertical: Space.md,
-          ),
-          decoration: BoxDecoration(
-            border: Border.all(color: c.outlineVariant),
-            borderRadius: BorderRadius.circular(Radii.md),
-            color: c.surfaceContainerLow,
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.tune, color: c.onSurfaceVariant),
-              const SizedBox(width: Space.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(summary, style: tt.titleSmall),
-                    const SizedBox(height: Space.xs),
-                    Text(
-                      audioLabel(t, s.audio),
-                      style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.expand_less, color: c.onSurfaceVariant),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    // Scrolls when the content does not fit (very large system fonts, small screens); otherwise the
-    // spacer keeps the profile card and the record button at the bottom, in the thumb zone.
-    return LayoutBuilder(
-      builder: (context, box) => SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          Space.lg,
-          Space.lg,
-          Space.lg,
-          Space.xl,
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: box.maxHeight - Space.lg - Space.xl,
-          ),
-          child: IntrinsicHeight(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(t.appTitle, style: tt.headlineSmall),
-                if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-                  const SizedBox(height: Space.sm),
-                  Semantics(
-                    identifier: 'ios_notice',
-                    child: Text(t.iosNoRecording, style: tt.bodyMedium),
-                  ),
-                ],
-                const SizedBox(height: Space.xl),
-                Row(
-                  children: [
-                    Expanded(child: Text(t.recentTitle, style: tt.titleMedium)),
-                    TextButton(
-                      onPressed: () =>
-                          ref.read(shellIndexProvider.notifier).go(1),
-                      child: Text(t.seeAll),
-                    ),
-                  ],
-                ),
-                list.when(
-                  data: (items) => items.isEmpty
-                      ? Align(
-                          alignment: Alignment.topLeft,
-                          child: Text(
-                            t.libraryEmptyBody,
-                            style: tt.bodyMedium?.copyWith(
-                              color: c.onSurfaceVariant,
-                            ),
-                          ),
-                        )
-                      : Column(
-                          children: [
-                            for (final e in items.take(purpose == null ? 3 : 1))
-                              MediaTile(
-                                entry: e,
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => PlayerScreen(entry: e),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, _) => const SizedBox.shrink(),
-                ),
-                const Spacer(),
-                const SizedBox(height: Space.lg),
-                if (purpose == null) ...[
-                  // Not chosen yet (the app was already in use): the old screen, plus an offer.
-                  _PurposeOffer(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const PurposeScreen(),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(Space.lg, Space.lg, Space.lg, Space.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(t.appTitle, style: tt.headlineSmall),
+          if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+            const SizedBox(height: Space.sm),
+            Semantics(
+              identifier: 'ios_notice',
+              child: Text(t.iosNoRecording, style: tt.bodyMedium),
+            ),
+          ],
+          const SizedBox(height: Space.lg),
+          // One tap changes the purpose; each purpose keeps its own settings (see PurposeNotifier).
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<Purpose>(
+              key: const ValueKey('purpose_selector'),
+              showSelectedIcon: false,
+              segments: [
+                for (final p in Purpose.values)
+                  ButtonSegment(
+                    value: p,
+                    label: Semantics(
+                      identifier: 'purpose_${p.name}',
+                      child: Text(
+                        switch (p) {
+                          Purpose.tutorial => t.modeTutorial,
+                          Purpose.game => t.modeGame,
+                          Purpose.plain => t.modePlain,
+                        },
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
-                  const SizedBox(height: Space.md),
-                  profileCard,
-                ],
-                const SizedBox(height: Space.lg),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    key: const ValueKey('record_start'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: c.primary,
-                      foregroundColor: c.onPrimary,
-                      minimumSize: Size(
-                        purpose == null ? 240 : double.infinity,
-                        purpose == null ? 64 : 92,
-                      ),
-                      textStyle: purpose == null
-                          ? tt.titleMedium
-                          : tt.titleLarge,
-                    ),
-                    onPressed: onStart,
-                    icon: const Icon(Icons.fiber_manual_record),
-                    label: Text(switch (purpose) {
-                      Purpose.tutorial => t.recordTutorial,
-                      Purpose.game => t.recordGame,
-                      Purpose.plain => t.recordPlain,
-                      null => t.recordStart,
-                    }),
-                  ),
-                ),
-                if (purpose != null) ...[
-                  const SizedBox(height: Space.md),
-                  QuickOptions(purpose: purpose),
-                  const SizedBox(height: Space.md),
-                  // Everything else lives here, folded away, for the people who want it.
-                  Semantics(
-                    identifier: 'record_advanced',
-                    child: Theme(
-                      data: Theme.of(context)
-                          .copyWith(dividerColor: Colors.transparent),
-                      child: ExpansionTile(
-                        key: const ValueKey('record_advanced'),
-                        tilePadding: EdgeInsets.zero,
-                        title: Text(t.advancedTitle, style: tt.titleSmall),
-                        children: [
-                          profileCard,
-                          const SizedBox(height: Space.sm),
-                          ListTile(
-                            key: const ValueKey('change_purpose'),
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(Icons.swap_horiz),
-                            title: Text(
-                              t.advancedPurpose(_purposeName(t, purpose)),
-                            ),
-                            onTap: () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (_) => const PurposeScreen(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
               ],
+              selected: {purpose},
+              onSelectionChanged: (v) =>
+                  ref.read(purposeProvider.notifier).choose(v.first),
             ),
           ),
-        ),
+          const SizedBox(height: Space.md),
+          QuickOptions(purpose: purpose),
+          const SizedBox(height: Space.lg),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              key: const ValueKey('record_start'),
+              style: FilledButton.styleFrom(
+                backgroundColor: c.primary,
+                foregroundColor: c.onPrimary,
+                minimumSize: const Size(double.infinity, 84),
+                textStyle: tt.titleLarge,
+              ),
+              onPressed: onStart,
+              icon: const Icon(Icons.fiber_manual_record),
+              label: Text(t.recordStart),
+            ),
+          ),
+          const SizedBox(height: Space.sm),
+          MoreOptions(purpose: purpose),
+          const SizedBox(height: Space.md),
+          Row(
+            children: [
+              Expanded(child: Text(t.recentTitle, style: tt.titleMedium)),
+              TextButton(
+                onPressed: () => ref.read(shellIndexProvider.notifier).go(1),
+                child: Text(t.seeAll),
+              ),
+            ],
+          ),
+          list.when(
+            data: (items) => items.isEmpty
+                ? Text(
+                    t.libraryEmptyBody,
+                    style: tt.bodyMedium?.copyWith(color: c.onSurfaceVariant),
+                  )
+                : Column(
+                    children: [
+                      for (final e in items.take(1))
+                        MediaTile(
+                          entry: e,
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => PlayerScreen(entry: e),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }
@@ -445,66 +338,6 @@ class _LiveView extends ConsumerWidget {
             OutlinedButton(onPressed: ctl.stop, child: Text(t.cancel)),
           const SizedBox(height: Space.lg),
         ],
-      ),
-    );
-  }
-}
-
-String _purposeName(AppL10n t, Purpose p) => switch (p) {
-  Purpose.tutorial => t.purposeTutorial,
-  Purpose.game => t.purposeGame,
-  Purpose.plain => t.purposePlain,
-};
-
-/// A card that offers the purpose question to someone who was using the app before it existed.
-class _PurposeOffer extends StatelessWidget {
-  const _PurposeOffer({required this.onTap});
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = AppL10n.of(context);
-    final tt = Theme.of(context).textTheme;
-    final c = Theme.of(context).colorScheme;
-    return Semantics(
-      identifier: 'purpose_offer',
-      button: true,
-      child: InkWell(
-        key: const ValueKey('purpose_offer'),
-        borderRadius: BorderRadius.circular(Radii.md),
-        onTap: onTap,
-        child: Ink(
-          padding: const EdgeInsets.all(Space.md),
-          decoration: BoxDecoration(
-            color: c.secondaryContainer,
-            borderRadius: BorderRadius.circular(Radii.md),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.auto_awesome, color: c.onSecondaryContainer),
-              const SizedBox(width: Space.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      t.purposeOffer,
-                      style: tt.titleSmall?.copyWith(
-                        color: c.onSecondaryContainer,
-                      ),
-                    ),
-                    Text(
-                      t.purposeOfferSub,
-                      style: tt.bodySmall?.copyWith(
-                        color: c.onSecondaryContainer,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -65,7 +65,7 @@ void main() {
     });
   });
 
-  testWidgets('first run: the choice is saved, applied and not asked again', (
+  testWidgets('first run: tutorial is picked and its settings applied', (
     tester,
   ) async {
     _phone(tester);
@@ -74,12 +74,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
     await tester.tap(find.text('Bỏ qua'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Làm video hướng dẫn'));
-    await tester.pumpAndSettle();
     final c = ProviderScope.containerOf(
       tester.element(find.byType(Scaffold).first),
     );
     expect(c.read(purposeProvider), Purpose.tutorial);
+    expect(c.read(settingsStoreProvider).getInt('purpose', -1), 0);
     expect(c.read(markerSettingsProvider).mode, MarkMode.clean);
     expect(c.read(markerSettingsProvider).touchSource, TouchSource.auto);
     expect(find.text('Bạn muốn làm gì?'), findsNothing);
@@ -96,84 +95,190 @@ void main() {
   });
 
   group('the recorder screen', () {
-    Future<void> open(WidgetTester tester, Map<String, Object> prefs) async {
+    Future<ProviderContainer> open(
+      WidgetTester tester,
+      Map<String, Object> prefs,
+    ) async {
       _phone(tester);
       final (:app, fake: _) = await buildTestApp(prefs: prefs);
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();
+      return ProviderScope.containerOf(
+        tester.element(find.byType(Scaffold).first),
+      );
     }
 
-    for (final (p, label) in [
-      (Purpose.tutorial, 'Quay hướng dẫn tự động'),
-      (Purpose.game, 'Quay game'),
-      (Purpose.plain, 'Quay video'),
-    ]) {
-      testWidgets('one big button says what it does for ${p.name}', (
+    Future<void> tapId(WidgetTester tester, String id) async {
+      await tester.ensureVisible(find.byKey(ValueKey(id)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(ValueKey(id)));
+      await tester.pumpAndSettle();
+    }
+
+    // The purpose buttons are at the top, the "More options" fold near the bottom.
+    Future<void> tapText(WidgetTester tester, String label) async {
+      await tester.ensureVisible(find.text(label));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
+
+    for (final p in Purpose.values) {
+      testWidgets('one big "Start recording" button for ${p.name}', (
         tester,
       ) async {
         await open(tester, {'purpose': p.index});
-        expect(find.text(label), findsOneWidget);
-        expect(find.text('Bắt đầu quay'), findsNothing);
+        expect(find.text('Bắt đầu quay'), findsOneWidget);
         final size = tester.getSize(find.byKey(const ValueKey('record_start')));
-        expect(size.height, greaterThanOrEqualTo(88));
+        expect(size.height, greaterThanOrEqualTo(80));
         expect(size.width, greaterThan(300)); // the whole row
+        // the purpose is picked on top, nothing is left of the old screen
+        expect(find.byKey(const ValueKey('purpose_selector')), findsOneWidget);
+        expect(find.byKey(const ValueKey('profile_card')), findsNothing);
+        expect(find.byKey(const ValueKey('change_purpose')), findsNothing);
+        expect(find.text('Nâng cao'), findsNothing);
+        expect(find.text('Thêm tuỳ chọn'), findsOneWidget);
       });
     }
 
     testWidgets('quick options: a tick is saved at once', (tester) async {
-      await open(tester, {'purpose': Purpose.tutorial.index});
-      final c = ProviderScope.containerOf(
-        tester.element(find.byType(Scaffold).first),
-      );
+      final c = await open(tester, {'purpose': Purpose.tutorial.index});
       expect(c.read(recSettingsProvider).audio, AudioMode.mic);
-      await tester.ensureVisible(find.byKey(const ValueKey('quick_system')));
-      await tester.tap(find.byKey(const ValueKey('quick_system')));
-      await tester.pumpAndSettle();
+      await tapId(tester, 'quick_system');
       expect(c.read(recSettingsProvider).audio, AudioMode.both);
-      await tester.tap(find.byKey(const ValueKey('quick_mic')));
-      await tester.pumpAndSettle();
+      await tapId(tester, 'quick_mic');
       expect(c.read(recSettingsProvider).audio, AudioMode.system);
-      await tester.ensureVisible(find.byKey(const ValueKey('quick_auto_zoom')));
-      await tester.tap(find.byKey(const ValueKey('quick_auto_zoom')));
-      await tester.pumpAndSettle();
+      await tapId(tester, 'quick_marks_auto');
+      expect(c.read(markerSettingsProvider).mode, MarkMode.clean);
+      expect(c.read(markerSettingsProvider).touchSource, TouchSource.auto);
+      await tapId(tester, 'quick_auto_zoom');
       expect(c.read(markerSettingsProvider).autoZoom, isFalse);
       // what was saved is what the next launch reads
       final s = c.read(settingsStoreProvider);
       expect(s.getInt('rec.audio', -1), AudioMode.system.index);
     });
 
-    testWidgets('the old controls are folded into Advanced', (tester) async {
-      await open(tester, {'purpose': Purpose.tutorial.index});
-      expect(find.text('Nâng cao'), findsOneWidget);
-      expect(find.byKey(const ValueKey('profile_card')), findsNothing);
-      await tester.ensureVisible(find.text('Nâng cao'));
-      await tester.tap(find.text('Nâng cao'));
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('profile_card')), findsOneWidget);
-      // and the choice can be changed from there
-      await tester.ensureVisible(find.byKey(const ValueKey('change_purpose')));
-      await tester.tap(find.byKey(const ValueKey('change_purpose')));
-      await tester.pumpAndSettle();
-      expect(find.text('Bạn muốn làm gì?'), findsOneWidget);
-      await tester.tap(find.text('Quay game'));
-      await tester.pumpAndSettle();
-      expect(find.text('Bạn muốn làm gì?'), findsNothing);
-      expect(find.text('Quay game'), findsWidgets); // the big button now
-      final c = ProviderScope.containerOf(
-        tester.element(find.byType(Scaffold).first),
-      );
-      expect(c.read(purposeProvider), Purpose.game);
+    testWidgets('tap marks: automatic, by hand, or none', (tester) async {
+      final c = await open(tester, {'purpose': Purpose.tutorial.index});
+      await tapId(tester, 'quick_marks_live');
+      expect(c.read(markerSettingsProvider).mode, MarkMode.dot);
+      expect(find.byKey(const ValueKey('quick_auto_zoom')), findsNothing);
+      await tapId(tester, 'quick_marks_none');
+      expect(c.read(markerSettingsProvider).mode, MarkMode.clean);
+      expect(c.read(markerSettingsProvider).touchSource, TouchSource.off);
+      expect(find.byKey(const ValueKey('quick_auto_number')), findsNothing);
+      await tapId(tester, 'quick_marks_auto');
+      expect(c.read(markerSettingsProvider).touchSource, TouchSource.auto);
     });
 
-    testWidgets('the old way is untouched when no purpose was chosen', (
+    testWidgets('each purpose keeps its own settings', (tester) async {
+      final c = await open(tester, {'purpose': Purpose.tutorial.index});
+      await tapId(tester, 'quick_marks_auto');
+      await tapId(tester, 'quick_res_p720');
+      expect(c.read(recSettingsProvider).resolution, Resolution.p720);
+
+      // game, used for the first time: starts from what was in use, with its ready settings on top
+      await tapText(tester, 'Game');
+      expect(c.read(purposeProvider), Purpose.game);
+      expect(c.read(recSettingsProvider).resolution, Resolution.p720);
+      expect(c.read(markerSettingsProvider).mode, MarkMode.dot);
+      await tapId(tester, 'quick_res_native');
+      await tapId(tester, 'quick_smooth');
+      expect(c.read(recSettingsProvider).fps, 60);
+
+      // back to tutorial: its own settings, untouched by what was done in game
+      await tapText(tester, 'Hướng dẫn');
+      expect(c.read(recSettingsProvider).resolution, Resolution.p720);
+      expect(c.read(recSettingsProvider).fps, 30);
+      expect(c.read(markerSettingsProvider).mode, MarkMode.clean);
+      expect(c.read(markerSettingsProvider).touchSource, TouchSource.auto);
+
+      // and game again: what was picked there
+      await tapText(tester, 'Game');
+      expect(c.read(recSettingsProvider).resolution, Resolution.native);
+      expect(c.read(recSettingsProvider).fps, 60);
+
+      // all of it is saved: the choice, the settings in use, and a copy per purpose
+      final s = c.read(settingsStoreProvider);
+      expect(s.getInt('purpose', -1), Purpose.game.index);
+      expect(s.getInt('rec.resolution', -1), Resolution.native.index);
+      expect(s.getString(profileKey(Purpose.tutorial)), isNotNull);
+      expect(s.getString(profileKey(Purpose.game)), isNotNull);
+    });
+
+    testWidgets('someone who used the app before keeps their settings', (
       tester,
     ) async {
-      await open(tester, {});
-      expect(find.text('Bắt đầu quay'), findsOneWidget);
-      expect(find.byKey(const ValueKey('profile_card')), findsOneWidget);
-      expect(find.text('Nâng cao'), findsNothing);
-      // and the choice is offered
-      expect(find.byKey(const ValueKey('purpose_offer')), findsOneWidget);
+      // no purpose saved yet (the old screen), settings of their own
+      final c = await open(tester, {
+        'rec.resolution': Resolution.p720.index,
+        'rec.countdown': 5,
+        'marker.color': 3,
+      });
+      expect(c.read(purposeProvider), Purpose.tutorial);
+      expect(c.read(settingsStoreProvider).getInt('purpose', -1), 0);
+      expect(c.read(recSettingsProvider).resolution, Resolution.p720);
+      expect(c.read(recSettingsProvider).countdown, 5);
+      expect(c.read(markerSettingsProvider).colorIndex, 3);
+      expect(c.read(markerSettingsProvider).mode, MarkMode.clean);
+      // and every other purpose starts from them too
+      await tapText(tester, 'Quay thường');
+      expect(c.read(recSettingsProvider).resolution, Resolution.p720);
+      expect(c.read(recSettingsProvider).countdown, 5);
+      expect(c.read(markerSettingsProvider).colorIndex, 3);
+    });
+
+    testWidgets('more options belong to the purpose', (tester) async {
+      await open(tester, {
+        'purpose': Purpose.tutorial.index,
+        'marker.mode': MarkMode.clean.index,
+        'marker.touchSourceV2': TouchSource.auto.index,
+      });
+      await tapText(tester, 'Thêm tuỳ chọn');
+      expect(find.byKey(const ValueKey('quick_mark_number')), findsOneWidget);
+      expect(find.byKey(const ValueKey('more_hold')), findsOneWidget);
+      expect(find.byKey(const ValueKey('more_pause')), findsOneWidget);
+      expect(find.byKey(const ValueKey('more_countdown_3')), findsOneWidget);
+      expect(find.byKey(const ValueKey('more_floating')), findsNothing);
+
+      await tapText(tester, 'Game');
+      await tapText(tester, 'Thêm tuỳ chọn');
+      expect(find.byKey(const ValueKey('more_floating')), findsOneWidget);
+      expect(find.byKey(const ValueKey('quick_mark_number')), findsNothing);
+      expect(find.byKey(const ValueKey('more_hold')), findsNothing);
+    });
+
+    testWidgets('a change in More options is saved for that purpose', (
+      tester,
+    ) async {
+      final c = await open(tester, {'purpose': Purpose.plain.index});
+      await tapText(tester, 'Thêm tuỳ chọn');
+      await tapId(tester, 'more_countdown_0');
+      expect(c.read(recSettingsProvider).countdown, 0);
+      await tapText(tester, 'Hướng dẫn');
+      expect(c.read(recSettingsProvider).countdown, 0); // first use: starts from it
+      await tapText(tester, 'Thêm tuỳ chọn');
+      await tapId(tester, 'more_countdown_5');
+      expect(c.read(recSettingsProvider).countdown, 5);
+      await tapText(tester, 'Quay thường');
+      expect(c.read(recSettingsProvider).countdown, 0);
+    });
+
+    testWidgets('reset puts every purpose back to its first settings', (
+      tester,
+    ) async {
+      final c = await open(tester, {'purpose': Purpose.game.index});
+      await tapId(tester, 'quick_res_p720');
+      await tapId(tester, 'quick_smooth');
+      await c.read(purposeProvider.notifier).resetAll();
+      await tester.pumpAndSettle();
+      expect(c.read(purposeProvider), Purpose.game);
+      expect(c.read(recSettingsProvider).resolution, Resolution.p1080);
+      expect(c.read(recSettingsProvider).fps, 30);
+      expect(c.read(markerSettingsProvider).mode, MarkMode.dot); // game's ready settings
+      final s = c.read(settingsStoreProvider);
+      expect(s.getString(profileKey(Purpose.tutorial)), isNull);
+      expect(s.getString(profileKey(Purpose.plain)), isNull);
     });
   });
 
@@ -261,20 +366,6 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       expect(fake.calls, contains('start'));
     });
-
-    testWidgets('the old way keeps its old behaviour (no screen)', (
-      tester,
-    ) async {
-      _phone(tester);
-      final (:app, :fake) = await buildTestApp();
-      fake.overlayGranted = false;
-      await tester.pumpWidget(app);
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('record_start')));
-      await tester.pumpAndSettle();
-      expect(find.text('Sẵn sàng quay chưa?'), findsNothing);
-      expect(fake.calls, contains('requestOverlay')); // as before
-    });
   });
 
   group('after recording', () {
@@ -348,14 +439,6 @@ void main() {
       await tester.pumpAndSettle(const Duration(milliseconds: 100));
       expect(find.text('Quay xong rồi'), findsNothing);
       expect(find.byKey(const ValueKey('record_start')), findsOneWidget);
-    });
-
-    testWidgets('the old way still shows the snack bar with View', (
-      tester,
-    ) async {
-      await open(tester, {});
-      expect(find.text('Quay xong rồi'), findsNothing);
-      expect(find.text('Xem'), findsOneWidget);
     });
   });
 }

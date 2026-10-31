@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-11-01] Cài đặt theo từng chế độ quay
+- Màn Quay, từ trên xuống: thanh chọn chế độ `[Hướng dẫn | Game | Quay thường]` → lựa chọn chính của chế độ → nút "Bắt đầu quay" → "Thêm tuỳ chọn" (riêng theo chế độ).
+- Mỗi chế độ nhớ cài đặt riêng (`purpose.profile.<chế độ>`). Khoá cũ giữ nguyên tên; người dùng cũ giữ cài đặt và mặc định ở "Hướng dẫn".
+- Hướng dẫn có "Dấu bấm": Tự động sau khi quay / Bấm tay khi quay / Không dấu.
+- Bỏ: màn chọn mục đích lúc mới cài, trang Dấu trong Cài đặt, thẻ cài đặt / "Nâng cao" / "Đổi mục đích", thông báo "Đã lưu… Xem" (luôn mở màn kết quả).
+- Cài đặt thêm "Đưa các chế độ quay về mặc định".
+- Test: `purpose_test` viết lại; Flutter 394/394, analyze sạch. Maestro mới: `ux_modes_record` PASS (video Game 1440×3120, Hướng dẫn 720×1560). Hồi quy 19/19 flow PASS. Kịch bản cập nhật theo giao diện mới; 7 flow chỉ kiểm giao diện đã bỏ được xoá. Chi tiết: `docs/PLAN_CHE_DO_QUAY.md`.
+
 ## [2026-10-31] Dấu trong bản dựng tự động: không lan sang màn mới, mỗi lúc một dấu
 - `TouchScan.locate` (Kotlin) trả thêm `changeMs`: lúc màn hình đổi hẳn sau lần bấm (đổi từ 20% hình, dò tới lần bấm kế, tối đa 3 s). Có test `changedShare`.
 - `AutoDirector.tapHoldMs`: dấu mờ xong trước khi màn hình đổi và trước khi dấu kế hiện; dừng hình vẫn giữ dấu hiện đủ.

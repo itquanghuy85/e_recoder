@@ -129,3 +129,12 @@ Nguyên nhân chung: `dumpsys battery` báo pin **2%**, `USB powered: false`, `A
 - Giá trị lấy từ `test-results/prefs_backup_final.xml`: `<long name="flutter.purpose" value="0" />`.
 - Cách làm: dừng app, sao tệp prefs hiện tại ra `cache/` của app, thêm đúng dòng này, ghi lại. So với bản sao: **chỉ khác đúng một dòng thêm vào**, 31 khoá còn lại giữ nguyên.
 - Sự cố trong lúc làm: lần ghi đầu qua Git Bash bị đổi đường dẫn trên máy nên tệp prefs bị ghi rỗng. Đã ghi lại ngay từ bản đã chuẩn bị. App bị dừng suốt quá trình, không được mở khi tệp rỗng, nên không mất dữ liệu. Đã xoá bản sao tạm trong `cache/`. Không xoá video hay dữ liệu nào khác.
+
+### Kết quả cuối 18 flow (01/11/2026, sau khi S25 được sạc)
+Chạy toàn bộ `run_flows18.ps1` (`test-results/flows18_modes`) trên giao diện mới "cài đặt theo chế độ quay":
+- **19/19 PASS**, gồm cả e2_overlays, e3_motion, store_pro, store_video_a, store_video_b.
+- Kịch bản e2_overlays dùng `panel_find` cho phông chữ, khung chữ và hiệu ứng chữ.
+- Tổng 18 flow: **18 PASS · 0 FAIL · 0 BLOCKED**.
+
+Chi tiết: `docs/PLAN_CHE_DO_QUAY.md`.
+

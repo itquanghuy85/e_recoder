@@ -31,6 +31,19 @@ class SettingsStore {
   Future<void> remove(String key) => _prefs.remove(key);
   bool getBool(String key, bool fallback) => _prefs.getBool(key) ?? fallback;
   Future<void> setBool(String key, bool v) => _prefs.setBool(key, v);
+
+  /// The stored value of [key] as it is (int, bool, double or String), or null when not set.
+  Object? getRaw(String key) => _prefs.get(key);
+
+  /// Writes a value read with [getRaw]; null removes the key (the setting goes back to its default).
+  Future<void> setRaw(String key, Object? v) => switch (v) {
+    null => _prefs.remove(key),
+    final int i => _prefs.setInt(key, i),
+    final bool b => _prefs.setBool(key, b),
+    final double d => _prefs.setDouble(key, d),
+    final String s => _prefs.setString(key, s),
+    _ => Future<void>.value(),
+  };
 }
 
 final settingsStoreProvider = Provider<SettingsStore>(

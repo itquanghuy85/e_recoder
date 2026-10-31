@@ -136,4 +136,11 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - Báo cáo: `docs/NGHIEM_THU_2026-10-31.md`.
 - Lượt QA cuối: giết app trong lúc quay `scripts/qa/ux_kill_recording.ps1`. `helpers/panel_find.yaml` (env `ID`) vuốt trong bảng công cụ đến khi thấy điều khiển: bảng mở ở đầu mỗi khi đổi công cụ. `run_flows18.ps1` tự đánh thức màn hình, tự đặt/khôi phục tiếng Anh cho store_en và chạy store_video_a trước store_video_b. Editor mở từ màn phát: lùi một lần về màn phát, lùi tiếp về màn chính.
 - Thời gian hiện dấu (quay sạch): `bash scripts/qa/ux_mark_timing.sh` (máy tính Samsung). Script tự đặt `marker.mode = 1` rồi trả giá trị cũ, đọc dự án bằng `scripts/qa/marks_timing.py` (kiểm "never two full marks") và ghép khung hình quanh dấu cuối vào `test-results/ux_mark_timing/last_mark_frames.png`.
+- Từ 01/11/2026 (cài đặt theo chế độ quay): không còn "đường cũ".
+  - Sau khi dừng quay, app luôn mở màn kết quả. Các flow dùng `helpers/after_stop.yaml` (chờ rồi bấm "Quay lại").
+  - Bấm tab Quay bằng `'Quay\sTab.*'` (nháy đơn): "Quay.*" khớp nhầm nút "Quay thường".
+  - Mục "Thêm tuỳ chọn" tìm theo id `record_more`. Trạng thái "đang chọn" của chip không đọc được theo id; kiểm bằng ảnh hoặc bằng cài đặt đã lưu.
+  - Bắt đầu quay thì app tự lùi xuống nền: muốn bấm "Dừng quay" trong app phải `launchApp` lại.
+  - Nghiệm thu chế độ: `bash scripts/qa/ux_modes_record.sh` (tự sao lưu và trả cài đặt, đo hai video bằng ffprobe).
+  - `run_flows18.ps1` không cần bỏ khoá `purpose` nữa.
 

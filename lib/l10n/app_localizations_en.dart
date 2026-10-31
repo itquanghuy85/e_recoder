@@ -1775,7 +1775,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get settingsGroupRecordSub =>
-      'How you mark while recording, automatic editing, and the permissions recording needs';
+      'Permissions for recording and the recording modes';
 
   @override
   String get settingsGroupHelpSub => 'The guide, privacy, and app information';
@@ -1974,4 +1974,48 @@ class AppL10nEn extends AppL10n {
   @override
   String get editorModeHintAdvanced =>
       'All tools shown. Back to Basic keeps everything you made.';
+
+  @override
+  String get modeTutorial => 'Tutorial';
+
+  @override
+  String get modeGame => 'Game';
+
+  @override
+  String get modePlain => 'Plain';
+
+  @override
+  String get moreOptions => 'More options';
+
+  @override
+  String get markWhenTitle => 'Tap marks';
+
+  @override
+  String get markWhenAuto => 'Added after recording';
+
+  @override
+  String get markWhenLive => 'By hand while recording';
+
+  @override
+  String get markWhenNone => 'No marks';
+
+  @override
+  String get optSmooth => 'Smooth (60 fps)';
+
+  @override
+  String get settingsResetModes => 'Reset the recording modes';
+
+  @override
+  String get settingsResetModesSub =>
+      'Tutorial, Game and Plain go back to their first settings';
+
+  @override
+  String get resetModesConfirm =>
+      'Put all three recording modes back to their first settings?';
+
+  @override
+  String get resetModesAction => 'Reset';
+
+  @override
+  String get resetModesDone => 'The recording modes are back to their defaults';
 }

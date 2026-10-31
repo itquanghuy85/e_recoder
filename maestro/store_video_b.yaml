@@ -108,6 +108,4 @@ tags:
 - waitForAnimationToEnd:
     timeout: 1500
 - tapOn: "Dừng quay"
-- extendedWaitUntil:
-    visible: "Đã lưu ESR_.*"
-    timeout: 30000
+- runFlow: helpers/after_stop.yaml
