@@ -155,10 +155,14 @@ object TouchScan {
      * spot). A frame just before the touch is compared with the frames just after it, and the place is
      * the middle of the part that changed first. When the whole screen changes (a new page, a
      * scroll) or nothing does, the place stays unknown (-1) and only the moment is used.
+     * "changeMs" is when the screen then changed for real (a new page, a keyboard, a scroll), looked
+     * for until the next touch and at most [CHANGE_SCAN_MS] later; -1 when it did not. The mark of the
+     * touch must be gone by then, or it would sit on the new screen.
      * Returns one map per time, in the same order, shaped like a scan result.
      */
     fun locate(ctx: Context, uri: Uri, timesMs: List<Long>): List<Map<String, Any?>> {
         val out = ArrayList<Map<String, Any?>>()
+        val sorted = timesMs.sorted()
         val mmr = MediaMetadataRetriever()
         try {
             mmr.setDataSource(ctx, uri)
@@ -167,14 +171,31 @@ object TouchScan {
                 val bw = lastW
                 val bh = lastH
                 var spot: DoubleArray? = null
+                var changeMs = -1L
                 if (before != null) {
                     for (dt in LOCATE_OFFSETS) {
                         val after = frameLuma(mmr, t + dt) ?: continue
                         if (lastW == bw && lastH == bh) spot = reaction(before, after, bw, bh)
                         if (spot != null) break
                     }
+                    val next = sorted.firstOrNull { it > t } ?: Long.MAX_VALUE
+                    val until = minOf(t + CHANGE_SCAN_MS, next)
+                    var dt = CHANGE_STEP_MS
+                    while (t + dt < until) {
+                        val after = frameLuma(mmr, t + dt)
+                        if (after != null && lastW == bw && lastH == bh && changedShare(before, after) >= SCREEN_CHANGE) {
+                            changeMs = t + dt
+                            break
+                        }
+                        dt += CHANGE_STEP_MS
+                    }
                 }
-                out.add(mapOf("tMs" to t, "x" to (spot?.get(0) ?: -1.0), "y" to (spot?.get(1) ?: -1.0), "durMs" to 0L, "dist" to 0.0))
+                out.add(
+                    mapOf(
+                        "tMs" to t, "x" to (spot?.get(0) ?: -1.0), "y" to (spot?.get(1) ?: -1.0),
+                        "durMs" to 0L, "dist" to 0.0, "changeMs" to changeMs,
+                    ),
+                )
             }
         } catch (e: Exception) {
             android.util.Log.w("TouchScan", "locate failed", e)
@@ -186,6 +207,21 @@ object TouchScan {
             out.add(mapOf("tMs" to timesMs[out.size], "x" to -1.0, "y" to -1.0, "durMs" to 0L, "dist" to 0.0))
         }
         return out
+    }
+
+    // After a touch, the screen is looked at every [CHANGE_STEP_MS] for a real change: at least
+    // [SCREEN_CHANGE] of the picture clearly different from just before the touch (a pressed key or a
+    // ripple is far less).
+    private const val CHANGE_SCAN_MS = 3000L
+    private const val CHANGE_STEP_MS = 120L
+    private const val SCREEN_CHANGE = 0.2
+
+    /** The share of the picture (0..1) that clearly changed between two frames of the same size. */
+    internal fun changedShare(a: IntArray, b: IntArray): Double {
+        if (a.size != b.size || a.isEmpty()) return 0.0
+        var n = 0
+        for (i in a.indices) if (abs(a[i] - b[i]) > DIFF) n++
+        return n.toDouble() / a.size
     }
 
     // A press shows for a frame or two (a faint ripple on the key), about 250 ms after the touch on a phone

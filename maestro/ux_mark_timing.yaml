@@ -1,0 +1,117 @@
+appId: com.huluca.escreenrecorder
+name: Mark timing - clean recording of Samsung Calculator, fast taps then a tap that opens a new screen
+tags:
+  - p1
+  - module-ux
+---
+# scripts/qa/ux_mark_timing.ps1 sets the clean mode first and reads the project after. Three keys tapped fast
+# (7, 5, 3), a pause, the key 1, then "unit converter", which opens a whole new screen. Expected in the
+# automatic edit: never two full marks at once, and the last mark gone before the converter screen shows.
+- launchApp:
+    stopApp: true
+- runFlow:
+    when:
+      visible: "Bỏ qua"
+    commands:
+      - tapOn: "Bỏ qua"
+- tapOn: "Quay hướng dẫn tự động"
+- runFlow:
+    when:
+      visible: "Sẵn sàng quay chưa."
+    commands:
+      - tapOn: "Sẵn sàng quay"
+- retry:
+    maxRetries: 3
+    commands:
+      - runFlow:
+          when:
+            visible: "Quay hướng dẫn tự động"
+          commands:
+            - tapOn: "Quay hướng dẫn tự động"
+      - runFlow:
+          when:
+            visible: "Trong khi dùng ứng dụng"
+          commands:
+            - tapOn: "Trong khi dùng ứng dụng"
+      - extendedWaitUntil:
+          visible: "Bắt đầu ngay|Chia sẻ màn hình|Dừng quay"
+          timeout: 8000
+- runFlow:
+    when:
+      visible: "Bắt đầu ngay|Chia sẻ màn hình"
+    commands:
+      - tapOn: "Bắt đầu ngay|Chia sẻ màn hình"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 4000
+    optional: true
+- launchApp:
+    appId: com.sec.android.app.popupcalculator
+    stopApp: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    id: "com.sec.android.app.popupcalculator:id/calc_keypad_btn_07"
+    waitToSettleTimeoutMs: 1
+    retryTapIfNoChange: false
+- tapOn:
+    id: "com.sec.android.app.popupcalculator:id/calc_keypad_btn_05"
+    waitToSettleTimeoutMs: 1
+    retryTapIfNoChange: false
+- tapOn:
+    id: "com.sec.android.app.popupcalculator:id/calc_keypad_btn_03"
+    waitToSettleTimeoutMs: 1
+    retryTapIfNoChange: false
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 3000
+    optional: true
+# Really fast: the key 8 three times, 0.45 s apart (three marks, never two full ones at once), then a
+# double tap on 2 (0.1 s apart: one mark).
+- tapOn:
+    id: "com.sec.android.app.popupcalculator:id/calc_keypad_btn_08"
+    repeat: 3
+    delay: 450
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 2500
+    optional: true
+- tapOn:
+    id: "com.sec.android.app.popupcalculator:id/calc_keypad_btn_02"
+    repeat: 2
+    delay: 100
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 2500
+    optional: true
+- tapOn:
+    id: "com.sec.android.app.popupcalculator:id/calc_keypad_btn_01"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 3000
+    optional: true
+- tapOn: "Chuyển đổi đơn vị"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 3500
+    optional: true
+- takeScreenshot: timing_1_converter
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Dừng quay"
+    timeout: 15000
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Quay xong rồi"
+    timeout: 40000
+- extendedWaitUntil:
+    notVisible: "Đang dựng tự động.*"
+    timeout: 120000
+- takeScreenshot: timing_2_result
+- tapOn: "Xuất ngay"
+- extendedWaitUntil:
+    visible: "Đã xuất: .*"
+    timeout: 120000
+- takeScreenshot: timing_3_exported

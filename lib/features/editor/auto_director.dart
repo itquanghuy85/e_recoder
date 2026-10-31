@@ -315,7 +315,12 @@ abstract final class AutoDirector {
           MarkerItem(
             id: 'tp_${i}_${e.tMs}',
             cueStartMs: cue,
-            holdMs: o.markerHoldMs,
+            holdMs: tapHoldMs(
+              taps,
+              i,
+              cue + MarkerTiming.cueMs,
+              o.markerHoldMs,
+            ),
             spec: tapSpec(
               o.markerType ??
                   (o.number ? MarkerType.number : MarkerType.ripple),
@@ -436,7 +441,33 @@ abstract final class AutoDirector {
     y: e.y,
     endMs: e.endMs,
     app: e.app,
+    changeMs: e.changeMs,
   );
+
+  /// A mark starts fading this long before the screen changes, so it is gone before the new screen
+  /// shows: the fade itself plus the step the change is looked for with (it can be found that late).
+  static const screenLeadMs = MarkerTiming.fadeMs + 150;
+
+  /// How long the mark of `taps[i]` stays after its take ([takeMs]): [holdMs], but never past the
+  /// moment the screen changed after the tap (it would sit on the new screen) and never into the next
+  /// mark, so only one mark is on the screen at a time. 0 means it fades right after the press.
+  static int tapHoldMs(
+    List<TouchEvent> taps,
+    int i,
+    int takeMs,
+    int holdMs,
+  ) {
+    var fadeAt = takeMs + holdMs;
+    final change = taps[i].changeMs;
+    if (change != null) fadeAt = math.min(fadeAt, change - screenLeadMs);
+    for (var j = i + 1; j < taps.length; j++) {
+      if (!taps[j].hasPosition) continue;
+      final nextCue = math.max(0, taps[j].tMs - MarkerTiming.cueMs);
+      fadeAt = math.min(fadeAt, nextCue - MarkerTiming.fadeMs);
+      break;
+    }
+    return math.max(0, fadeAt - takeMs);
+  }
 
   static TextItem _caption(String id, String text, int from, int to, int dur) {
     final start = from.clamp(0, math.max(0, dur - 300)).toInt();

@@ -70,6 +70,17 @@ class TouchLocateTest {
     }
 
     @Test
+    fun `a pressed button is a small change, a new page a big one`() {
+        val a = frame()
+        val button = frame().also { it.fill(30, 150, 59, 169, 200) }
+        val page = frame().also { it.fill(0, 0, w - 1, h / 2, 200) }
+        assertTrue(TouchScan.changedShare(a, button) < 0.2)
+        assertTrue(TouchScan.changedShare(a, page) >= 0.2)
+        assertEquals(0.0, TouchScan.changedShare(a, a), 0.0)
+        assertEquals(0.0, TouchScan.changedShare(IntArray(10), IntArray(12)), 0.0)
+    }
+
+    @Test
     fun `a round show-taps spot is found by the dot rule first`() {
         val a = frame()
         val b = frame().also { it.fill(40, 100, 51, 111, 255) } // a 12 x 12 round-ish spot

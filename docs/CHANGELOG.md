@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-10-31] Dấu trong bản dựng tự động: không lan sang màn mới, mỗi lúc một dấu
+- `TouchScan.locate` (Kotlin) trả thêm `changeMs`: lúc màn hình đổi hẳn sau lần bấm (đổi từ 20% hình, dò tới lần bấm kế, tối đa 3 s). Có test `changedShare`.
+- `AutoDirector.tapHoldMs`: dấu mờ xong trước khi màn hình đổi và trước khi dấu kế hiện; dừng hình vẫn giữ dấu hiện đủ.
+- `TouchClassifier`: hai lần chạm cách nhau dưới 0,3 s chỉ giữ một dấu, bất kể vị trí (trước đây 0,25 s và phải gần nhau).
+- Bản dựng sau khi quay dùng chữ "Đang nhập…" / "Đã nhập" tiếng Việt (trước đây ra tiếng Anh).
+- Nghiệm thu S25: `scripts/qa/ux_mark_timing.sh` + `maestro/ux_mark_timing.yaml` PASS (lượt 3). Flutter test 395/395, analyze sạch, Kotlin unit test đạt. Chi tiết: `docs/PLAN_CHE_DO_QUAY.md`.
+
 ## [2026-10-31] Build và kiểm thử iOS qua Mac (SSH)
 - iOS build được: Simulator Debug và máy thật `--no-codesign` (22 MB). Trên Mac: Flutter test 387/387, analyze sạch. App mở trên iPhone 17 Simulator, không crash.
 - BLOCKED: smoke test Maestro (Mac thiếu Java), kiểm trên iPhone thật (chưa có máy và chứng chỉ ký).

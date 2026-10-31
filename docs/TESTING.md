@@ -135,4 +135,5 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - Lưu ý: Maestro `stopApp` không giết dịch vụ xuất nền; muốn giết hẳn dùng `adb shell am force-stop`. Maestro tự cấp mọi quyền khi `launchApp`.
 - Báo cáo: `docs/NGHIEM_THU_2026-10-31.md`.
 - Lượt QA cuối: giết app trong lúc quay `scripts/qa/ux_kill_recording.ps1`. `helpers/panel_find.yaml` (env `ID`) vuốt trong bảng công cụ đến khi thấy điều khiển: bảng mở ở đầu mỗi khi đổi công cụ. `run_flows18.ps1` tự đánh thức màn hình, tự đặt/khôi phục tiếng Anh cho store_en và chạy store_video_a trước store_video_b. Editor mở từ màn phát: lùi một lần về màn phát, lùi tiếp về màn chính.
+- Thời gian hiện dấu (quay sạch): `bash scripts/qa/ux_mark_timing.sh` (máy tính Samsung). Script tự đặt `marker.mode = 1` rồi trả giá trị cũ, đọc dự án bằng `scripts/qa/marks_timing.py` (kiểm "never two full marks") và ghép khung hình quanh dấu cuối vào `test-results/ux_mark_timing/last_mark_frames.png`.
 

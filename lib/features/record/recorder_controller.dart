@@ -176,6 +176,8 @@ class RecorderController extends Notifier<RecorderState> {
             markerColor: Color(mk.color),
             markerThickness: mk.thickness,
             markerHoldMs: mk.holdMs,
+            typingLabel: vi ? 'Đang nhập…' : 'Typing…',
+            typedLabel: vi ? 'Đã nhập' : 'Typed',
           );
           var auto = AutoDirector.fromTouches(
             draft,
