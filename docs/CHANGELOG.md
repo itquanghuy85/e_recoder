@@ -1,5 +1,8 @@
 # Changelog
 
+## [2026-10-31] Bỏ lần bấm "Dừng quay" khỏi các bước tự dựng
+- `RecorderController.stopTapWindowMs = 1200`: các lần bấm trong 1,2 giây cuối video là bấm nút dừng nên không đưa vào dựng tự động. Test: Flutter 349. S25 Ultra: quay sạch bấm 7/5/9 rồi Dừng cho đúng 3 dấu (trước đó 4).
+
 ## [2026-10-31] Dựng tự động dùng đúng dấu người dùng chọn
 - Trước đây dựng tự động chỉ gắn dấu số (hoặc gợn sóng) và bỏ qua dấu, màu, độ dày, thời gian hiện đã chọn. Nay: Cài đặt → Dấu → nhóm 4 có hàng chọn "Dấu tự động gắn vào mỗi lần bấm" (ngón tay, gợn sóng, mũi tên, vòng tròn, khung, nét vẽ, số; mặc định số, khoá mới `marker.autoType`). Màu, độ dày, thời gian hiện lấy từ nhóm 1 và 2.
 - `AutoDirector.tapSpec` dựng hình quanh chỗ bấm: vòng tròn tròn thật trên màn hình, khung chữ nhật, mũi tên chỉ từ góc dưới phải, nét gạch chân. `DirectorOptions` thêm `markerType/markerColor/markerThickness/markerHoldMs`; không đặt thì giữ luật cũ.

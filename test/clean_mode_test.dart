@@ -233,6 +233,27 @@ void main() {
       expect(p.zooms.length, 1); // it zooms into the touch whose place is known
     });
 
+    test('the press on the stop button is not a step', () async {
+      final (_, fake, store) = await _make({'marker.mode': 1});
+      fake.touchPlaces[3000] = (x: 0.3, y: 0.6);
+      fake.touchPlaces[19500] = (x: 0.5, y: 0.9); // the stop button, 0.5 s before the end
+      fake.controller.add(withTouches([3000, 19500]));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      final p = (await store.load('content://v/9'))!;
+      expect(fake.calls, contains('locateTouches:1'));
+      expect(p.markers.length, 1);
+      expect(p.markers.single.spec.x0, closeTo(0.3, 1e-9));
+    });
+
+    test('only the stop press heard: nothing to build', () async {
+      final (_, fake, store) = await _make({'marker.mode': 1});
+      fake.controller.add(withTouches([19600]));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(fake.calls.where((e) => e.startsWith('locateTouches')), isEmpty);
+      final p = await store.load('content://v/9');
+      expect(p?.markers ?? const [], isEmpty);
+    });
+
     test('no touches heard: no touch lookup, no project', () async {
       final (_, fake, store) = await _make({'marker.mode': 1});
       fake.controller.add(_saved());

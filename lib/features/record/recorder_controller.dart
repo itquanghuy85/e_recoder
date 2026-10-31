@@ -89,6 +89,9 @@ class RecorderController extends Notifier<RecorderState> {
     }
   }
 
+  /// Touches this close to the end of a recording are the press on stop.
+  static const stopTapWindowMs = 1200;
+
   /// Clean mode: the markers placed while recording become an edit project, with the optional
   /// automatic zoom / step numbering, ready when the user opens the video in the editor.
   Future<void> _saveDraft(RecSavedEvent e) async {
@@ -116,9 +119,14 @@ class RecorderController extends Notifier<RecorderState> {
       // Touches heard while recording: find where they were and build the rest of the edit from
       // them (captions + freezes, and marks + zoom where the place is known), right now, so the
       // video opens in the editor already edited. A failure leaves the draft as it is.
-      if (e.touches.isNotEmpty) {
+      // The press on the app's own stop button is heard too: it is not a step of what was recorded.
+      final heard = [
+        for (final t in e.touches)
+          if (t.tMs <= e.durationMs - stopTapWindowMs) t,
+      ];
+      if (heard.isNotEmpty) {
         final placed = await _native.locateTouches(e.uri, [
-          for (final t in e.touches) t.tMs,
+          for (final t in heard) t.tMs,
         ]);
         final events = TouchClassifier.classify(placed);
         if (events.isNotEmpty) {
