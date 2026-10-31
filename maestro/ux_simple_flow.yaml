@@ -4,6 +4,7 @@ tags:
   - p1
   - module-ux
 ---
+# Env: PURPOSE = tutorial|game|plain, BUTTON = the big button's text for it (ux_flow.ps1 sets both).
 # Needs the first-run state (no "onboarded" / "purpose" in the settings): scripts/qa/ux_flow.ps1 sets it up
 # and puts the phone's own settings back afterwards. Choose "tutorial", record 5 s, stop, look at the result
 # screen, open the editor and come back, export. The file is checked by the script.
@@ -23,12 +24,12 @@ tags:
     id: "purpose_plain"
 - takeScreenshot: ux_1_purpose
 - tapOn:
-    id: "purpose_tutorial"
-- assertVisible: "Quay hướng dẫn tự động"
+    id: "purpose_${PURPOSE}"
+- assertVisible: "${BUTTON}"
 - assertVisible:
     id: "record_advanced"
 - takeScreenshot: ux_2_record_screen
-- tapOn: "Quay hướng dẫn tự động"
+- tapOn: "${BUTTON}"
 # A missing permission is listed on its own screen; with everything granted this block is skipped.
 - runFlow:
     when:
@@ -41,9 +42,9 @@ tags:
     commands:
       - runFlow:
           when:
-            visible: "Quay hướng dẫn tự động"
+            visible: "${BUTTON}"
           commands:
-            - tapOn: "Quay hướng dẫn tự động"
+            - tapOn: "${BUTTON}"
       - runFlow:
           when:
             visible: "Trong khi dùng ứng dụng"
@@ -92,5 +93,5 @@ tags:
     timeout: 120000
 - takeScreenshot: ux_5_exported
 - tapOn: "Quay lại"
-- assertVisible: "Quay hướng dẫn tự động"
+- assertVisible: "${BUTTON}"
 - takeScreenshot: ux_6_back_to_record

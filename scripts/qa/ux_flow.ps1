@@ -1,7 +1,8 @@
 param(
   [string]$Serial = "R5CY6323KMX",
   [string]$Package = "com.huluca.escreenrecorder",
-  [string]$OutDir = "test-results\ux_flow"
+  [string]$OutDir = "test-results\ux_flow",
+  [ValidateSet("tutorial", "game", "plain")][string]$Purpose = "tutorial"
 )
 # Runs maestro/ux_simple_flow.yaml (first run: asks the purpose, one big button, result screen, export).
 #
@@ -24,7 +25,7 @@ adb -s $Serial shell am force-stop $Package
 cmd /c "adb -s $Serial exec-out run-as $Package cat $prefs > `"$backup`""
 $xml = Get-Content $backup -Raw -Encoding UTF8
 if ($xml -notmatch "<map") { throw "could not read the settings file (is it a debug build?)" }
-$work = $xml -replace '<boolean name="flutter\.onboarded"[^>]*/>', '' -replace '<int name="flutter\.purpose"[^>]*/>', ''
+$work = $xml -replace '<boolean name="flutter\.onboarded"[^>]*/>', '' -replace '<(long|int) name="flutter\.purpose"[^>]*/>', ''
 $tmp = Join-Path $env:TEMP "ux_prefs.xml"
 [IO.File]::WriteAllText($tmp, $work, (New-Object Text.UTF8Encoding $false))
 adb -s $Serial push $tmp /data/local/tmp/ux_prefs.xml | Out-Null
@@ -35,7 +36,8 @@ $env:JAVA_TOOL_OPTIONS = "-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"
 Remove-Item $OutDir -Recurse -Force -ErrorAction SilentlyContinue
 $before = (adb -s $Serial shell "ls '/sdcard/Movies/E Screen Recorder/'") -join "`n"
 try {
-  & $maestro --device $Serial test --test-output-dir $OutDir maestro\ux_simple_flow.yaml
+  $button = @{ tutorial = "Quay hướng dẫn tự động"; game = "Quay game"; plain = "Quay video" }[$Purpose]
+  & $maestro --device $Serial test -e "PURPOSE=$Purpose" -e "BUTTON=$button" --test-output-dir $OutDir maestro\ux_simple_flow.yaml
   $code = $LASTEXITCODE
 } finally {
   adb -s $Serial shell am force-stop $Package

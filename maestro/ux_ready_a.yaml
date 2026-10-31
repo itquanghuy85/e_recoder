@@ -1,0 +1,20 @@
+appId: com.huluca.escreenrecorder
+name: Ready check A - overlay permission missing, the screen lists it
+tags:
+  - p1
+  - module-ux
+---
+# scripts/qa/ux_ready.ps1 takes the "display over other apps" permission away and sets purpose = plain
+# before this runs. Tapping Record must NOT start recording: it shows what is missing.
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Quay video"
+    timeout: 20000
+- tapOn: "Quay video"
+- assertVisible: "Sẵn sàng quay chưa."
+- assertVisible:
+    id: "ready_overlay"
+- assertNotVisible: "Dừng quay"
+# (that the button is shut is read from the screenshot: Maestro cannot see a Flutter button's disabled state)
+- takeScreenshot: ready_a_missing

@@ -117,5 +117,7 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - Flow: chọn mục đích → nút Quay hướng dẫn tự động → quay ~5 s → Dừng → màn kết quả → Sửa thêm → back → Xuất ngay → "Đã xuất: ESR_edit_..." → Quay lại.
 - Khi quay, app tự thu xuống nền, flow phải `launchApp` lại (stopApp false) trước khi bấm Dừng. Maestro khớp chữ theo cả nhãn gộp của thẻ, nên chọn thẻ mục đích bằng id `purpose_tutorial|game|plain` và mục gập bằng id `record_advanced`.
 - Kết quả trên S25 Ultra: flow đạt, file xuất tồn tại; `clean_auto_touches` và `settings_layout` (đường cũ) vẫn đạt; Flutter 368 đạt.
-- Chưa kiểm trên máy thật: màn "Sẵn sàng quay chưa?" (máy test đã cấp đủ quyền nên bước bị bỏ qua; có widget test), mục đích Quay game / Quay thường.
+- Mục đích khác: `ux_flow.ps1 -Purpose game` và `-Purpose plain` (nút "Quay game" / "Quay video") đạt trên S25, có file xuất.
+- Màn "Sẵn sàng quay chưa?": `scripts/qa/ux_ready.ps1` (`maestro/ux_ready_a|b.yaml`) thu hồi quyền hiển thị trên ứng dụng khác bằng `appops`, kiểm màn liệt kê quyền và không bắt đầu quay (A), cấp lại, về màn hình chính rồi mở lại: app thấy quyền đã bật, "Sẵn sàng quay" mở và quay được (B). Đạt trên S25; giá trị app-op và file cài đặt của máy được trả về như cũ. Maestro không đọc được trạng thái khóa của nút Flutter, nên nút khóa ở A xem qua ảnh chụp.
+- Lưu ý khi sửa file cài đặt bằng `run-as`: Flutter lưu số nguyên dạng `<long>`, ghi `<int>` làm app đọc lỗi và hiện màn trắng.
 

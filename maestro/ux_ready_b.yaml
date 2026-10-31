@@ -1,0 +1,53 @@
+appId: com.huluca.escreenrecorder
+name: Ready check B - permission switched on, coming back opens the way to record
+tags:
+  - p1
+  - module-ux
+---
+# Runs after ux_ready_a with the permission given back. Returning to the app re-checks it; "Ready to
+# record" opens and recording starts.
+# The person goes to the system settings and comes back: leave the app, then open it again.
+- pressKey: home
+- launchApp:
+    stopApp: false
+# The button was shut in A (permission missing); it opens once the app has seen the permission is on.
+- extendedWaitUntil:
+    visible:
+      id: "ready_go"
+      enabled: true
+    timeout: 8000
+- takeScreenshot: ready_b_on
+- tapOn:
+    id: "ready_go"
+- retry:
+    maxRetries: 3
+    commands:
+      - runFlow:
+          when:
+            visible: "Trong khi dùng ứng dụng"
+          commands:
+            - tapOn: "Trong khi dùng ứng dụng"
+      - extendedWaitUntil:
+          visible: "Bắt đầu ngay|Chia sẻ màn hình|Dừng quay"
+          timeout: 8000
+- runFlow:
+    when:
+      visible: "Bắt đầu ngay|Chia sẻ màn hình"
+    commands:
+      - tapOn: "Bắt đầu ngay|Chia sẻ màn hình"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 4000
+    optional: true
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Dừng quay"
+    timeout: 15000
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Quay xong rồi"
+    timeout: 40000
+- takeScreenshot: ready_b_result
+- tapOn: "Quay lại"
