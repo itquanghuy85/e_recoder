@@ -1,4 +1,6 @@
 import 'package:e_screen_recorder/features/marker/marker_spec.dart';
+import 'package:e_screen_recorder/core/native_recorder.dart';
+import 'package:e_screen_recorder/features/editor/project_store.dart';
 import 'package:e_screen_recorder/features/marker/marker_settings.dart';
 import 'package:e_screen_recorder/features/purpose/purpose.dart';
 import 'package:flutter/material.dart';
@@ -198,7 +200,10 @@ void main() {
       final fake = await open(tester, overlay: false);
       await tester.tap(find.byKey(const ValueKey('record_start')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('ready_mic')), findsNothing); // mic is on
+      expect(
+        find.byKey(const ValueKey('ready_mic')),
+        findsNothing,
+      ); // mic is on
       await tester.tap(find.byKey(const ValueKey('ready_overlay')));
       await tester.pumpAndSettle();
       expect(fake.calls, contains('requestOverlay'));
@@ -226,6 +231,88 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Sẵn sàng quay chưa?'), findsNothing);
       expect(fake.calls, contains('requestOverlay')); // as before
+    });
+  });
+
+  group('after recording', () {
+    final entry = MediaEntry(
+      uri: 'content://v/9',
+      name: 'ESR_9.mp4',
+      durationMs: 20000,
+      size: 1000,
+      width: 720,
+      height: 1600,
+      dateAdded: DateTime(2026, 10, 31),
+    );
+
+    Future<FakeRecorder> open(
+      WidgetTester tester,
+      Map<String, Object> prefs,
+    ) async {
+      _phone(tester);
+      final (:app, :fake) = await buildTestApp(
+        media: [entry],
+        prefs: prefs,
+        projects: MemoryProjectStore(),
+      );
+      await tester.pumpWidget(app);
+      await tester.pumpAndSettle();
+      fake.controller.add(
+        RecSavedEvent('content://v/9', 'ESR_9.mp4', 20000, 1000),
+      );
+      // the list reloads, then the screen is pushed and slides in
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 150));
+      }
+      return fake;
+    }
+
+    testWidgets('with a purpose: the result screen, not the editor', (
+      tester,
+    ) async {
+      await open(tester, {'purpose': Purpose.tutorial.index});
+      expect(find.text('Quay xong rồi'), findsOneWidget);
+      expect(find.byKey(const ValueKey('result_export')), findsOneWidget);
+      expect(find.byKey(const ValueKey('result_edit')), findsOneWidget);
+      expect(find.byKey(const ValueKey('result_back')), findsOneWidget);
+      expect(find.text('Sửa thêm'), findsOneWidget);
+      expect(find.text('Xuất ngay'), findsOneWidget);
+      expect(find.text('Quay lại'), findsOneWidget);
+    });
+
+    testWidgets('Export now exports the recording at once', (tester) async {
+      final fake = await open(tester, {'purpose': Purpose.plain.index});
+      await tester.tap(find.byKey(const ValueKey('result_export')));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(fake.calls, contains('startExport'));
+      expect(fake.lastExportJob!['sourceUri'], 'content://v/9');
+      // the buttons that would leave are shut while it runs
+      final back = tester.widget<OutlinedButton>(
+        find.byKey(const ValueKey('result_back')),
+      );
+      expect(back.onPressed, isNull);
+      fake.controller.add(
+        ExportDoneEvent('content://e/1', 'ESR_edit_9.mp4', 20000, 5000),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byKey(const ValueKey('result_done')), findsOneWidget);
+      expect(find.text('Đã xuất: ESR_edit_9.mp4'), findsOneWidget);
+    });
+
+    testWidgets('Record again goes back to the recorder', (tester) async {
+      await open(tester, {'purpose': Purpose.plain.index});
+      await tester.tap(find.byKey(const ValueKey('result_back')));
+      await tester.pumpAndSettle(const Duration(milliseconds: 100));
+      expect(find.text('Quay xong rồi'), findsNothing);
+      expect(find.byKey(const ValueKey('record_start')), findsOneWidget);
+    });
+
+    testWidgets('the old way still shows the snack bar with View', (
+      tester,
+    ) async {
+      await open(tester, {});
+      expect(find.text('Quay xong rồi'), findsNothing);
+      expect(find.text('Xem'), findsOneWidget);
     });
   });
 }

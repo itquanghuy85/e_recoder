@@ -13,6 +13,7 @@ import '../marker/marker_settings.dart';
 import '../purpose/purpose.dart';
 import '../purpose/purpose_screen.dart';
 import '../purpose/ready_check_screen.dart';
+import '../purpose/result_screen.dart';
 import '../library/media_tile.dart';
 import '../library/player_screen.dart';
 import 'rec_settings.dart';
@@ -74,12 +75,16 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       );
   }
 
-  Future<void> _openSaved(String uri) async {
+  /// [result]: the three-choice screen shown after a recording; otherwise the plain player.
+  Future<void> _openSaved(String uri, {bool result = false}) async {
     final list = await ref.read(mediaListProvider.future);
     final entry = list.where((e) => e.uri == uri).firstOrNull;
     if (entry != null && mounted) {
       Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => PlayerScreen(entry: entry)),
+        MaterialPageRoute<void>(
+          builder: (_) =>
+              result ? ResultScreen(entry: entry) : PlayerScreen(entry: entry),
+        ),
       );
     }
   }
@@ -93,6 +98,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       final n = next.notice;
       if (n == null) return;
       switch (n) {
+        case SavedNotice() when ref.read(purposeProvider) != null:
+          // A purpose was chosen: show what came out, with Export now / Edit more / Record again.
+          _openSaved(n.uri, result: true);
         case SavedNotice():
           _snack(
             t.savedSnack(n.name),

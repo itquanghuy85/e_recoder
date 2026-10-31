@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:e_screen_recorder/app/settings_store.dart';
 import 'package:e_screen_recorder/core/native_recorder.dart';
+import 'package:e_screen_recorder/features/editor/project_store.dart';
 import 'package:e_screen_recorder/features/editor/touch_log.dart';
 import 'package:e_screen_recorder/core/permissions_gateway.dart';
 import 'package:e_screen_recorder/features/marker/marker_spec.dart';
@@ -394,6 +395,7 @@ Future<({Widget app, FakeRecorder fake})> buildTestApp({
   FakePermissions? permissions,
   Locale locale = const Locale('vi'),
   Map<String, Object> prefs = const {},
+  ProjectStore? projects,
 }) async {
   SharedPreferences.setMockInitialValues({'onboarded': onboarded, ...prefs});
   final store = await SettingsStore.load();
@@ -408,6 +410,7 @@ Future<({Widget app, FakeRecorder fake})> buildTestApp({
         permissionsGatewayProvider.overrideWithValue(
           permissions ?? FakePermissions(),
         ),
+        if (projects != null) projectStoreProvider.overrideWithValue(projects),
       ],
       child: const EScreenRecorderApp(),
     ),
