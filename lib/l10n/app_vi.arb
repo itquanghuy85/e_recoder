@@ -768,5 +768,19 @@
   "resultExported": "Đã xuất: {name}",
   "@resultExported": { "placeholders": { "name": { "type": "String" } } },
   "resultExportFailed": "Xuất không được. Bạn thử lại hoặc bấm Sửa thêm.",
-  "resultPreviewError": "Không phát được video này."
+  "resultPreviewError": "Không phát được video này.",
+  "quickTitle": "Chọn nhanh",
+  "quickGameMark": "Dấu khi bạn chạm",
+  "quickTouches": "Ghi mọi lần bấm",
+  "batchTitle": "Đổi tất cả dấu",
+  "batchScopeAll": "Áp cho tất cả {n} dấu",
+  "@batchScopeAll": { "placeholders": { "n": { "type": "int" } } },
+  "batchScopeSel": "Áp cho {n} dấu đã chọn",
+  "@batchScopeSel": { "placeholders": { "n": { "type": "int" } } },
+  "batchSelectAll": "Chọn tất cả",
+  "batchClear": "Bỏ chọn",
+  "batchFromHere": "Từ đây đến hết",
+  "batchKind": "Loại dấu",
+  "batchColor": "Màu",
+  "batchThickness": "Độ dày"
 }

@@ -488,6 +488,46 @@ abstract final class AutoDirector {
     return out;
   }
 
+  /// Changes the look of marks in one go: another kind (an arrow becomes a tap mark, a number, ...),
+  /// colour and/or thickness. [ids] limits it to those marks, null means every mark. A mark that changes
+  /// kind is redrawn around the spot it pointed at, and step numbers are renumbered when numbers are
+  /// involved. Timing, text and zoom stay as they were.
+  static EditProject restyleMarkers(
+    EditProject p, {
+    MarkerType? type,
+    Color? color,
+    double? thickness,
+    Set<String>? ids,
+  }) {
+    if (type == null && color == null && thickness == null) return p;
+    MarkerSpec restyle(MarkerSpec s) {
+      if (type != null && type != s.type) {
+        final at = anchorOf(s);
+        return tapSpec(
+          type,
+          at.dx,
+          at.dy,
+          s.number,
+          frameW: p.frameW,
+          frameH: p.frameH,
+          color: color ?? s.color,
+          thickness: thickness ?? s.thickness,
+        ).copyWith(opacity: s.opacity);
+      }
+      return s.copyWith(color: color, thickness: thickness);
+    }
+
+    final out = p.copyWith(
+      markers: [
+        for (final m in p.markers)
+          ids != null && !ids.contains(m.id)
+              ? m
+              : m.copyWith(spec: restyle(m.spec)),
+      ],
+    );
+    return type == MarkerType.number ? renumber(out) : out;
+  }
+
   /// Step markers get 1, 2, 3 ... in the order they appear.
   static EditProject renumber(EditProject p) {
     final steps =

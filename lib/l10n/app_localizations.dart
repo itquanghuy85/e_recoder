@@ -3624,6 +3624,78 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Không phát được video này.'**
   String get resultPreviewError;
+
+  /// No description provided for @quickTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn nhanh'**
+  String get quickTitle;
+
+  /// No description provided for @quickGameMark.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu khi bạn chạm'**
+  String get quickGameMark;
+
+  /// No description provided for @quickTouches.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi mọi lần bấm'**
+  String get quickTouches;
+
+  /// No description provided for @batchTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi tất cả dấu'**
+  String get batchTitle;
+
+  /// No description provided for @batchScopeAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp cho tất cả {n} dấu'**
+  String batchScopeAll(int n);
+
+  /// No description provided for @batchScopeSel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp cho {n} dấu đã chọn'**
+  String batchScopeSel(int n);
+
+  /// No description provided for @batchSelectAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tất cả'**
+  String get batchSelectAll;
+
+  /// No description provided for @batchClear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ chọn'**
+  String get batchClear;
+
+  /// No description provided for @batchFromHere.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ đây đến hết'**
+  String get batchFromHere;
+
+  /// No description provided for @batchKind.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại dấu'**
+  String get batchKind;
+
+  /// No description provided for @batchColor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu'**
+  String get batchColor;
+
+  /// No description provided for @batchThickness.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ dày'**
+  String get batchThickness;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

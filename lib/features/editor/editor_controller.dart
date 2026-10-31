@@ -256,8 +256,13 @@ class EditorController extends ChangeNotifier {
   bool multiSelect = false;
   final Set<int> multiSelected = {};
 
+  /// Marks picked while multi-select is on (the batch look change applies to these, or to every mark
+  /// when none is picked).
+  final Set<String> multiMarkerIds = {};
+
   void setMultiSelect(bool on) {
     multiSelect = on;
+    multiMarkerIds.clear();
     multiSelected
       ..clear()
       ..addAll(on ? {selectedSegment} : const <int>{});
@@ -268,6 +273,76 @@ class EditorController extends ChangeNotifier {
   List<int> get activeSegments {
     if (!multiSelect || multiSelected.isEmpty) return [selectedSegment];
     return multiSelected.toList()..sort();
+  }
+
+  /// Selects every clip of the video row (multi-select on).
+  void selectAllSegments() {
+    multiSelect = true;
+    multiMarkerIds.clear();
+    multiSelected
+      ..clear()
+      ..addAll([for (var i = 0; i < _project.segments.length; i++) i]);
+    selectedId = null;
+    notifyListeners();
+  }
+
+  /// Selects clip [i] and every clip after it.
+  void selectSegmentsFrom(int i) {
+    multiSelect = true;
+    multiMarkerIds.clear();
+    multiSelected
+      ..clear()
+      ..addAll([for (var k = i; k < _project.segments.length; k++) k]);
+    selectedSegment = i;
+    selectedId = null;
+    notifyListeners();
+  }
+
+  /// Multi-select only keeps the current clip.
+  void clearSegmentSelection() {
+    multiSelected
+      ..clear()
+      ..add(selectedSegment);
+    notifyListeners();
+  }
+
+  void toggleMarker(String id) {
+    final cur = selectedId;
+    if (cur != null && cur != id && _project.markers.any((m) => m.id == cur)) {
+      multiMarkerIds.add(cur);
+    }
+    selectedId = null;
+    if (!multiMarkerIds.remove(id)) multiMarkerIds.add(id);
+    notifyListeners();
+  }
+
+  void selectAllMarkers() {
+    multiSelect = true;
+    multiMarkerIds
+      ..clear()
+      ..addAll(_project.markers.map((m) => m.id));
+    selectedId = null;
+    notifyListeners();
+  }
+
+  void clearMarkerSelection() {
+    multiMarkerIds.clear();
+    notifyListeners();
+  }
+
+  /// One undo step: change kind / colour / thickness of the picked marks (every mark when none picked).
+  void restyleMarkers({MarkerType? type, Color? color, double? thickness}) {
+    final ids = multiMarkerIds.isEmpty ? null : Set<String>.of(multiMarkerIds);
+    _apply(
+      AutoDirector.restyleMarkers(
+        _project,
+        type: type,
+        color: color,
+        thickness: thickness,
+        ids: ids,
+      ),
+    );
+    notifyListeners();
   }
 
   void toggleSegment(int i) {

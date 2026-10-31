@@ -1909,4 +1909,44 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get resultPreviewError => 'Không phát được video này.';
+
+  @override
+  String get quickTitle => 'Chọn nhanh';
+
+  @override
+  String get quickGameMark => 'Dấu khi bạn chạm';
+
+  @override
+  String get quickTouches => 'Ghi mọi lần bấm';
+
+  @override
+  String get batchTitle => 'Đổi tất cả dấu';
+
+  @override
+  String batchScopeAll(int n) {
+    return 'Áp cho tất cả $n dấu';
+  }
+
+  @override
+  String batchScopeSel(int n) {
+    return 'Áp cho $n dấu đã chọn';
+  }
+
+  @override
+  String get batchSelectAll => 'Chọn tất cả';
+
+  @override
+  String get batchClear => 'Bỏ chọn';
+
+  @override
+  String get batchFromHere => 'Từ đây đến hết';
+
+  @override
+  String get batchKind => 'Loại dấu';
+
+  @override
+  String get batchColor => 'Màu';
+
+  @override
+  String get batchThickness => 'Độ dày';
 }

@@ -286,7 +286,8 @@ class EditorTimelineState extends State<EditorTimeline> {
       ? (c.multiSelect
             ? c.multiSelected.contains(ch.index)
             : (c.selectedId == null && ch.index == c.selectedSegment))
-      : ch.id == c.selectedId;
+      : ch.id == c.selectedId ||
+            (ch.kind == _Kind.marker && c.multiMarkerIds.contains(ch.id));
 
   ({_Chip? chip, _Grab grab}) _hit(Offset pos, double w) {
     final p = c.project;
@@ -353,6 +354,8 @@ class EditorTimelineState extends State<EditorTimeline> {
   void _select(_Chip ch) {
     if (ch.kind == _Kind.segment) {
       c.toggleSegment(ch.index);
+    } else if (ch.kind == _Kind.marker && c.multiSelect) {
+      c.toggleMarker(ch.id);
     } else {
       c.select(ch.id);
     }

@@ -1914,4 +1914,44 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get resultPreviewError => 'This video cannot be played.';
+
+  @override
+  String get quickTitle => 'Quick options';
+
+  @override
+  String get quickGameMark => 'Mark when you tap';
+
+  @override
+  String get quickTouches => 'Record every tap';
+
+  @override
+  String get batchTitle => 'Change all marks';
+
+  @override
+  String batchScopeAll(int n) {
+    return 'Applies to all $n marks';
+  }
+
+  @override
+  String batchScopeSel(int n) {
+    return 'Applies to the $n selected marks';
+  }
+
+  @override
+  String get batchSelectAll => 'Select all';
+
+  @override
+  String get batchClear => 'Clear selection';
+
+  @override
+  String get batchFromHere => 'From here to the end';
+
+  @override
+  String get batchKind => 'Mark kind';
+
+  @override
+  String get batchColor => 'Colour';
+
+  @override
+  String get batchThickness => 'Thickness';
 }

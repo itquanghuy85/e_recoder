@@ -7,6 +7,7 @@ import 'package:video_player/video_player.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
 import '../marker/marker_inspector.dart';
+import '../marker/marker_settings.dart' show MarkerSettings;
 import '../marker/marker_spec.dart';
 import 'editor_controller.dart';
 import 'editor_pro_tools.dart';
@@ -820,6 +821,7 @@ class _MarkerPanel extends StatelessWidget {
             t.markerAddHint,
             style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
           ),
+          if (c.project.markers.isNotEmpty) _MarkerBatch(c: c),
         ],
       );
     }
@@ -841,6 +843,116 @@ class _MarkerPanel extends StatelessWidget {
           onChanged: (v) =>
               c.updateMarker(sel.copyWith(holdMs: v.round()), record: false),
           fmt: editorSecs,
+        ),
+      ],
+    );
+  }
+}
+
+/// Changes every mark (or the ticked ones) in one go: kind, colour, thickness.
+class _MarkerBatch extends StatelessWidget {
+  const _MarkerBatch({required this.c});
+  final EditorController c;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppL10n.of(context);
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final picked = c.multiMarkerIds.length;
+    final total = c.project.markers.length;
+    return Column(
+      key: const ValueKey('marker_batch'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(height: Space.xl),
+        Text(t.batchTitle, style: tt.titleSmall),
+        const SizedBox(height: Space.xs),
+        Text(
+          picked > 0 ? t.batchScopeSel(picked) : t.batchScopeAll(total),
+          key: const ValueKey('marker_batch_scope'),
+          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+        ),
+        const SizedBox(height: Space.sm),
+        Wrap(
+          spacing: Space.sm,
+          children: [
+            Semantics(
+              identifier: 'marker_select_all',
+              child: OutlinedButton(
+                onPressed: c.selectAllMarkers,
+                child: Text(t.batchSelectAll),
+              ),
+            ),
+            if (picked > 0)
+              Semantics(
+                identifier: 'marker_select_none',
+                child: OutlinedButton(
+                  onPressed: c.clearMarkerSelection,
+                  child: Text(t.batchClear),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: Space.sm),
+        Text(t.batchKind, style: tt.labelLarge),
+        Wrap(
+          spacing: Space.sm,
+          runSpacing: Space.xs,
+          children: [
+            for (final m in MarkerType.values)
+              Semantics(
+                identifier: 'batch_kind_${m.name}',
+                button: true,
+                child: ActionChip(
+                  avatar: Icon(markerTypeIcon(m), size: 18),
+                  label: Text(markerTypeLabel(t, m)),
+                  onPressed: () => c.restyleMarkers(type: m),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: Space.sm),
+        Text(t.batchColor, style: tt.labelLarge),
+        Wrap(
+          spacing: Space.sm,
+          children: [
+            for (var i = 0; i < MarkerPalette.colors.length; i++)
+              Semantics(
+                identifier: 'batch_color_$i',
+                button: true,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => c.restyleMarkers(color: MarkerPalette.colors[i]),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    margin: const EdgeInsets.symmetric(vertical: Space.xs),
+                    decoration: BoxDecoration(
+                      color: MarkerPalette.colors[i],
+                      shape: BoxShape.circle,
+                      border: Border.all(color: cs.outlineVariant),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: Space.sm),
+        Text(t.batchThickness, style: tt.labelLarge),
+        Wrap(
+          spacing: Space.sm,
+          children: [
+            for (final th in MarkerSettings.thicknessOptions)
+              Semantics(
+                identifier: 'batch_thickness_${th.round()}',
+                button: true,
+                child: ActionChip(
+                  label: Text('${th.round()}'),
+                  onPressed: () => c.restyleMarkers(thickness: th),
+                ),
+              ),
+          ],
         ),
       ],
     );
@@ -1438,7 +1550,9 @@ class _AutoPanel extends StatelessWidget {
                     stepPrefix: t.stepLabelPrefix,
                   ),
             icon: const Icon(Icons.touch_app),
-            label: Text(c.directing ? t.autoFromTouchesRunning : t.autoFromTouches),
+            label: Text(
+              c.directing ? t.autoFromTouchesRunning : t.autoFromTouches,
+            ),
           ),
         ),
         if (c.lastTouches != null && !c.directing)
@@ -1461,7 +1575,8 @@ class _AutoPanel extends StatelessWidget {
           value: o.pauseMs.toDouble(),
           min: 0,
           max: 1500,
-          onChanged: (v) => c.setDirectorOptions(o.copyWith(pauseMs: v.round())),
+          onChanged: (v) =>
+              c.setDirectorOptions(o.copyWith(pauseMs: v.round())),
           fmt: editorSecs2,
         ),
         editorSlider(
@@ -1475,7 +1590,8 @@ class _AutoPanel extends StatelessWidget {
           onChanged: (v) => c.setDirectorOptions(
             o.copyWith(pauseZoom: v < 1.1 ? 1.0 : v.clamp(1.2, 1.5)),
           ),
-          fmt: (v) => v < 1.1 ? '—' : '${v.toStringAsFixed(1).replaceAll('.', ',')}×',
+          fmt: (v) =>
+              v < 1.1 ? '—' : '${v.toStringAsFixed(1).replaceAll('.', ',')}×',
         ),
         Text(t.inputModeTitle, style: tt.labelLarge),
         Wrap(

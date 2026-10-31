@@ -625,5 +625,19 @@
   "resultExported": "Exported: {name}",
   "@resultExported": { "placeholders": { "name": { "type": "String" } } },
   "resultExportFailed": "The export failed. Try again or tap Edit more.",
-  "resultPreviewError": "This video cannot be played."
+  "resultPreviewError": "This video cannot be played.",
+  "quickTitle": "Quick options",
+  "quickGameMark": "Mark when you tap",
+  "quickTouches": "Record every tap",
+  "batchTitle": "Change all marks",
+  "batchScopeAll": "Applies to all {n} marks",
+  "@batchScopeAll": { "placeholders": { "n": { "type": "int" } } },
+  "batchScopeSel": "Applies to the {n} selected marks",
+  "@batchScopeSel": { "placeholders": { "n": { "type": "int" } } },
+  "batchSelectAll": "Select all",
+  "batchClear": "Clear selection",
+  "batchFromHere": "From here to the end",
+  "batchKind": "Mark kind",
+  "batchColor": "Colour",
+  "batchThickness": "Thickness"
 }

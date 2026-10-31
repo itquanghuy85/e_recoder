@@ -486,6 +486,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                   MediaQuery.sizeOf(context).width,
                 ),
               ),
+              _SelectBar(c: c),
               EditorTimeline(key: _timelineKey, controller: c),
               const Divider(),
               EditorTools(
@@ -626,6 +627,70 @@ class _Transport extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// One row above the timeline for picking clips: "Select many" on/off, and when on: all, from the
+/// current clip to the end, or clear. Marks are picked by tapping them while this is on.
+class _SelectBar extends StatelessWidget {
+  const _SelectBar({required this.c});
+  final EditorController c;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppL10n.of(context);
+    final tt = Theme.of(context).textTheme;
+    return SingleChildScrollView(
+      key: const ValueKey('select_bar'),
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: Space.sm),
+      child: Row(
+        children: [
+          Semantics(
+            identifier: 'timeline_multi',
+            child: FilterChip(
+              label: Text(t.editMultiSelect),
+              selected: c.multiSelect,
+              onSelected: c.setMultiSelect,
+            ),
+          ),
+          if (c.multiSelect) ...[
+            const SizedBox(width: Space.sm),
+            Semantics(
+              identifier: 'timeline_select_all',
+              child: ActionChip(
+                label: Text(t.batchSelectAll),
+                onPressed: c.selectAllSegments,
+              ),
+            ),
+            const SizedBox(width: Space.sm),
+            Semantics(
+              identifier: 'timeline_select_from',
+              child: ActionChip(
+                label: Text(t.batchFromHere),
+                onPressed: () => c.selectSegmentsFrom(c.selectedSegment),
+              ),
+            ),
+            const SizedBox(width: Space.sm),
+            Semantics(
+              identifier: 'timeline_select_clear',
+              child: ActionChip(
+                label: Text(t.batchClear),
+                onPressed: () {
+                  c.clearSegmentSelection();
+                  c.clearMarkerSelection();
+                },
+              ),
+            ),
+            const SizedBox(width: Space.sm),
+            Text(
+              '${c.activeSegments.length}/${c.project.segments.length}',
+              style: tt.bodySmall,
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

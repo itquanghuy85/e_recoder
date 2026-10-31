@@ -11,6 +11,7 @@ import '../../theme/app_tokens.dart';
 import '../library/media_repository.dart';
 import '../marker/marker_settings.dart';
 import '../purpose/purpose.dart';
+import '../purpose/quick_options.dart';
 import '../purpose/purpose_screen.dart';
 import '../purpose/ready_check_screen.dart';
 import '../purpose/result_screen.dart';
@@ -254,7 +255,7 @@ class _IdleView extends ConsumerWidget {
                         )
                       : Column(
                           children: [
-                            for (final e in items.take(3))
+                            for (final e in items.take(purpose == null ? 3 : 1))
                               MediaTile(
                                 entry: e,
                                 onTap: () => Navigator.of(context).push(
@@ -309,6 +310,8 @@ class _IdleView extends ConsumerWidget {
                   ),
                 ),
                 if (purpose != null) ...[
+                  const SizedBox(height: Space.md),
+                  QuickOptions(purpose: purpose),
                   const SizedBox(height: Space.md),
                   // Everything else lives here, folded away, for the people who want it.
                   Semantics(

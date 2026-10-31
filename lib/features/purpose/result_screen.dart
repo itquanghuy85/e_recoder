@@ -8,7 +8,10 @@ import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
 import '../editor/edit_project.dart';
 import '../editor/editor_controller.dart';
+import '../editor/editor_extra_players.dart';
+import '../editor/editor_playback.dart';
 import '../editor/editor_screen.dart';
+import '../editor/editor_stage.dart';
 import '../editor/project_store.dart';
 import '../library/media_repository.dart';
 import '../record/recorder_controller.dart';
@@ -27,67 +30,135 @@ class ResultScreen extends ConsumerStatefulWidget {
 enum _Phase { building, idle, exporting, done, error }
 
 class _ResultScreenState extends ConsumerState<ResultScreen> {
-  late final VideoPlayerController _v = videoControllerFor(widget.entry.uri);
+  VideoPlayerController? _v;
+  EditorController? _ctl;
+  PlaybackDriver? _driver;
+  ExtraPlayers? _extras;
   bool _playerFailed = false;
+  bool _seeking = false;
+  int _lastSeek = -1;
   _Phase _phase = _Phase.building;
   double _progress = 0;
   String? _exportedName;
-  EditorController? _export;
   ExportQuality _quality = ExportQuality.original;
 
   @override
   void initState() {
     super.initState();
-    _v
-        .initialize()
-        .then((_) {
-          if (mounted) setState(() {});
-        })
-        .catchError((Object _) {
-          if (mounted) setState(() => _playerFailed = true);
-        });
-    _v.addListener(() {
-      if (mounted) setState(() {});
-    });
     // The automatic edit of a clean recording is saved a moment after the recording; wait for it, so
-    // that "Export now" never exports the video before the edit is in place.
-    ref.read(recorderProvider.notifier).draftReady.whenComplete(() {
-      if (mounted && _phase == _Phase.building) {
-        setState(() => _phase = _Phase.idle);
+    // that the preview shows the marks and "Export now" never exports the video before the edit is in
+    // place.
+    ref.read(recorderProvider.notifier).draftReady.whenComplete(_initPreview);
+  }
+
+  /// The preview is the editor's own stage (video plus the marks, zoom and text of the saved edit), so
+  /// what is played here is what will be exported. Nothing in it can be touched; a tap plays or pauses.
+  Future<void> _initPreview() async {
+    if (!mounted) return;
+    try {
+      final v = videoControllerFor(
+        widget.entry.uri,
+        options: VideoPlayerOptions(mixWithOthers: true),
+      );
+      await v.initialize();
+      if (!mounted) {
+        await v.dispose();
+        return;
       }
-    });
+      final store = ref.read(projectStoreProvider);
+      final project =
+          await store.load(widget.entry.uri) ??
+          EditProject.fresh(
+            sourceUri: widget.entry.uri,
+            name: widget.entry.name,
+            durationMs: v.value.duration.inMilliseconds,
+            frameW: v.value.size.width.round(),
+            frameH: v.value.size.height.round(),
+          );
+      if (!mounted) {
+        await v.dispose();
+        return;
+      }
+      final c = EditorController(
+        project: project,
+        native: ref.read(nativeRecorderProvider),
+        store: store,
+      );
+      c.addListener(_onController);
+      setState(() {
+        _v = v;
+        _ctl = c;
+        _driver = PlaybackDriver(controller: c, player: VideoPlayerPort(v));
+        _extras = ExtraPlayers(c);
+        if (_phase == _Phase.building) _phase = _Phase.idle;
+      });
+      await v.seekTo(Duration.zero);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _playerFailed = true;
+          if (_phase == _Phase.building) _phase = _Phase.idle;
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
-    _export?.removeListener(_onExport);
-    _export?.dispose();
-    _v.dispose();
+    _driver?.dispose();
+    _extras?.dispose();
+    _ctl?.removeListener(_onController);
+    _ctl?.dispose();
+    _v?.dispose();
     super.dispose();
+  }
+
+  void _onController() {
+    final c = _ctl;
+    if (c == null || !mounted) return;
+    if (_phase == _Phase.exporting) _onExport();
+    // Scrubbing while paused: keep the frame in step with the playhead.
+    if (!c.playing) _seekPlayerTo(c.sourceMs);
+    setState(() {});
+  }
+
+  Future<void> _seekPlayerTo(int sourceMs) async {
+    final v = _v;
+    if (v == null || _seeking || (sourceMs - _lastSeek).abs() < 25) return;
+    _seeking = true;
+    _lastSeek = sourceMs;
+    try {
+      await v.seekTo(Duration(milliseconds: sourceMs));
+    } finally {
+      _seeking = false;
+    }
   }
 
   Future<void> _exportNow() async {
     final store = ref.read(projectStoreProvider);
-    final e = widget.entry;
-    final project =
-        await store.load(widget.entry.uri) ??
-        EditProject.fresh(
-          sourceUri: widget.entry.uri,
-          name: widget.entry.name,
-          durationMs: e.durationMs,
-          frameW: e.width,
-          frameH: e.height,
-        );
+    // The preview may not have come up (a video that cannot be played); the export does not need it.
+    var c = _ctl;
+    if (c == null) {
+      final e = widget.entry;
+      final project =
+          await store.load(e.uri) ??
+          EditProject.fresh(
+            sourceUri: e.uri,
+            name: e.name,
+            durationMs: e.durationMs,
+            frameW: e.width,
+            frameH: e.height,
+          );
+      if (!mounted) return;
+      c = EditorController(
+        project: project,
+        native: ref.read(nativeRecorderProvider),
+        store: store,
+      )..addListener(_onController);
+      _ctl = c;
+    }
+    await _driver?.pause();
     if (!mounted) return;
-    _v.pause();
-    final c = EditorController(
-      project: project,
-      native: ref.read(nativeRecorderProvider),
-      store: store,
-    );
-    c.addListener(_onExport);
-    _export?.dispose();
-    _export = c;
     setState(() {
       _phase = _Phase.exporting;
       _progress = 0;
@@ -96,19 +167,17 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   }
 
   void _onExport() {
-    final s = _export?.exportState;
-    if (s == null || !mounted) return;
+    final s = _ctl?.exportState;
+    if (s == null) return;
     switch (s.phase) {
       case ExportPhase.running:
-        setState(() => _progress = s.progress);
+        _progress = s.progress;
       case ExportPhase.done:
         ref.invalidate(mediaListProvider);
-        setState(() {
-          _phase = _Phase.done;
-          _exportedName = s.result?.name;
-        });
+        _phase = _Phase.done;
+        _exportedName = s.result?.name;
       case ExportPhase.error:
-        setState(() => _phase = _Phase.error);
+        _phase = _Phase.error;
       case ExportPhase.idle:
         break;
     }
@@ -122,11 +191,69 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   };
 
   void _edit() {
-    _v.pause();
+    _driver?.pause();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => EditorScreen(entry: widget.entry),
       ),
+    );
+  }
+
+  Widget _preview(AppL10n t, ColorScheme c, bool busy) {
+    final ctl = _ctl;
+    final v = _v;
+    if (_playerFailed) return Center(child: Text(t.resultPreviewError));
+    if (ctl == null || v == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final total = ctl.project.outDurationMs;
+    return Column(
+      children: [
+        Expanded(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: EditorStage(
+                    controller: ctl,
+                    video: v,
+                    pipVideos: _extras?.pips ?? const {},
+                    repaint: _extras,
+                    viewZoom: false,
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: GestureDetector(
+                  key: const ValueKey('result_preview'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: busy ? null : () => _driver?.toggle(),
+                  child: Center(
+                    child: ctl.playing
+                        ? const SizedBox.shrink()
+                        : Icon(
+                            Icons.play_circle_fill,
+                            size: 64,
+                            color: c.onSurface.withValues(alpha: 0.7),
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Slider(
+          key: const ValueKey('result_seek'),
+          value: ctl.outMs.clamp(0, total).toDouble(),
+          max: total.clamp(1, 1 << 30).toDouble(),
+          onChanged: busy
+              ? null
+              : (x) async {
+                  await _driver?.pause();
+                  ctl.seekOut(x.round());
+                },
+        ),
+      ],
     );
   }
 
@@ -135,7 +262,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     final t = AppL10n.of(context);
     final tt = Theme.of(context).textTheme;
     final c = Theme.of(context).colorScheme;
-    final v = _v.value;
     final busy = _phase == _Phase.exporting;
     return PopScope(
       canPop: !busy,
@@ -161,33 +287,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: Space.sm),
-                Expanded(
-                  child: _playerFailed
-                      ? Center(child: Text(t.resultPreviewError))
-                      : !v.isInitialized
-                      ? const Center(child: CircularProgressIndicator())
-                      : GestureDetector(
-                          key: const ValueKey('result_preview'),
-                          onTap: () => v.isPlaying ? _v.pause() : _v.play(),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Center(
-                                child: AspectRatio(
-                                  aspectRatio: v.aspectRatio,
-                                  child: VideoPlayer(_v),
-                                ),
-                              ),
-                              if (!v.isPlaying)
-                                Icon(
-                                  Icons.play_circle_fill,
-                                  size: 64,
-                                  color: c.onSurface.withValues(alpha: 0.7),
-                                ),
-                            ],
-                          ),
-                        ),
-                ),
+                Expanded(child: _preview(t, c, busy)),
                 const SizedBox(height: Space.md),
                 SizedBox(
                   height: 28,
@@ -239,7 +339,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                           key: ValueKey('result_quality_${q.name}'),
                           label: Text(_qualityLabel(t, q)),
                           selected: _quality == q,
-                          onSelected: _phase == _Phase.exporting
+                          onSelected: busy
                               ? null
                               : (_) => setState(() => _quality = q),
                         ),

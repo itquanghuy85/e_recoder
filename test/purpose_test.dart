@@ -1,4 +1,6 @@
+import 'package:e_screen_recorder/app/settings_store.dart';
 import 'package:e_screen_recorder/features/marker/marker_spec.dart';
+import 'package:e_screen_recorder/features/record/rec_settings.dart';
 import 'package:e_screen_recorder/core/native_recorder.dart';
 import 'package:e_screen_recorder/features/editor/project_store.dart';
 import 'package:e_screen_recorder/features/marker/marker_settings.dart';
@@ -118,14 +120,38 @@ void main() {
       });
     }
 
+    testWidgets('quick options: a tick is saved at once', (tester) async {
+      await open(tester, {'purpose': Purpose.tutorial.index});
+      final c = ProviderScope.containerOf(
+        tester.element(find.byType(Scaffold).first),
+      );
+      expect(c.read(recSettingsProvider).audio, AudioMode.mic);
+      await tester.ensureVisible(find.byKey(const ValueKey('quick_system')));
+      await tester.tap(find.byKey(const ValueKey('quick_system')));
+      await tester.pumpAndSettle();
+      expect(c.read(recSettingsProvider).audio, AudioMode.both);
+      await tester.tap(find.byKey(const ValueKey('quick_mic')));
+      await tester.pumpAndSettle();
+      expect(c.read(recSettingsProvider).audio, AudioMode.system);
+      await tester.ensureVisible(find.byKey(const ValueKey('quick_auto_zoom')));
+      await tester.tap(find.byKey(const ValueKey('quick_auto_zoom')));
+      await tester.pumpAndSettle();
+      expect(c.read(markerSettingsProvider).autoZoom, isFalse);
+      // what was saved is what the next launch reads
+      final s = c.read(settingsStoreProvider);
+      expect(s.getInt('rec.audio', -1), AudioMode.system.index);
+    });
+
     testWidgets('the old controls are folded into Advanced', (tester) async {
       await open(tester, {'purpose': Purpose.tutorial.index});
       expect(find.text('Nâng cao'), findsOneWidget);
       expect(find.byKey(const ValueKey('profile_card')), findsNothing);
+      await tester.ensureVisible(find.text('Nâng cao'));
       await tester.tap(find.text('Nâng cao'));
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('profile_card')), findsOneWidget);
       // and the choice can be changed from there
+      await tester.ensureVisible(find.byKey(const ValueKey('change_purpose')));
       await tester.tap(find.byKey(const ValueKey('change_purpose')));
       await tester.pumpAndSettle();
       expect(find.text('Bạn muốn làm gì?'), findsOneWidget);
