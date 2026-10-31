@@ -26,9 +26,26 @@ tags:
 - tapOn:
     id: "purpose_${PURPOSE}"
 - assertVisible: "${BUTTON}"
+- takeScreenshot: ux_2_record_screen
+# Quick options: ticks right on the record screen, no need to open the settings.
+- scrollUntilVisible:
+    element:
+      id: "quick_mic"
+- assertVisible:
+    id: "quick_mic"
+- assertVisible:
+    id: "quick_system"
+- tapOn:
+    id: "quick_system"
+- takeScreenshot: ux_2a_quick_options
+- scrollUntilVisible:
+    element:
+      id: "record_advanced"
 - assertVisible:
     id: "record_advanced"
-- takeScreenshot: ux_2_record_screen
+- scrollUntilVisible:
+    element: "${BUTTON}"
+    direction: UP
 - tapOn: "${BUTTON}"
 # A missing permission is listed on its own screen; with everything granted this block is skipped.
 - runFlow:
@@ -83,6 +100,36 @@ tags:
       id: "editor_play"
     timeout: 30000
 - takeScreenshot: ux_4_editor
+# Batch change of marks: add two arrows, turn them all into tap marks at once, pick many clips.
+- tapOn:
+    id: "tool_marker"
+- tapOn:
+    id: "add_marker_arrow"
+- tapOn:
+    id: "tool_marker"
+- tapOn:
+    id: "add_marker_arrow"
+- takeScreenshot: ux_4a0_markers_added
+# The batch section is a folded row at the top of the marker panel: open it.
+- tapOn:
+    id: "marker_batch"
+- takeScreenshot: ux_4a1_batch_open
+- assertVisible: "Áp cho tất cả 2 dấu"
+- swipe:
+    start: 50%,92%
+    end: 50%,78%
+- takeScreenshot: ux_4a2_after_swipe
+- tapOn:
+    id: "batch_kind_finger"
+- takeScreenshot: ux_4a_batch
+- tapOn:
+    id: "timeline_multi"
+- takeScreenshot: ux_4b_multi_on
+- assertVisible:
+    id: "timeline_select_all"
+- tapOn:
+    id: "timeline_select_all"
+- takeScreenshot: ux_4c_multi
 - back
 - extendedWaitUntil:
     visible: "Xuất ngay"

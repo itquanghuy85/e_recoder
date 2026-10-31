@@ -638,7 +638,10 @@ class _SelectBar extends StatelessWidget {
   final EditorController c;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ListenableBuilder(listenable: c, builder: (context, _) => _bar(context));
+
+  Widget _bar(BuildContext context) {
     final t = AppL10n.of(context);
     final tt = Theme.of(context).textTheme;
     return SingleChildScrollView(

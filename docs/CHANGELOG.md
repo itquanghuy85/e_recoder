@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-10-31] Chọn nhanh bằng ô tick, xem trước có dấu, đổi dấu hàng loạt, chọn nhiều trên timeline
+- **Chọn nhanh** (`features/purpose/quick_options.dart`, dưới nút Quay to): ô tick Micro / Âm thanh máy, chọn Độ nét; Hướng dẫn thêm: Ghi mọi lần bấm, Đánh số bước, Phóng to vào chỗ bấm và chọn dấu tự động; Game: chọn dấu khi chạm. Mỗi lần tick lưu ngay qua `recSettingsProvider` / `markerSettingsProvider` (test `purpose_test` kiểm khoá `rec.audio` đã ghi). Nút Quay lên trước phần này để luôn thấy không cần cuộn; khi đã chọn mục đích chỉ hiện 1 video gần đây.
+- **Màn kết quả** (`result_screen.dart`): xem trước dùng chính `EditorStage` + `PlaybackDriver` của editor nên thấy dấu, zoom, số bước của bản dựng tự động; chạm để phát/tạm dừng, có thanh tua. Xem trước lỗi vẫn xuất được.
+- **Đổi dấu hàng loạt** (`AutoDirector.restyleMarkers`, `EditorController.restyleMarkers`, mục gập "Đổi tất cả dấu" đầu bảng Dấu): đổi loại (mũi tên → chạm, số...), màu, độ dày. Áp cho các dấu đã chọn, không chọn gì thì áp cho tất cả; một lần hoàn tác. Dấu đổi loại được vẽ lại đúng chỗ nó chỉ vào; đổi sang Số bước thì đánh số lại.
+- **Chọn nhiều trên timeline**: hàng nút trên timeline: Chọn nhiều, Chọn tất cả, Từ đây đến hết, Bỏ chọn; chạm dấu để chọn thêm khi đang bật.
+- Test: Flutter 377/377 (mới `batch_markers_test` 8, `purpose_test` +1), analyze sạch. Maestro `ux_simple_flow` (chọn nhanh, mở xem trước, đổi dấu hàng loạt, Chọn nhiều/Chọn tất cả, xuất 720p) đạt trên S25 Ultra.
+- Chưa nghiệm thu trên máy: bản quay thử không có lần bấm nên chưa xem được dấu tự động trong xem trước; dấu đổi loại mới xác nhận bằng unit test và ảnh editor, chưa so sánh từng điểm ảnh. Đổi dấu theo nhóm đã chọn (chạm từng dấu) mới có unit test.
+- Lỗi đã sửa dọc đường: khung chọn nhanh dùng `Container` có màu bọc ô tick làm mất hiệu ứng chạm (đổi sang `Material`); hàng nút chọn nhiều không vẽ lại khi bật (thiếu `ListenableBuilder`).
+
 ## [2026-10-31] Màn kết quả: chọn chất lượng xuất
 - `result_screen.dart`: thêm hàng chọn chất lượng (Gốc / 1080p / 720p / 480p) trên nút "Xuất ngay"; mặc định Gốc, dùng lại nhãn đã có. Chọn xong "Xuất ngay" xuất đúng mức đó.
 - `maestro/ux_simple_flow.yaml`: chọn 720p trước khi xuất. `scripts/qa/ux_flow.ps1`: chữ nút "hướng dẫn" đổi sang regex ASCII (dòng lệnh Windows làm hỏng chữ có dấu) và thêm BOM cho file.
