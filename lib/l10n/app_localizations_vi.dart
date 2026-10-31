@@ -555,7 +555,7 @@ class AppL10nVi extends AppL10n {
       'Chế độ sạch cũng có nút “Đánh dấu” trong thông báo. Vùng ẩn ở góc không nhìn thấy trong video.';
 
   @override
-  String get toolAuto => 'Tự động';
+  String get toolAuto => 'Dựng tự động';
 
   @override
   String get autoTitle => 'Dựng tự động';
@@ -747,10 +747,10 @@ class AppL10nVi extends AppL10n {
   String get toolText => 'Chữ';
 
   @override
-  String get toolCover => 'Che';
+  String get toolCover => 'Che vùng';
 
   @override
-  String get toolZoom => 'Phóng';
+  String get toolZoom => 'Phóng to';
 
   @override
   String get splitHere => 'Cắt tại đây';
@@ -1143,10 +1143,10 @@ class AppL10nVi extends AppL10n {
   String get audioStillHint => 'Khung đóng băng và đoạn trống không có tiếng.';
 
   @override
-  String get toolPicture => 'Hình';
+  String get toolPicture => 'Hình ảnh';
 
   @override
-  String get toolOverlay => 'Lớp phủ';
+  String get toolOverlay => 'Chèn hình';
 
   @override
   String get picRotate => 'Xoay 90°';
@@ -1952,4 +1952,21 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get readyNoMic => 'Quay không thu tiếng';
+
+  @override
+  String get toolExport => 'Xuất';
+
+  @override
+  String get editorModeBasic => 'Cơ bản';
+
+  @override
+  String get editorModeAdvanced => 'Nâng cao';
+
+  @override
+  String get editorModeHintBasic =>
+      'Đủ để cắt, thêm dấu và chữ. Cần hiệu ứng? Chọn Nâng cao.';
+
+  @override
+  String get editorModeHintAdvanced =>
+      'Hiện đủ công cụ. Về Cơ bản vẫn giữ mọi thứ đã làm.';
 }

@@ -27,6 +27,7 @@ tags:
     visible:
       id: "editor_play"
     timeout: 20000
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_overlay"
 - tapOn:

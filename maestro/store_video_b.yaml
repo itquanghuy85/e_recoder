@@ -61,6 +61,7 @@ tags:
 - hideKeyboard
 - waitForAnimationToEnd:
     timeout: 1500
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_zoom"
 - tapOn:

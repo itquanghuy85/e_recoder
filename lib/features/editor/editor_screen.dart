@@ -49,6 +49,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   bool _failed = false;
   EditorTool _tool = EditorTool.cut;
   bool _toolsHidden = false;
+
+  /// Advanced mode (all tools) or Basic (the everyday ones). Remembered between launches.
+  bool _advanced = false;
   bool _seeking = false;
   int _lastSeekSource = -1;
   final _timelineKey = GlobalKey<EditorTimelineState>();
@@ -61,9 +64,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       if (mounted) ScaffoldMessenger.of(context).clearSnackBars();
     });
     try {
-      _toolsHidden = ref
-          .read(settingsStoreProvider)
-          .getBool('editor.toolsHidden', false);
+      final st = ref.read(settingsStoreProvider);
+      _toolsHidden = st.getBool('editor.toolsHidden', false);
+      _advanced = st.getBool('editor.advanced', false);
     } catch (_) {}
     _init();
   }
@@ -169,7 +172,14 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           : c.project.audioTracks.any((e) => e.id == id)
           ? EditorTool.audio
           : null;
-      if (want != null && want != _tool) setState(() => _tool = want);
+      if (want != null &&
+          (want != _tool || (!_advanced && advancedTools.contains(want)))) {
+        setState(() {
+          _tool = want;
+          // The clip picked on the timeline belongs to a tool Basic hides: show it, for this session only.
+          if (advancedTools.contains(want)) _advanced = true;
+        });
+      }
     }
     // A voice-over ends when playback ends (the end of the video, or the person pausing).
     if (c.recordingVoice && _wasPlaying && !c.playing) {
@@ -329,6 +339,27 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   Future<void> _pause() async => _driver?.pause();
 
+  Future<void> _openExport() async {
+    final c = _c;
+    if (c == null) return;
+    await _pause();
+    if (!mounted) return;
+    await showExportSheet(context, c, onSaveStill: _saveStill);
+  }
+
+  /// Basic <-> Advanced. Only what is shown changes; the edit itself (marks, text, zooms, regions, ...)
+  /// is not touched. Going back to Basic from an advanced tool lands on Cut.
+  void _setAdvanced(bool on) {
+    setState(() {
+      _advanced = on;
+      if (!on && advancedTools.contains(_tool)) {
+        _tool = EditorTool.cut;
+        _c?.select(null);
+      }
+    });
+    ref.read(settingsStoreProvider).setBool('editor.advanced', on);
+  }
+
   Future<void> _confirmReset(EditorController c) async {
     final t = AppL10n.of(context);
     final cs = Theme.of(context).colorScheme;
@@ -439,11 +470,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                     backgroundColor: cs.tertiary,
                     foregroundColor: cs.onTertiary,
                   ),
-                  onPressed: () async {
-                    await _pause();
-                    if (!context.mounted) return;
-                    await showExportSheet(context, c, onSaveStill: _saveStill);
-                  },
+                  onPressed: _openExport,
                   child: Text(t.exportAction),
                 ),
               ),
@@ -515,6 +542,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 newMarkerThickness: mk.thickness,
                 video: v,
                 onRecordVoice: _recordVoice,
+                advanced: _advanced,
+                onAdvanced: _setAdvanced,
+                onExport: _openExport,
                 collapsed: _toolsHidden,
                 onToggleCollapsed: () {
                   setState(() => _toolsHidden = !_toolsHidden);

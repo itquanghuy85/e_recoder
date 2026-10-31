@@ -202,3 +202,4 @@ Mục tiêu: người dùng chỉ chọn mục đích, không phải hiểu "qua
 - Màn Quay: một nút lớn; mọi thứ cũ gom vào "Nâng cao". Kiểm quyền trước khi quay. Quay xong: "Xuất ngay" / "Sửa thêm" / "Quay lại".
 - Phụ đề tự động và 6 hiệu ứng chữ giữ nguyên. Việc để sau: dựng sẵn xem trước theo mẫu ở màn kết quả; trình chỉnh sửa hai chế độ Cơ bản / Nâng cao; đổi tên các mục khó hiểu.
 
+- Trình chỉnh sửa hai chế độ (đã làm): Cơ bản mặc định 6 tab (Cắt, Dấu, Chữ, Tốc độ, Âm thanh, Xuất), Nâng cao thêm 6 (Chuyển cảnh, Hình ảnh, Chèn hình, Che vùng, Phóng to, Dựng tự động); chuyển chế độ không đổi dữ liệu; chế độ được nhớ. Chi tiết và nghiệm thu: `docs/CHANGELOG.md` (2026-10-31, Cơ bản / Nâng cao). Còn mở: dấu tự động trên app không phải Samsung.

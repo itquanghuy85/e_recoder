@@ -54,6 +54,7 @@ tags:
     timeout: 30000
 - assertVisible: "Dòng thời gian: 1 đoạn, 2 dấu, 0 chữ, 0 khối che, 2 phóng to"
 # Automatic direction: the zooms came from the recording; the still stretch is found now.
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_auto"
 - tapOn:

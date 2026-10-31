@@ -38,6 +38,7 @@ tags:
 - assertVisible:
     id: "editor_play"
 # A zoom clip exposes level, length, zoom-in and zoom-out speed.
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_zoom"
 - tapOn:

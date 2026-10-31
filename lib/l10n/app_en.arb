@@ -640,5 +640,10 @@
   "batchKind": "Mark kind",
   "batchColor": "Colour",
   "batchThickness": "Thickness",
-  "readyNoMic": "Record without sound"
+  "readyNoMic": "Record without sound",
+  "toolExport": "Export",
+  "editorModeBasic": "Basic",
+  "editorModeAdvanced": "Advanced",
+  "editorModeHintBasic": "Enough to cut, mark and add text. Need effects? Choose Advanced.",
+  "editorModeHintAdvanced": "All tools shown. Back to Basic keeps everything you made."
 }

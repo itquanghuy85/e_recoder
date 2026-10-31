@@ -99,6 +99,7 @@ tags:
 - waitForAnimationToEnd:
     timeout: 2500
 - takeScreenshot: store/pro_speed
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_transition"
 - tapOn:

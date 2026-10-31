@@ -75,6 +75,7 @@ tags:
 - waitForAnimationToEnd:
     timeout: 900
 - takeScreenshot: store/en_05_editor
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_auto"
 - tapOn:

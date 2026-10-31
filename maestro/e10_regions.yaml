@@ -17,6 +17,7 @@ tags:
       id: "editor_play"
     timeout: 30000
 - runFlow: helpers/ensure_tools_open.yaml
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_cover"
 # 0-3 s: blur

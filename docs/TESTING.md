@@ -121,3 +121,8 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - Màn "Sẵn sàng quay chưa?": `scripts/qa/ux_ready.ps1` (`maestro/ux_ready_a|b.yaml`) thu hồi quyền hiển thị trên ứng dụng khác bằng `appops`, kiểm màn liệt kê quyền và không bắt đầu quay (A), cấp lại, về màn hình chính rồi mở lại: app thấy quyền đã bật, "Sẵn sàng quay" mở và quay được (B). Đạt trên S25; giá trị app-op và file cài đặt của máy được trả về như cũ. Maestro không đọc được trạng thái khóa của nút Flutter, nên nút khóa ở A xem qua ảnh chụp.
 - Lưu ý khi sửa file cài đặt bằng `run-as`: Flutter lưu số nguyên dạng `<long>`, ghi `<int>` làm app đọc lỗi và hiện màn trắng.
 
+## Trình chỉnh sửa Cơ bản / Nâng cao
+- `scripts/qa/ux_modes.ps1` chạy `maestro/ux_editor_modes.yaml`: xoá riêng khoá `editor.advanced` rồi kiểm mặc định Cơ bản, chuyển hai chiều, chữ/dấu/zoom còn nguyên, xuất từ tab Xuất, nhớ chế độ sau khi mở lại app. Cần một video quay có bản dựng tự động (chạy `ux_real.ps1` trước). Video thử được giữ.
+- Editor mở ở Cơ bản: flow cần công cụ nâng cao gọi `runFlow: helpers/editor_advanced.yaml` trước khi bấm `tool_cover`, `tool_zoom`, `tool_transition`...
+- `scripts/qa/marks_of_latest.py <projects.db>` in các dấu của dự án lưu gần nhất (loại, số bước, vị trí); lấy `projects.db` bằng `adb exec-out run-as com.huluca.escreenrecorder cat databases/projects.db`.
+- Mic bị từ chối: `scripts/qa/ux_mic.ps1`. Làm thử như người dùng: `scripts/qa/ux_real.ps1`.

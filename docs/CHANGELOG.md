@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-10-31] Trình chỉnh sửa hai chế độ Cơ bản / Nâng cao
+- **Cơ bản (mặc định):** 6 tab: Cắt, Dấu, Chữ, Tốc độ, Âm thanh, Xuất (tab Xuất mở hộp xuất, giống nút Xuất ở trên). **Nâng cao** thêm hàng thứ hai: Chuyển cảnh, Hình ảnh, Chèn hình, Che vùng, Phóng to, Dựng tự động. Hai nút chọn chế độ kèm một dòng giải thích ngay dưới các tab; chế độ được nhớ giữa các lần mở (`editor.advanced`).
+- **Chuyển chế độ chỉ đổi cái hiện ra**, không đụng dữ liệu bản dựng (dấu, chữ, zoom, tốc độ, vùng che...). Chọn một clip của công cụ nâng cao trên timeline khi đang ở Cơ bản thì tự hiện Nâng cao trong phiên đó (không ghi nhớ). Về Cơ bản từ một công cụ nâng cao thì rơi về Cắt.
+- Tên hiển thị rõ hơn (id và mã nhận diện không đổi): Hình → Hình ảnh, Lớp phủ → Chèn hình, Che → Che vùng, Phóng → Phóng to, Tự động → Dựng tự động.
+- Các flow Maestro cũ dùng công cụ nâng cao gọi thêm `helpers/editor_advanced.yaml` (tự bật Nâng cao nếu đang bị ẩn; 18 flow, chưa chạy lại từng cái trên máy).
+- Nghiệm thu S25 (RUNTIME_VERIFIED, `scripts/qa/ux_modes.ps1` + `maestro/ux_editor_modes.yaml`): mặc định Cơ bản (6 tab, không có Che/Phóng/Chuyển cảnh), thêm chữ ở Cơ bản, sang Nâng cao thấy đủ 12 tab, về Cơ bản chữ/dấu/zoom/tốc độ vẫn còn trên timeline, xuất từ tab Xuất: video có chữ "Văn bản", zoom và 3 dấu vòng ở phím 7, 5, 9; thoát và mở lại app thì chế độ còn nguyên (cả Nâng cao lẫn Cơ bản). Flutter test 382 (mới `editor_modes_test` 4), analyze sạch.
+- **Chưa kiểm được:** dấu tự động trên app không phải Samsung. Thử với Chrome không dùng được: Chrome hiện trang chủ cá nhân và lần bấm làm đổi cả trang; script đọc dự án khi bản dựng còn chạy nên kết quả (2 dấu, lệch chỗ) không đáng tin. Đã bỏ flow đó. Cần một app có thay đổi nhỏ tại chỗ bấm (như máy tính) và không chứa dữ liệu cá nhân. Ghi chú thêm: vị trí dấu tìm từ hình nên bấm làm đổi cả màn hình thì vị trí dễ lệch.
+- Việc phát hiện khi thử: bản dựng tự động của video dài mất hơn 5 giây; tắt app ngay lúc đó sẽ cắt ngang bản dựng (chưa kiểm xem app có tự dựng lại khi mở lại).
+
 ## [2026-10-31] Quyền micro bị từ chối: nghiệm thu và lối thoát "Quay không thu tiếng"
 - Nghiệm thu S25 (RUNTIME_VERIFIED, `scripts/qa/ux_mic.ps1` + `maestro/ux_mic_denied.yaml`): thu hồi quyền micro, bấm Quay -> "Sẵn sàng quay chưa?" liệt kê Micro với nút Bật, nút chính xám "Còn thiếu quyền"; bấm Bật rồi "Không cho phép" -> vẫn ở màn đó, chưa quay.
 - Thêm nút "Quay không thu tiếng" (`ready_check_screen.dart`, chỉ hiện khi thiếu micro): đặt âm thanh = Không rồi quay tiếp, người từ chối micro không bị kẹt. Test `purpose_test` +1 (Flutter 378).

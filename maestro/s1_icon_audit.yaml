@@ -26,6 +26,7 @@ tags:
 - tapOn:
     id: "tool_audio"
 - takeScreenshot: artifacts/s1_editor_audio
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_cover"
 - takeScreenshot: artifacts/s1_editor_cover

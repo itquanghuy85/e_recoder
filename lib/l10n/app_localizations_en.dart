@@ -1957,4 +1957,21 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get readyNoMic => 'Record without sound';
+
+  @override
+  String get toolExport => 'Export';
+
+  @override
+  String get editorModeBasic => 'Basic';
+
+  @override
+  String get editorModeAdvanced => 'Advanced';
+
+  @override
+  String get editorModeHintBasic =>
+      'Enough to cut, mark and add text. Need effects? Choose Advanced.';
+
+  @override
+  String get editorModeHintAdvanced =>
+      'All tools shown. Back to Basic keeps everything you made.';
 }

@@ -1096,7 +1096,7 @@ abstract class AppL10n {
   /// No description provided for @toolAuto.
   ///
   /// In vi, this message translates to:
-  /// **'Tự động'**
+  /// **'Dựng tự động'**
   String get toolAuto;
 
   /// No description provided for @autoTitle.
@@ -1438,13 +1438,13 @@ abstract class AppL10n {
   /// No description provided for @toolCover.
   ///
   /// In vi, this message translates to:
-  /// **'Che'**
+  /// **'Che vùng'**
   String get toolCover;
 
   /// No description provided for @toolZoom.
   ///
   /// In vi, this message translates to:
-  /// **'Phóng'**
+  /// **'Phóng to'**
   String get toolZoom;
 
   /// No description provided for @splitHere.
@@ -2176,13 +2176,13 @@ abstract class AppL10n {
   /// No description provided for @toolPicture.
   ///
   /// In vi, this message translates to:
-  /// **'Hình'**
+  /// **'Hình ảnh'**
   String get toolPicture;
 
   /// No description provided for @toolOverlay.
   ///
   /// In vi, this message translates to:
-  /// **'Lớp phủ'**
+  /// **'Chèn hình'**
   String get toolOverlay;
 
   /// No description provided for @picRotate.
@@ -3702,6 +3702,36 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Quay không thu tiếng'**
   String get readyNoMic;
+
+  /// No description provided for @toolExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất'**
+  String get toolExport;
+
+  /// No description provided for @editorModeBasic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cơ bản'**
+  String get editorModeBasic;
+
+  /// No description provided for @editorModeAdvanced.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nâng cao'**
+  String get editorModeAdvanced;
+
+  /// No description provided for @editorModeHintBasic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đủ để cắt, thêm dấu và chữ. Cần hiệu ứng? Chọn Nâng cao.'**
+  String get editorModeHintBasic;
+
+  /// No description provided for @editorModeHintAdvanced.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện đủ công cụ. Về Cơ bản vẫn giữ mọi thứ đã làm.'**
+  String get editorModeHintAdvanced;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -5,6 +5,7 @@ tags:
   - module-editor
 ---
 - runFlow: helpers/open_edit.yaml
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_overlay"
 - tapOn:

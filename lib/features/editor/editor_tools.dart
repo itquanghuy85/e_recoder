@@ -31,6 +31,26 @@ enum EditorTool {
   auto,
 }
 
+/// What a new person sees: the everyday tools. Export is the sixth tab (the same as the button on top).
+const basicTools = [
+  EditorTool.cut,
+  EditorTool.marker,
+  EditorTool.text,
+  EditorTool.speed,
+  EditorTool.audio,
+];
+
+/// Shown on top of the basic ones in Advanced mode. Switching mode only changes what is shown: nothing
+/// that was made with these tools is touched, previewed or exported any differently.
+const advancedTools = [
+  EditorTool.transition,
+  EditorTool.picture,
+  EditorTool.overlay,
+  EditorTool.cover,
+  EditorTool.zoom,
+  EditorTool.auto,
+];
+
 String toolLabel(AppL10n t, EditorTool e) => switch (e) {
   EditorTool.cut => t.toolCut,
   EditorTool.speed => t.toolSpeed,
@@ -73,7 +93,15 @@ class EditorTools extends StatelessWidget {
     this.onRecordVoice,
     this.collapsed = false,
     this.onToggleCollapsed,
+    this.advanced = false,
+    this.onAdvanced,
+    this.onExport,
   });
+
+  /// Advanced mode shows the second row of tools; Basic hides it (and nothing else changes).
+  final bool advanced;
+  final ValueChanged<bool>? onAdvanced;
+  final VoidCallback? onExport;
 
   /// When true only a slim handle is shown, so the preview gets the room.
   final bool collapsed;
@@ -126,74 +154,16 @@ class EditorTools extends StatelessWidget {
           ),
         ),
         if (!collapsed) ...[
-          // Every tool is one tap away: two rows, no hidden sideways scrolling.
-          for (final row in [
-            EditorTool.values.take(6).toList(),
-            EditorTool.values.skip(6).toList(),
-          ])
-            SizedBox(
-              height: 44,
-              child: Row(
-                children: [
-                  for (final e in row)
-                    Expanded(
-                      child: Semantics(
-                        identifier: 'tool_${e.name}',
-                        button: true,
-                        selected: tool == e,
-                        child: InkWell(
-                          onTap: () => onTool(e),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: tool == e
-                                      ? cs.tertiaryContainer
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  toolIcon(e),
-                                  size: 18,
-                                  color: tool == e
-                                      ? cs.onTertiaryContainer
-                                      : cs.onSurfaceVariant,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                ),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    toolLabel(t, e),
-                                    maxLines: 1,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall
-                                        ?.copyWith(
-                                          fontSize: 10,
-                                          color: tool == e
-                                              ? cs.onSurface
-                                              : cs.onSurfaceVariant,
-                                        ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  // keep the last row's tabs the same width as the first row's
-                  for (var i = row.length; i < 6; i++) const Spacer(),
-                ],
-              ),
-            ),
+          // Every tool shown is one tap away: no hidden sideways scrolling.
+          _toolRow(context, [
+            for (final e in basicTools) _tab(context, e),
+            _exportTab(context),
+          ]),
+          if (advanced)
+            _toolRow(context, [
+              for (final e in advancedTools) _tab(context, e),
+            ]),
+          _modeRow(context),
           const Divider(),
           ConstrainedBox(
             constraints: BoxConstraints(
@@ -240,6 +210,121 @@ class EditorTools extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+
+  Widget _toolRow(BuildContext context, List<Widget> tabs) => SizedBox(
+    height: 44,
+    child: Row(children: [for (final w in tabs) Expanded(child: w)]),
+  );
+
+  Widget _tabBody(
+    BuildContext context,
+    IconData icon,
+    String label,
+    bool selected,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 40,
+          height: 24,
+          decoration: BoxDecoration(
+            color: selected ? cs.tertiaryContainer : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: selected ? cs.onTertiaryContainer : cs.onSurfaceVariant,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontSize: 10,
+                color: selected ? cs.onSurface : cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tab(BuildContext context, EditorTool e) {
+    final t = AppL10n.of(context);
+    return Semantics(
+      identifier: 'tool_${e.name}',
+      button: true,
+      selected: tool == e,
+      child: InkWell(
+        onTap: () => onTool(e),
+        child: _tabBody(context, toolIcon(e), toolLabel(t, e), tool == e),
+      ),
+    );
+  }
+
+  Widget _exportTab(BuildContext context) {
+    final t = AppL10n.of(context);
+    return Semantics(
+      identifier: 'tool_export',
+      button: true,
+      child: InkWell(
+        onTap: onExport,
+        child: _tabBody(context, Icons.ios_share, t.toolExport, false),
+      ),
+    );
+  }
+
+  /// Basic / Advanced, with a line saying what each means. The choice is remembered by the screen.
+  Widget _modeRow(BuildContext context) {
+    final t = AppL10n.of(context);
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Space.lg),
+      child: Row(
+        children: [
+          Semantics(
+            identifier: 'editor_mode_basic',
+            child: ChoiceChip(
+              key: const ValueKey('editor_mode_basic'),
+              label: Text(t.editorModeBasic),
+              selected: !advanced,
+              visualDensity: VisualDensity.compact,
+              onSelected: (_) => onAdvanced?.call(false),
+            ),
+          ),
+          const SizedBox(width: Space.xs),
+          Semantics(
+            identifier: 'editor_mode_advanced',
+            child: ChoiceChip(
+              key: const ValueKey('editor_mode_advanced'),
+              label: Text(t.editorModeAdvanced),
+              selected: advanced,
+              visualDensity: VisualDensity.compact,
+              onSelected: (_) => onAdvanced?.call(true),
+            ),
+          ),
+          const SizedBox(width: Space.sm),
+          Expanded(
+            child: Text(
+              advanced ? t.editorModeHintAdvanced : t.editorModeHintBasic,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,0 +1,14 @@
+appId: com.huluca.escreenrecorder
+name: Helper - switch the editor to Advanced when the advanced tools are hidden
+tags:
+  - helper
+---
+# The editor opens in Basic mode. Flows that use the advanced tools (transition, picture, overlay, cover,
+# zoom, auto) call this first: it switches to Advanced when those tools are hidden, and does nothing otherwise.
+- runFlow:
+    when:
+      notVisible:
+        id: "tool_cover"
+    commands:
+      - tapOn:
+          id: "editor_mode_advanced"

@@ -1,0 +1,94 @@
+appId: com.huluca.escreenrecorder
+name: Editor Basic / Advanced - default Basic, both ways, nothing lost, remembered, exported
+tags:
+  - p1
+  - module-ux
+  - module-editor
+---
+# Needs a raw recording with an automatic edit (run ux_real.ps1 first). scripts/qa/ux_modes.ps1 clears the
+# saved mode first, so the first look is the default. Videos are kept.
+- runFlow: helpers/open_latest_recording.yaml
+# 1. Basic is the default: five tools and Export, nothing advanced, and the line that explains it.
+- assertVisible:
+    id: "tool_cut"
+- assertVisible:
+    id: "tool_marker"
+- assertVisible:
+    id: "tool_text"
+- assertVisible:
+    id: "tool_speed"
+- assertVisible:
+    id: "tool_audio"
+- assertVisible:
+    id: "tool_export"
+- assertNotVisible:
+    id: "tool_cover"
+- assertNotVisible:
+    id: "tool_zoom"
+- assertNotVisible:
+    id: "tool_transition"
+- assertVisible: "Đủ để cắt, thêm dấu và chữ.*"
+- takeScreenshot: modes_1_basic
+# 2. Make something in Basic: a caption text.
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "add_text"
+- takeScreenshot: modes_2_text
+# 3. Basic -> Advanced: all twelve are there.
+- tapOn:
+    id: "editor_mode_advanced"
+- assertVisible:
+    id: "tool_cover"
+- assertVisible:
+    id: "tool_zoom"
+- assertVisible:
+    id: "tool_transition"
+- assertVisible:
+    id: "tool_picture"
+- assertVisible:
+    id: "tool_overlay"
+- assertVisible:
+    id: "tool_auto"
+- assertVisible: "Hiện đủ công cụ.*"
+- tapOn:
+    id: "tool_zoom"
+- takeScreenshot: modes_3_advanced_zoom
+# 4. Advanced -> Basic: the advanced tools hide, the edit (text, marks, zooms, speed) stays.
+- tapOn:
+    id: "editor_mode_basic"
+- assertNotVisible:
+    id: "tool_cover"
+- assertNotVisible:
+    id: "tool_zoom"
+- assertVisible:
+    id: "tool_marker"
+- takeScreenshot: modes_4_back_basic
+# 5. Export from Basic with the "Xuất" tab: the advanced effects (zoom, speed) and the text must be in it.
+- tapOn:
+    id: "tool_export"
+- tapOn:
+    id: "quality_p720"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000
+- takeScreenshot: modes_5_exported
+# 6. The choice is remembered: choose Advanced, restart the app, it is still Advanced; then Basic.
+- back
+- tapOn:
+    id: "editor_mode_advanced"
+- runFlow: helpers/open_latest_recording.yaml
+- assertVisible:
+    id: "tool_cover"
+- takeScreenshot: modes_6_advanced_remembered
+- tapOn:
+    id: "editor_mode_basic"
+- runFlow: helpers/open_latest_recording.yaml
+- assertNotVisible:
+    id: "tool_cover"
+- assertVisible:
+    id: "tool_export"
+- takeScreenshot: modes_7_basic_remembered
