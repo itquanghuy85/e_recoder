@@ -2,6 +2,7 @@ import 'package:e_screen_recorder/features/editor/auto_director.dart';
 import 'package:e_screen_recorder/features/editor/edit_project.dart';
 import 'package:e_screen_recorder/features/editor/touch_log.dart';
 import 'package:e_screen_recorder/features/marker/marker_spec.dart';
+import 'package:flutter/painting.dart' show Color;
 import 'package:flutter_test/flutter_test.dart';
 
 EditProject _base([int ms = 30000]) => EditProject.fresh(
@@ -100,6 +101,54 @@ void main() {
       expect(stills.length, 2);
       expect(stills.every((s) => s.freezeMs == 800), isTrue);
       expect(p.outDurationMs, 30000 + 1600);
+    });
+
+    test('the chosen mark, colour and time are used at every tap', () {
+      for (final type in MarkerType.values) {
+        final p = AutoDirector.fromTouches(
+          _base(),
+          TouchClassifier.classify([_t(3000, 0.4, 0.5), _t(9000, 0.2, 0.6)]),
+          DirectorOptions(
+            markerType: type,
+            markerColor: const Color(0xFF34C759),
+            markerThickness: 8,
+            markerHoldMs: 2000,
+          ),
+        );
+        expect(p.markers.length, 2, reason: type.name);
+        expect(p.markers.every((m) => m.spec.type == type), isTrue);
+        expect(p.markers.first.spec.color, const Color(0xFF34C759));
+        expect(p.markers.first.spec.thickness, 8);
+        expect(p.markers.first.holdMs, 2000);
+        final s = p.markers.first.spec;
+        // every shape stays inside the frame and sits on the tap
+        for (final v in [s.x0, s.y0, s.x1, s.y1, ...s.points]) {
+          expect(v, inInclusiveRange(0.0, 1.0));
+        }
+        final a = s.anchor;
+        if (type == MarkerType.circle || type == MarkerType.rect) {
+          expect(a.x, closeTo(0.4, 0.001));
+          expect(a.y, closeTo(0.5, 0.001));
+        }
+        if (type == MarkerType.circle) {
+          // round on screen: width and height in pixels match
+          expect((s.x1 - s.x0) * 1080, closeTo((s.y1 - s.y0) * 2400, 1));
+        }
+      }
+    });
+
+    test('without a chosen mark the old rule stays (number, or ripple)', () {
+      final ev = TouchClassifier.classify([_t(3000)]);
+      expect(
+        AutoDirector.fromTouches(_base(), ev, const DirectorOptions())
+            .markers.single.spec.type,
+        MarkerType.number,
+      );
+      expect(
+        AutoDirector.fromTouches(_base(), ev, const DirectorOptions(number: false))
+            .markers.single.spec.type,
+        MarkerType.ripple,
+      );
     });
 
     test('typing is one step, not one mark per key', () {

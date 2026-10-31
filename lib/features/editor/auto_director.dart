@@ -23,7 +23,18 @@ class DirectorOptions {
     this.inputMode = InputMode.merge,
     this.typingLabel = 'Typing…',
     this.typedLabel = 'Typed',
+    this.markerType,
+    this.markerColor = const Color(0xFFFF3B30),
+    this.markerThickness = 5,
+    this.markerHoldMs = 1500,
   });
+
+  /// The mark drawn at each touch of a known place. Null keeps the old rule: a step number when
+  /// [number] is on, a ripple when it is off.
+  final MarkerType? markerType;
+  final Color markerColor;
+  final double markerThickness;
+  final int markerHoldMs;
 
   /// Zoom smoothly into the area of each marker.
   final bool zoom;
@@ -74,7 +85,15 @@ class DirectorOptions {
     InputMode? inputMode,
     String? typingLabel,
     String? typedLabel,
+    MarkerType? markerType,
+    Color? markerColor,
+    double? markerThickness,
+    int? markerHoldMs,
   }) => DirectorOptions(
+    markerType: markerType ?? this.markerType,
+    markerColor: markerColor ?? this.markerColor,
+    markerThickness: markerThickness ?? this.markerThickness,
+    markerHoldMs: markerHoldMs ?? this.markerHoldMs,
     zoom: zoom ?? this.zoom,
     number: number ?? this.number,
     idle: idle ?? this.idle,
@@ -182,6 +201,85 @@ abstract final class AutoDirector {
         : q.insertFreezeAt(i + 1, t, ms: len);
   }
 
+  /// A mark of [type] for a tap at (x, y). Shapes that need a size (circle, box) get one around the
+  /// tap that is square on screen; the arrow points at it from the lower right; the pen underlines it.
+  static MarkerSpec tapSpec(
+    MarkerType type,
+    double x,
+    double y,
+    int step, {
+    required int frameW,
+    required int frameH,
+    Color color = const Color(0xFFFF3B30),
+    double thickness = 5,
+  }) {
+    final ar = frameH > 0
+        ? frameW / frameH
+        : 0.45; // width per height, to keep shapes round
+    double cx(double v) => v.clamp(0.0, 1.0);
+    switch (type) {
+      case MarkerType.circle:
+      case MarkerType.rect:
+        final hw = type == MarkerType.circle ? 0.09 : 0.16;
+        // half height in fractions of the height, from a half height of hw (circle) or 0.06 (box) of the width
+        final h =
+            (type == MarkerType.circle ? hw : 0.06) / (ar == 0 ? 1 : 1 / ar);
+        return MarkerSpec(
+          type: type,
+          color: color,
+          thickness: thickness,
+          x0: cx(x - hw),
+          y0: cx(y - h),
+          x1: cx(x + hw),
+          y1: cx(y + h),
+          number: step,
+        );
+      case MarkerType.arrow:
+        return MarkerSpec(
+          type: type,
+          color: color,
+          thickness: thickness,
+          x0: cx(x + 0.22),
+          y0: cx(y + 0.22 * ar * 2),
+          x1: x,
+          y1: y,
+          number: step,
+        );
+      case MarkerType.pen:
+        return MarkerSpec(
+          type: type,
+          color: color,
+          thickness: thickness,
+          x0: x,
+          y0: y,
+          points: [
+            cx(x - 0.12),
+            cx(y + 0.03),
+            cx(x - 0.06),
+            cx(y + 0.04),
+            cx(x),
+            cx(y + 0.03),
+            cx(x + 0.06),
+            cx(y + 0.04),
+            cx(x + 0.12),
+            cx(y + 0.03),
+          ],
+          number: step,
+        );
+      default:
+        return MarkerSpec(
+          type: type,
+          color: color,
+          thickness: thickness,
+          x0: x,
+          y0: y,
+          x1: x,
+          y1: y,
+          number: step,
+        );
+    }
+  }
+
   /// A project drawn from the touches found in a recording: a mark and (if wanted) a freeze at each
   /// meaningful touch, and one "typing" step for each typing burst instead of a mark per key. Touches
   /// without a known position get a caption instead of a mark, and are never zoomed to.
@@ -203,10 +301,7 @@ abstract final class AutoDirector {
 
     final taps = [
       for (final e in sorted)
-        if (e.kind == TouchKind.tap)
-          e
-        else if (keyAsTap(e))
-          _asTap(e),
+        if (e.kind == TouchKind.tap) e else if (keyAsTap(e)) _asTap(e),
     ];
     var step = 0;
     for (var i = 0; i < taps.length; i++) {
@@ -220,18 +315,29 @@ abstract final class AutoDirector {
           MarkerItem(
             id: 'tp_${i}_${e.tMs}',
             cueStartMs: cue,
-            holdMs: 1500,
-            spec: MarkerSpec(
-              type: o.number ? MarkerType.number : MarkerType.ripple,
-              x0: e.x!.clamp(0.0, 1.0),
-              y0: e.y!.clamp(0.0, 1.0),
-              number: step,
+            holdMs: o.markerHoldMs,
+            spec: tapSpec(
+              o.markerType ??
+                  (o.number ? MarkerType.number : MarkerType.ripple),
+              e.x!.clamp(0.0, 1.0),
+              e.y!.clamp(0.0, 1.0),
+              step,
+              frameW: base.frameW,
+              frameH: base.frameH,
+              color: o.markerColor,
+              thickness: o.markerThickness,
             ),
           ),
         );
       } else {
         out = out.upsertText(
-          _caption('tpt_${i}_${e.tMs}', '$stepPrefix$step', e.tMs - 100, e.tMs + 1500, dur),
+          _caption(
+            'tpt_${i}_${e.tMs}',
+            '$stepPrefix$step',
+            e.tMs - 100,
+            e.tMs + 1500,
+            dur,
+          ),
         );
       }
     }
@@ -248,9 +354,15 @@ abstract final class AutoDirector {
         gi++;
         final start = keys.first.tMs;
         final end = keys.last.endMs ?? keys.last.tMs;
-        final typing = keys.any((k) => k.sensitive) ? o.typedLabel : o.typingLabel;
-        out = out.upsertText(_caption('typ_$gi', typing, start - 400, end, dur));
-        out = out.upsertText(_caption('typd_$gi', o.typedLabel, end, end + 1500, dur));
+        final typing = keys.any((k) => k.sensitive)
+            ? o.typedLabel
+            : o.typingLabel;
+        out = out.upsertText(
+          _caption('typ_$gi', typing, start - 400, end, dur),
+        );
+        out = out.upsertText(
+          _caption('typd_$gi', o.typedLabel, end, end + 1500, dur),
+        );
         // The field is the last tap before the first key, when its place is known.
         final field = sorted
             .where((e) => e.kind == TouchKind.tap && e.tMs < start)
@@ -262,7 +374,9 @@ abstract final class AutoDirector {
           final zs = math.max(0, start - 500);
           final ze = math.min(dur, end + 500);
           if (ze - zs >= 800 &&
-              !out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100)) {
+              !out.zooms.any(
+                (z) => zs < z.endMs + 100 && ze > z.startMs - 100,
+              )) {
             out = out.upsertZoom(
               ZoomItem(
                 id: 'zi_$gi',
@@ -290,7 +404,8 @@ abstract final class AutoDirector {
         final zs = math.max(0, e.tMs - zoomLeadMs);
         final ze = math.min(dur, e.tMs + 1200);
         if (ze - zs < 800) continue;
-        if (out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100)) continue;
+        if (out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100))
+          continue;
         out = out.upsertZoom(
           ZoomItem(
             id: 'zt_${e.tMs}',

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:ui' show PlatformDispatcher;
+import 'dart:ui' show Color, PlatformDispatcher;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -133,6 +133,10 @@ class RecorderController extends Notifier<RecorderState> {
             pauseMs: mk.pauseMs,
             pauseZoom: mk.pauseZoom,
             inputMode: mk.inputMode,
+            markerType: mk.autoMarker,
+            markerColor: Color(mk.color),
+            markerThickness: mk.thickness,
+            markerHoldMs: mk.holdMs,
           );
           var auto = AutoDirector.fromTouches(
             draft,

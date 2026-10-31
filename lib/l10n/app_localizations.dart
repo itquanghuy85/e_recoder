@@ -3355,6 +3355,18 @@ abstract class AppL10n {
   /// **'Tự động dựng chỉ có khi quay sạch, vì lúc đó video chưa có dấu nào chen vào để app dựng lại cho đẹp.'**
   String get markerAutoNeedsClean;
 
+  /// No description provided for @autoMarkerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu tự động gắn vào mỗi lần bấm'**
+  String get autoMarkerTitle;
+
+  /// No description provided for @autoMarkerHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn kiểu dấu; màu, độ dày và thời gian hiện lấy ở mục 1 và 2 phía trên. Quay xong, dấu này tự có ở từng chỗ bạn đã bấm.'**
+  String get autoMarkerHint;
+
   /// No description provided for @markerAutoSwitch.
   ///
   /// In vi, this message translates to:

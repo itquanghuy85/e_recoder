@@ -579,6 +579,8 @@
   "markerSecAuto": "Automatic editing after recording",
   "markerSecAutoSub": "The app zooms in on the spots you marked and numbers the steps as soon as the recording ends. You can still change it in the editor.",
   "markerAutoNeedsClean": "Automatic editing is only available with clean recording: nothing is drawn into the video, so the app can redraw the markers properly.",
+  "autoMarkerTitle": "Mark added at every tap",
+  "autoMarkerHint": "Pick the kind of mark; its colour, thickness and time come from groups 1 and 2 above. When the recording ends it is placed at every tap.",
   "markerAutoSwitch": "Turn on clean recording",
   "settingsGroupRecordSub": "How you mark while recording, automatic editing, and the permissions recording needs",
   "settingsGroupHelpSub": "The guide, privacy, and app information",

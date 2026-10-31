@@ -28,6 +28,14 @@ tags:
     timeout: 20000
 - tapOn:
     id: "touch_source_auto"
+# The mark the automatic edit puts at every tap: a circle this time (the default is the number).
+- scrollUntilVisible:
+    element:
+      id: "auto_marker_circle"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: "auto_marker_circle"
 - back
 - tapOn:
     text: "Quay.*"

@@ -1764,6 +1764,13 @@ class AppL10nEn extends AppL10n {
       'Automatic editing is only available with clean recording: nothing is drawn into the video, so the app can redraw the markers properly.';
 
   @override
+  String get autoMarkerTitle => 'Mark added at every tap';
+
+  @override
+  String get autoMarkerHint =>
+      'Pick the kind of mark; its colour, thickness and time come from groups 1 and 2 above. When the recording ends it is placed at every tap.';
+
+  @override
   String get markerAutoSwitch => 'Turn on clean recording';
 
   @override

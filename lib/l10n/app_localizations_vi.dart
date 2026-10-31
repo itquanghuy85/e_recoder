@@ -1759,6 +1759,13 @@ class AppL10nVi extends AppL10n {
       'Tự động dựng chỉ có khi quay sạch, vì lúc đó video chưa có dấu nào chen vào để app dựng lại cho đẹp.';
 
   @override
+  String get autoMarkerTitle => 'Dấu tự động gắn vào mỗi lần bấm';
+
+  @override
+  String get autoMarkerHint =>
+      'Chọn kiểu dấu; màu, độ dày và thời gian hiện lấy ở mục 1 và 2 phía trên. Quay xong, dấu này tự có ở từng chỗ bạn đã bấm.';
+
+  @override
   String get markerAutoSwitch => 'Bật Quay sạch, dựng sau';
 
   @override

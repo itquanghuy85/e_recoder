@@ -1,5 +1,10 @@
 # Changelog
 
+## [2026-10-31] Dựng tự động dùng đúng dấu người dùng chọn
+- Trước đây dựng tự động chỉ gắn dấu số (hoặc gợn sóng) và bỏ qua dấu, màu, độ dày, thời gian hiện đã chọn. Nay: Cài đặt → Dấu → nhóm 4 có hàng chọn "Dấu tự động gắn vào mỗi lần bấm" (ngón tay, gợn sóng, mũi tên, vòng tròn, khung, nét vẽ, số; mặc định số, khoá mới `marker.autoType`). Màu, độ dày, thời gian hiện lấy từ nhóm 1 và 2.
+- `AutoDirector.tapSpec` dựng hình quanh chỗ bấm: vòng tròn tròn thật trên màn hình, khung chữ nhật, mũi tên chỉ từ góc dưới phải, nét gạch chân. `DirectorOptions` thêm `markerType/markerColor/markerThickness/markerHoldMs`; không đặt thì giữ luật cũ.
+- Test: Flutter 347, Maestro `clean_auto_touches` (chọn vòng tròn) PASS trên S25: 4 vòng tròn quanh phím 7/5/9, 4 lần phóng to.
+
 ## [2026-10-31] Quay sạch tự nhận lần bấm (không lắc, không vùng ẩn) + Cài đặt chia nhóm rõ
 - **Nghe mọi lần bấm khi quay sạch** (`overlay/TouchWatcher.kt`): cửa sổ ẩn 1x1 px dùng `FLAG_WATCH_OUTSIDE_TOUCH`, Android báo `ACTION_OUTSIDE` cho mỗi lần chạm ở bất kỳ đâu. Không vẽ gì (video vẫn sạch), không cần lắc máy, không cần chạm vùng ẩn, không quyền mới. Chỉ ghi THỜI ĐIỂM (Android giấu vị trí chạm của app khác); không ghi nội dung màn hình hay phím gõ.
 - **Tìm chỗ bấm từ hình ảnh** (`TouchScan.locate` + `reaction`): so khung ngay trước lần chạm với các khung sau (mỗi 40 ms, tới 680 ms), ngưỡng thấp (vệt sáng của phím vừa bấm rất mờ), vùng thay đổi liên thông lớn nhất, khung phản ứng đầu tiên quyết định; thay đổi gần cả màn hình (đổi trang) thì không có vị trí. Đo trên S25 Ultra bằng máy tính Samsung: phím 7 / 5 / 9 cho (0,17-0,18 ; 0,55-0,58) / (0,40 ; 0,68) / (0,62-0,66 ; 0,58).

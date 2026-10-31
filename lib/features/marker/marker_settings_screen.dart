@@ -548,6 +548,30 @@ class _AutoDirectSection extends ConsumerWidget {
         // How the editor learns where you tapped, to build the edit from your touches.
         const TouchSourceSection(),
         const SizedBox(height: Space.sm),
+        Text(t.autoMarkerTitle, style: tt.titleSmall),
+        Text(
+          t.autoMarkerHint,
+          style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+        ),
+        const SizedBox(height: Space.sm),
+        Wrap(
+          key: const ValueKey('auto_marker_choice'),
+          spacing: Space.sm,
+          runSpacing: Space.sm,
+          children: [
+            for (final m in MarkerType.values)
+              Semantics(
+                identifier: 'auto_marker_${m.name}',
+                child: ChoiceChip(
+                  avatar: Icon(markerTypeIcon(m), size: 18),
+                  label: Text(markerTypeLabel(t, m)),
+                  selected: settings.autoMarker == m,
+                  onSelected: (_) => n.update(settings.copyWith(autoMarker: m)),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: Space.sm),
         ...[
           Semantics(
             identifier: 'auto_zoom_opt',

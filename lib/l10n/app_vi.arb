@@ -722,6 +722,8 @@
   "markerSecAuto": "Tự động dựng sau khi quay",
   "markerSecAutoSub": "App tự phóng to vào chỗ bạn đã đánh dấu và đánh số bước ngay khi quay xong. Bạn vẫn sửa được trong trình chỉnh sửa.",
   "markerAutoNeedsClean": "Tự động dựng chỉ có khi quay sạch, vì lúc đó video chưa có dấu nào chen vào để app dựng lại cho đẹp.",
+  "autoMarkerTitle": "Dấu tự động gắn vào mỗi lần bấm",
+  "autoMarkerHint": "Chọn kiểu dấu; màu, độ dày và thời gian hiện lấy ở mục 1 và 2 phía trên. Quay xong, dấu này tự có ở từng chỗ bạn đã bấm.",
   "markerAutoSwitch": "Bật Quay sạch, dựng sau",
   "settingsGroupRecordSub": "Cách đánh dấu khi quay, tự động dựng và các quyền cần để quay",
   "settingsGroupHelpSub": "Xem lại hướng dẫn, quyền riêng tư và thông tin ứng dụng",
