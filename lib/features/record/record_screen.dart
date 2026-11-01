@@ -41,9 +41,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     if (await ReadyCheckScreen.missingAnything(ref, needs)) {
       if (!mounted) return;
       final go = await Navigator.of(context).push<bool>(
-        MaterialPageRoute<bool>(
-          builder: (_) => ReadyCheckScreen(needs: needs),
-        ),
+        MaterialPageRoute<bool>(builder: (_) => ReadyCheckScreen(needs: needs)),
       );
       if (go != true || !mounted) return;
     }
@@ -145,53 +143,109 @@ class _IdleView extends ConsumerWidget {
     final list = ref.watch(mediaListProvider);
     final purpose = ref.watch(purposeProvider);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(Space.lg, Space.lg, Space.lg, Space.xl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(t.appTitle, style: tt.headlineSmall),
-          if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-            const SizedBox(height: Space.sm),
-            Semantics(
-              identifier: 'ios_notice',
-              child: Text(t.iosNoRecording, style: tt.bodyMedium),
+    // The options scroll; the Start button stays pinned at the bottom whatever their length.
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+              Space.lg,
+              Space.lg,
+              Space.lg,
+              Space.md,
             ),
-          ],
-          const SizedBox(height: Space.lg),
-          // One tap changes the purpose; each purpose keeps its own settings (see PurposeNotifier).
-          SizedBox(
-            width: double.infinity,
-            child: SegmentedButton<Purpose>(
-              key: const ValueKey('purpose_selector'),
-              showSelectedIcon: false,
-              segments: [
-                for (final p in Purpose.values)
-                  ButtonSegment(
-                    value: p,
-                    label: Semantics(
-                      identifier: 'purpose_${p.name}',
-                      child: Text(
-                        switch (p) {
-                          Purpose.tutorial => t.modeTutorial,
-                          Purpose.game => t.modeGame,
-                          Purpose.plain => t.modePlain,
-                        },
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t.appTitle, style: tt.headlineSmall),
+                if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+                  const SizedBox(height: Space.sm),
+                  Semantics(
+                    identifier: 'ios_notice',
+                    child: Text(t.iosNoRecording, style: tt.bodyMedium),
                   ),
+                ],
+                const SizedBox(height: Space.lg),
+                // One tap changes the purpose; each purpose keeps its own settings (see PurposeNotifier).
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<Purpose>(
+                    key: const ValueKey('purpose_selector'),
+                    showSelectedIcon: false,
+                    segments: [
+                      for (final p in Purpose.values)
+                        ButtonSegment(
+                          value: p,
+                          label: Semantics(
+                            identifier: 'purpose_${p.name}',
+                            child: Text(
+                              switch (p) {
+                                Purpose.tutorial => t.modeTutorial,
+                                Purpose.game => t.modeGame,
+                                Purpose.plain => t.modePlain,
+                              },
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                    ],
+                    selected: {purpose},
+                    onSelectionChanged: (v) =>
+                        ref.read(purposeProvider.notifier).choose(v.first),
+                  ),
+                ),
+                const SizedBox(height: Space.md),
+                QuickOptions(purpose: purpose),
+                const SizedBox(height: Space.sm),
+                MoreOptions(purpose: purpose),
+                const SizedBox(height: Space.md),
+                Row(
+                  children: [
+                    Expanded(child: Text(t.recentTitle, style: tt.titleMedium)),
+                    TextButton(
+                      onPressed: () =>
+                          ref.read(shellIndexProvider.notifier).go(1),
+                      child: Text(t.seeAll),
+                    ),
+                  ],
+                ),
+                list.when(
+                  data: (items) => items.isEmpty
+                      ? Text(
+                          t.libraryEmptyBody,
+                          style: tt.bodyMedium?.copyWith(
+                            color: c.onSurfaceVariant,
+                          ),
+                        )
+                      : Column(
+                          children: [
+                            for (final e in items.take(1))
+                              MediaTile(
+                                entry: e,
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => PlayerScreen(entry: e),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, _) => const SizedBox.shrink(),
+                ),
               ],
-              selected: {purpose},
-              onSelectionChanged: (v) =>
-                  ref.read(purposeProvider.notifier).choose(v.first),
             ),
           ),
-          const SizedBox(height: Space.md),
-          QuickOptions(purpose: purpose),
-          const SizedBox(height: Space.lg),
-          SizedBox(
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Space.lg,
+            Space.sm,
+            Space.lg,
+            Space.md,
+          ),
+          child: SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
               key: const ValueKey('record_start'),
@@ -206,42 +260,8 @@ class _IdleView extends ConsumerWidget {
               label: Text(t.recordStart),
             ),
           ),
-          const SizedBox(height: Space.sm),
-          MoreOptions(purpose: purpose),
-          const SizedBox(height: Space.md),
-          Row(
-            children: [
-              Expanded(child: Text(t.recentTitle, style: tt.titleMedium)),
-              TextButton(
-                onPressed: () => ref.read(shellIndexProvider.notifier).go(1),
-                child: Text(t.seeAll),
-              ),
-            ],
-          ),
-          list.when(
-            data: (items) => items.isEmpty
-                ? Text(
-                    t.libraryEmptyBody,
-                    style: tt.bodyMedium?.copyWith(color: c.onSurfaceVariant),
-                  )
-                : Column(
-                    children: [
-                      for (final e in items.take(1))
-                        MediaTile(
-                          entry: e,
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => PlayerScreen(entry: e),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-            loading: () => const SizedBox.shrink(),
-            error: (_, _) => const SizedBox.shrink(),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

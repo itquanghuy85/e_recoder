@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-11-01] Dấu không lan sang màn sau, zoom 300% đúng tâm, bỏ "Bước N" khi tắt đánh số
+- Dò màn hình đổi theo ô (12×24) thay vì theo điểm ảnh: trang trắng sang trang trắng khác chữ cũng dò ra, nên dấu mờ trước khi màn mới hiện. Test Kotlin `changedBlocks`.
+- Bỏ các chạm lúc thao tác Dừng quay (chạm khi app ở phía trước, và chạm dẫn app về phía trước).
+- Tắt "Đánh số các bước": không còn dấu số và chữ "Bước N". Nhãn đổi thành "Đánh số các bước".
+- Zoom tự động: mỗi lần chạm một zoom riêng, tâm đúng điểm chạm, mức phóng tới 300% (trước đây gộp và lấy trung điểm).
+- Thanh "Thời gian hiện dấu" và "Mức phóng" nằm trong các chế độ Hướng dẫn / Game; tốc độ phóng và giữ thêm trong "Thêm tuỳ chọn". Nút "Bắt đầu quay" ghim ở đáy màn Quay.
+- Flutter 397/397, analyze sạch, Kotlin đạt. Chưa chạy lại trên S25 (không kết nối). Chi tiết: `docs/PLAN_CHE_DO_QUAY.md`, mục "Đợt 2".
+
 ## [2026-11-01] Cài đặt theo từng chế độ quay
 - Màn Quay, từ trên xuống: thanh chọn chế độ `[Hướng dẫn | Game | Quay thường]` → lựa chọn chính của chế độ → nút "Bắt đầu quay" → "Thêm tuỳ chọn" (riêng theo chế độ).
 - Mỗi chế độ nhớ cài đặt riêng (`purpose.profile.<chế độ>`). Khoá cũ giữ nguyên tên; người dùng cũ giữ cài đặt và mặc định ở "Hướng dẫn".

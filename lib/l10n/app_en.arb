@@ -188,7 +188,7 @@
   "autoTitle": "Auto direct",
   "autoHint": "Zooms into your markers, renumbers the steps and speeds up stretches where the screen does not change. Everything stays editable and undoable.",
   "autoZoomOpt": "Zoom into markers",
-  "autoNumberOpt": "Renumber the steps",
+  "autoNumberOpt": "Number the steps",
   "autoIdleOpt": "Speed up still stretches",
   "autoRun": "Direct automatically",
   "autoRunning": "Analysing the video…",
@@ -659,5 +659,6 @@
   "settingsResetModesSub": "Tutorial, Game and Plain go back to their first settings",
   "resetModesConfirm": "Put all three recording modes back to their first settings?",
   "resetModesAction": "Reset",
-  "resetModesDone": "The recording modes are back to their defaults"
+  "resetModesDone": "The recording modes are back to their defaults",
+  "holdTitle": "How long a mark shows"
 }

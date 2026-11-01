@@ -74,13 +74,16 @@ tags:
     timeout: 15000
 - tapOn:
     id: "record_more"
-- scrollUntilVisible:
-    element:
-      id: "more_hold"
-    direction: DOWN
-    timeout: 15000
 - assertVisible:
     id: "quick_mark_number"
+# The main options hold the mark time and the zoom level (up to 300 %).
+- scrollUntilVisible:
+    element:
+      id: "quick_zoom_scale"
+    direction: UP
+    timeout: 15000
+- assertVisible:
+    id: "quick_hold"
 - takeScreenshot: modes_4_tutorial_more
 - tapOn:
     id: "record_more"

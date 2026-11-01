@@ -143,4 +143,5 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
   - Bắt đầu quay thì app tự lùi xuống nền: muốn bấm "Dừng quay" trong app phải `launchApp` lại.
   - Nghiệm thu chế độ: `bash scripts/qa/ux_modes_record.sh` (tự sao lưu và trả cài đặt, đo hai video bằng ffprobe).
   - `run_flows18.ps1` không cần bỏ khoá `purpose` nữa.
+- Đợt 2 (01/11/2026): thanh thời gian dấu nay là `quick_hold` ở lựa chọn chính (không còn `more_hold`); mức phóng là `quick_zoom_scale`. Nút `record_start` ghim ở đáy màn Quay (phần trên cuộn). Nghiệm thu lại trên S25 khi kết nối: `bash scripts/qa/ux_mark_timing.sh` (kiểm cả ảnh dấu sau khi đổi màn), `bash scripts/qa/ux_modes_record.sh`, rồi `run_flows18.ps1`.
 

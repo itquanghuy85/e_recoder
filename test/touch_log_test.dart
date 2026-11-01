@@ -340,6 +340,41 @@ void main() {
       expect(AutoDirector.fromTouches(_base(), e, hold).markers.length, 1);
     });
 
+    test('steps not numbered: no number marks and no step captions', () {
+      const off = DirectorOptions(number: false, pauseMs: 0);
+      final ev = TouchClassifier.classify([
+        c(3000, 0.5, 0.3, null),
+        RawTouch(tMs: 9000), // a touch whose place is unknown
+        c(15000, 0.2, 0.4, null),
+      ]);
+      // the default kind is "number": without numbering it is the plain ripple
+      for (final kind in [null, MarkerType.number]) {
+        final p = AutoDirector.fromTouches(
+          _base(),
+          ev,
+          off.copyWith(markerType: kind),
+        );
+        expect(p.markers.length, 2);
+        expect(p.markers.any((m) => m.spec.type == MarkerType.number), isFalse);
+        expect(p.texts.where((t) => t.text.startsWith('Step')), isEmpty);
+      }
+      // a kind the person chose is kept
+      final arrow = AutoDirector.fromTouches(
+        _base(),
+        ev,
+        off.copyWith(markerType: MarkerType.arrow),
+      );
+      expect(arrow.markers.every((m) => m.spec.type == MarkerType.arrow), isTrue);
+      // numbered: numbers and a caption for the touch without a place
+      final on = AutoDirector.fromTouches(
+        _base(),
+        ev,
+        const DirectorOptions(pauseMs: 0, markerType: MarkerType.number),
+      );
+      expect(on.markers.every((m) => m.spec.type == MarkerType.number), isTrue);
+      expect(on.texts.where((t) => t.text.startsWith('Step')).length, 1);
+    });
+
     test('changeMs is read from the scan, -1 means none', () {
       expect(
         RawTouch.fromMap({'tMs': 1, 'x': 0.1, 'y': 0.1, 'changeMs': 400}).changeMs,

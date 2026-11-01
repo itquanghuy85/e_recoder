@@ -69,15 +69,38 @@ class TouchLocateTest {
         assertNull(TouchScan.reaction(IntArray(10), IntArray(12)))
     }
 
+    // Thin dark lines every 6 rows in the middle of a white page: the few pixels of a page of text.
+    private fun IntArray.textLines(y0: Int, y1: Int) {
+        var y = y0
+        while (y <= y1) { fill(8, y, w - 9, y + 1, 40); y += 6 }
+    }
+
     @Test
     fun `a pressed button is a small change, a new page a big one`() {
         val a = frame()
         val button = frame().also { it.fill(30, 150, 59, 169, 200) }
         val page = frame().also { it.fill(0, 0, w - 1, h / 2, 200) }
-        assertTrue(TouchScan.changedShare(a, button) < 0.2)
-        assertTrue(TouchScan.changedShare(a, page) >= 0.2)
-        assertEquals(0.0, TouchScan.changedShare(a, a), 0.0)
-        assertEquals(0.0, TouchScan.changedShare(IntArray(10), IntArray(12)), 0.0)
+        assertTrue(TouchScan.changedBlocks(a, button) < 0.15)
+        assertTrue(TouchScan.changedBlocks(a, page) >= 0.15)
+        assertEquals(0.0, TouchScan.changedBlocks(a, a), 0.0)
+        assertEquals(0.0, TouchScan.changedBlocks(IntArray(10), IntArray(12)), 0.0)
+    }
+
+    @Test
+    fun `a white page replaced by another page of text is a new screen`() {
+        val white = frame(bg = 240)
+        val text = frame(bg = 240).also { it.textLines(20, 220) }
+        // few pixels change (about a third of them by more than a pixel threshold), but everywhere
+        assertTrue(TouchScan.changedBlocks(white, text) >= 0.5)
+    }
+
+    @Test
+    fun `a row that lights up or a ripple is not a new screen`() {
+        val white = frame(bg = 240)
+        val row = frame(bg = 240).also { it.fill(0, 100, w - 1, 124, 215) } // a pressed list row
+        val digits = frame(bg = 240).also { it.textLines(20, 40) } // a result that changes
+        assertTrue(TouchScan.changedBlocks(white, row) < 0.15)
+        assertTrue(TouchScan.changedBlocks(white, digits) < 0.15)
     }
 
     @Test

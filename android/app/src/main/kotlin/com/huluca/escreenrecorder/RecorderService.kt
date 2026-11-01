@@ -116,6 +116,7 @@ class RecorderService : Service(), ControlBar.Listener {
         this.config = config
         marks.clear()
         touches.clear()
+        running = this
         pausedByPicker = false
         if (config.floatingBar) {
             if (config.clean) startClean(config) else startDot(config)
@@ -188,10 +189,20 @@ class RecorderService : Service(), ControlBar.Listener {
 
     /** A touch somewhere on screen: its video time is "now" minus how long ago the event happened. */
     private fun addTouch(eventUptimeMs: Long) {
-        if (paused) return
+        // A touch while our own app is in front is Pause / Stop on its live view, not part of what is shown.
+        if (paused || appInFront) return
         val ago = (android.os.SystemClock.uptimeMillis() - eventUptimeMs).coerceIn(0L, 1000L)
         val t = (elapsedMs() - ago).coerceAtLeast(0L)
         touches.add(mapOf("tMs" to t, "x" to -1.0, "y" to -1.0, "durMs" to 0L, "dist" to 0.0))
+    }
+
+    /**
+     * Our app came back to the front while recording (to press Stop): the touches of the last moments
+     * were the way back (the notification, the app switcher), not part of what is shown.
+     */
+    private fun dropTrailingTouches() {
+        val from = elapsedMs() - BACK_TO_APP_MS
+        touches.removeAll { ((it["tMs"] as? Long) ?: 0L) > from }
     }
 
     private fun addMark(spec: MarkerSpec, tMs: Long) {
@@ -272,6 +283,7 @@ class RecorderService : Service(), ControlBar.Listener {
             finishAndClose(); return
         }
         ticking = false
+        running = null
         hideOverlays()
         RecorderBus.changePhase(RecorderBus.SAVING)
         session = null
@@ -421,5 +433,16 @@ class RecorderService : Service(), ControlBar.Listener {
         private const val CHANNEL = "esr_recording"
         private const val NOTIF_ID = 4201
         private const val LOW_STORAGE_BYTES = 60L * 1024 * 1024
+        private const val BACK_TO_APP_MS = 1500L
+
+        /** Is our own app in front of the screen (set from MainActivity). */
+        @Volatile var appInFront = false
+            private set
+        @Volatile private var running: RecorderService? = null
+
+        fun appFront(front: Boolean) {
+            appInFront = front
+            if (front) running?.dropTrailingTouches()
+        }
     }
 }

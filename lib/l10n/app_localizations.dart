@@ -1120,7 +1120,7 @@ abstract class AppL10n {
   /// No description provided for @autoNumberOpt.
   ///
   /// In vi, this message translates to:
-  /// **'Đánh số lại các bước'**
+  /// **'Đánh số các bước'**
   String get autoNumberOpt;
 
   /// No description provided for @autoIdleOpt.
@@ -3816,6 +3816,12 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Đã đưa các chế độ quay về mặc định'**
   String get resetModesDone;
+
+  /// No description provided for @holdTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian hiện dấu'**
+  String get holdTitle;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

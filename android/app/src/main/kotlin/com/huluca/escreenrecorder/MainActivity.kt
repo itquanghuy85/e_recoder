@@ -26,6 +26,16 @@ import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
+    override fun onResume() {
+        super.onResume()
+        RecorderService.appFront(true)
+    }
+
+    override fun onPause() {
+        RecorderService.appFront(false)
+        super.onPause()
+    }
+
     private var pendingStart: MethodChannel.Result? = null
     private val io = Executors.newFixedThreadPool(2)
     private val main = Handler(Looper.getMainLooper())

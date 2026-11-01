@@ -121,7 +121,10 @@ abstract final class AutoDirector {
   static const zoomScale = 1.7;
   static const zoomLeadMs = 200;
   static const zoomMergeGapMs = 700;
-  static const zoomMaxSpan = 0.5;
+
+  /// Touches this close (fractions of the frame) are one spot: their zooms are one.
+  static const zoomSameSpot = 0.06;
+  static const zoomMinMs = 800;
   static const idleSpeed = 4.0;
   static const idleMinMs = 1800;
   static const idleEdgeMs = 350;
@@ -322,8 +325,7 @@ abstract final class AutoDirector {
               o.markerHoldMs,
             ),
             spec: tapSpec(
-              o.markerType ??
-                  (o.number ? MarkerType.number : MarkerType.ripple),
+              _tapKind(o),
               e.x!.clamp(0.0, 1.0),
               e.y!.clamp(0.0, 1.0),
               step,
@@ -334,7 +336,8 @@ abstract final class AutoDirector {
             ),
           ),
         );
-      } else {
+      } else if (o.number) {
+        // A touch whose place is unknown only gets a step caption, and only when steps are numbered.
         out = out.upsertText(
           _caption(
             'tpt_${i}_${e.tMs}',
@@ -443,6 +446,13 @@ abstract final class AutoDirector {
     app: e.app,
     changeMs: e.changeMs,
   );
+
+  /// The mark put at each tap. Step numbers only appear when steps are numbered: without it a "number"
+  /// mark (the default kind) is drawn as the plain ripple instead.
+  static MarkerType _tapKind(DirectorOptions o) {
+    final k = o.markerType ?? (o.number ? MarkerType.number : MarkerType.ripple);
+    return k == MarkerType.number && !o.number ? MarkerType.ripple : k;
+  }
 
   /// A mark starts fading this long before the screen changes, so it is gone before the new screen
   /// shows: the fade itself plus the step the change is looked for with (it can be found that late).
@@ -609,17 +619,26 @@ abstract final class AutoDirector {
   ]) {
     final marks = [...p.markers]
       ..sort((a, b) => a.cueStartMs.compareTo(b.cueStartMs));
+    // One zoom per touch, centred on that touch. Touches at the same spot share one zoom; a touch
+    // elsewhere ends the zoom before it (it zooms out) when it comes before that one is over, and a zoom
+    // cut too short to be seen is dropped, so a quick run of touches is zoomed at its last one.
     final windows = <_Win>[];
     for (final m in marks) {
       final start = math.max(0, m.cueStartMs - zoomLeadMs);
       final end = math.min(p.durationMs, m.endMs + o.zoomHoldMs);
-      if (end - start < 800) continue;
+      if (end - start < zoomMinMs) continue;
       final a = anchorOf(m.spec);
       final last = windows.isEmpty ? null : windows.last;
-      if (last != null && start - last.end < zoomMergeGapMs) {
-        // Too far apart to share one frame: keep the first zoom only.
-        last.tryAdd(a, end);
-        continue;
+      if (last != null) {
+        final near = (last.focus - a).distance <= zoomSameSpot;
+        if (near && start - last.end < zoomMergeGapMs) {
+          last.end = math.max(last.end, end);
+          continue;
+        }
+        if (start < last.end + 100) {
+          last.end = start - 100;
+          if (last.end - last.start < zoomMinMs) windows.removeLast();
+        }
       }
       windows.add(_Win(start, end, a));
     }
@@ -630,13 +649,12 @@ abstract final class AutoDirector {
         (z) => w.start < z.endMs + 100 && w.end > z.startMs - 100,
       );
       if (overlaps) continue;
-      final f = w.focus;
       out = out.upsertZoom(
         ZoomItem(
           id: 'zm_${n++}_${w.start}',
-          fx: f.dx,
-          fy: f.dy,
-          scale: w.scaleCapped(o.zoomScale),
+          fx: w.focus.dx,
+          fy: w.focus.dy,
+          scale: o.zoomScale,
           startMs: w.start,
           endMs: w.end,
           inMs: o.zoomRampMs,
@@ -696,33 +714,10 @@ abstract final class AutoDirector {
   }
 }
 
+/// One zoom window: when, and the touch it is centred on.
 class _Win {
-  _Win(this.start, this.end, Offset a)
-    : minX = a.dx,
-      maxX = a.dx,
-      minY = a.dy,
-      maxY = a.dy;
+  _Win(this.start, this.end, this.focus);
   final int start;
   int end;
-  double minX, maxX, minY, maxY;
-
-  void tryAdd(Offset a, int newEnd) {
-    final nx0 = math.min(minX, a.dx), nx1 = math.max(maxX, a.dx);
-    final ny0 = math.min(minY, a.dy), ny1 = math.max(maxY, a.dy);
-    if (math.max(nx1 - nx0, ny1 - ny0) > AutoDirector.zoomMaxSpan) return;
-    minX = nx0;
-    maxX = nx1;
-    minY = ny0;
-    maxY = ny1;
-    end = math.max(end, newEnd);
-  }
-
-  Offset get focus => Offset((minX + maxX) / 2, (minY + maxY) / 2);
-
-  /// A wide spread needs a gentler zoom so both targets stay in frame.
-  double scaleCapped(double cap) {
-    final span = math.max(maxX - minX, maxY - minY);
-    if (span <= 0.05) return cap;
-    return (0.8 / (span + 0.25)).clamp(math.min(1.2, cap), cap).toDouble();
-  }
+  final Offset focus;
 }

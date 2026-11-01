@@ -568,7 +568,7 @@ class AppL10nVi extends AppL10n {
   String get autoZoomOpt => 'Phóng to vào dấu';
 
   @override
-  String get autoNumberOpt => 'Đánh số lại các bước';
+  String get autoNumberOpt => 'Đánh số các bước';
 
   @override
   String get autoIdleOpt => 'Tua nhanh đoạn đứng yên';
@@ -2012,4 +2012,7 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get resetModesDone => 'Đã đưa các chế độ quay về mặc định';
+
+  @override
+  String get holdTitle => 'Thời gian hiện dấu';
 }

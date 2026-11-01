@@ -103,7 +103,7 @@ void main() {
     expect(fake.calls, containsAllInOrder(['pause', 'stop']));
   });
 
-  testWidgets('tutorial: how long a mark stays is a seconds slider', (
+  testWidgets('tutorial: mark time and zoom level are sliders on the main options', (
     tester,
   ) async {
     _phone(tester);
@@ -112,10 +112,7 @@ void main() {
     );
     await tester.pumpWidget(app);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Thêm tuỳ chọn'));
-    await tester.tap(find.text('Thêm tuỳ chọn'));
-    await tester.pumpAndSettle();
-    final hold = find.byKey(const ValueKey('more_hold'));
+    final hold = find.byKey(const ValueKey('quick_hold'));
     await tester.ensureVisible(hold);
     await tester.pumpAndSettle();
     expect(find.text('2,5 s'), findsOneWidget);
@@ -125,5 +122,17 @@ void main() {
     await tester.drag(hold, const Offset(-4000, 0)); // far left = shortest
     await tester.pumpAndSettle();
     expect(find.text('0,5 s'), findsOneWidget);
+
+    // zoom level: 170 % by default, up to 300 %
+    final zoom = find.byKey(const ValueKey('quick_zoom_scale'));
+    await tester.ensureVisible(zoom);
+    await tester.pumpAndSettle();
+    expect(find.text('170%'), findsOneWidget);
+    await tester.drag(zoom, const Offset(2000, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('300%'), findsOneWidget);
+    await tester.drag(zoom, const Offset(-4000, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('120%'), findsOneWidget);
   });
 }

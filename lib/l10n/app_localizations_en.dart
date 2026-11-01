@@ -570,7 +570,7 @@ class AppL10nEn extends AppL10n {
   String get autoZoomOpt => 'Zoom into markers';
 
   @override
-  String get autoNumberOpt => 'Renumber the steps';
+  String get autoNumberOpt => 'Number the steps';
 
   @override
   String get autoIdleOpt => 'Speed up still stretches';
@@ -2018,4 +2018,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get resetModesDone => 'The recording modes are back to their defaults';
+
+  @override
+  String get holdTitle => 'How long a mark shows';
 }

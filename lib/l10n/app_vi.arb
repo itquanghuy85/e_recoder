@@ -252,7 +252,7 @@
   "autoTitle": "Dựng tự động",
   "autoHint": "Tự phóng to vào chỗ đánh dấu, đánh số lại các bước và tua nhanh đoạn màn hình đứng yên. Mọi thứ vẫn sửa và hoàn tác được.",
   "autoZoomOpt": "Phóng to vào dấu",
-  "autoNumberOpt": "Đánh số lại các bước",
+  "autoNumberOpt": "Đánh số các bước",
   "autoIdleOpt": "Tua nhanh đoạn đứng yên",
   "autoRun": "Dựng tự động",
   "autoRunning": "Đang phân tích video…",
@@ -802,5 +802,6 @@
   "settingsResetModesSub": "Cài đặt của Hướng dẫn, Game và Quay thường trở về ban đầu",
   "resetModesConfirm": "Đưa cả ba chế độ quay về cài đặt ban đầu?",
   "resetModesAction": "Đưa về mặc định",
-  "resetModesDone": "Đã đưa các chế độ quay về mặc định"
+  "resetModesDone": "Đã đưa các chế độ quay về mặc định",
+  "holdTitle": "Thời gian hiện dấu"
 }

@@ -183,7 +183,7 @@ object TouchScan {
                     var dt = CHANGE_STEP_MS
                     while (t + dt < until) {
                         val after = frameLuma(mmr, t + dt)
-                        if (after != null && lastW == bw && lastH == bh && changedShare(before, after) >= SCREEN_CHANGE) {
+                        if (after != null && lastW == bw && lastH == bh && changedBlocks(before, after, bw, bh) >= SCREEN_CHANGE) {
                             changeMs = t + dt
                             break
                         }
@@ -210,18 +210,37 @@ object TouchScan {
     }
 
     // After a touch, the screen is looked at every [CHANGE_STEP_MS] for a real change: at least
-    // [SCREEN_CHANGE] of the picture clearly different from just before the touch (a pressed key or a
-    // ripple is far less).
+    // [SCREEN_CHANGE] of the picture's blocks different from just before the touch (a pressed key or a
+    // ripple is a few blocks).
     private const val CHANGE_SCAN_MS = 3000L
     private const val CHANGE_STEP_MS = 120L
-    private const val SCREEN_CHANGE = 0.2
+    private const val SCREEN_CHANGE = 0.15
 
-    /** The share of the picture (0..1) that clearly changed between two frames of the same size. */
-    internal fun changedShare(a: IntArray, b: IntArray): Double {
-        if (a.size != b.size || a.isEmpty()) return 0.0
-        var n = 0
-        for (i in a.indices) if (abs(a[i] - b[i]) > DIFF) n++
-        return n.toDouble() / a.size
+    // The picture is cut into blocks of BLOCK_W x BLOCK_H pixels (12 x 24 of them on the 108 x 240 scan); a
+    // block changed when its pixels differ by [BLOCK_DIFF] on average. Counting blocks, not pixels, sees a
+    // white page replaced by another white page with other text (few pixels, spread everywhere).
+    private const val BLOCK_W = 9
+    private const val BLOCK_H = 10
+    private const val BLOCK_DIFF = 8
+
+    /** The share (0..1) of the picture's blocks that changed between two frames of the same size. */
+    internal fun changedBlocks(a: IntArray, b: IntArray, w: Int = W, h: Int = H): Double {
+        if (a.size != b.size || a.size != w * h) return 0.0
+        val cols = (w + BLOCK_W - 1) / BLOCK_W
+        val rows = (h + BLOCK_H - 1) / BLOCK_H
+        var changed = 0
+        for (r in 0 until rows) for (c in 0 until cols) {
+            var sum = 0L
+            var n = 0
+            for (y in r * BLOCK_H until minOf(h, (r + 1) * BLOCK_H)) {
+                for (x in c * BLOCK_W until minOf(w, (c + 1) * BLOCK_W)) {
+                    sum += abs(a[y * w + x] - b[y * w + x])
+                    n++
+                }
+            }
+            if (n > 0 && sum / n >= BLOCK_DIFF) changed++
+        }
+        return changed.toDouble() / (rows * cols)
     }
 
     // A press shows for a frame or two (a faint ripple on the key), about 250 ms after the touch on a phone

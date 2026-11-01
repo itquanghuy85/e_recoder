@@ -234,9 +234,13 @@ void main() {
         'marker.mode': MarkMode.clean.index,
         'marker.touchSourceV2': TouchSource.auto.index,
       });
+      // the main options: how long a mark shows, how far the zoom goes
+      expect(find.byKey(const ValueKey('quick_hold')), findsOneWidget);
+      expect(find.byKey(const ValueKey('quick_zoom_scale')), findsOneWidget);
       await tapText(tester, 'Thêm tuỳ chọn');
       expect(find.byKey(const ValueKey('quick_mark_number')), findsOneWidget);
-      expect(find.byKey(const ValueKey('more_hold')), findsOneWidget);
+      expect(find.byKey(const ValueKey('more_zoom_ramp')), findsOneWidget);
+      expect(find.byKey(const ValueKey('more_zoom_hold')), findsOneWidget);
       expect(find.byKey(const ValueKey('more_pause')), findsOneWidget);
       expect(find.byKey(const ValueKey('more_countdown_3')), findsOneWidget);
       expect(find.byKey(const ValueKey('more_floating')), findsNothing);
@@ -245,7 +249,8 @@ void main() {
       await tapText(tester, 'Thêm tuỳ chọn');
       expect(find.byKey(const ValueKey('more_floating')), findsOneWidget);
       expect(find.byKey(const ValueKey('quick_mark_number')), findsNothing);
-      expect(find.byKey(const ValueKey('more_hold')), findsNothing);
+      expect(find.byKey(const ValueKey('quick_zoom_scale')), findsNothing);
+      expect(find.byKey(const ValueKey('quick_hold')), findsOneWidget); // marks by hand have it too
     });
 
     testWidgets('a change in More options is saved for that purpose', (

@@ -121,6 +121,18 @@ class QuickOptions extends ConsumerWidget {
                       ),
                   ],
                 ),
+              if (when != MarkWhen.none) w.holdSlider(t, mk, mkN),
+              if (when == MarkWhen.auto && mk.autoZoom)
+                w.slider(
+                  'quick_zoom_scale',
+                  t.zoomScale,
+                  '${(mk.zoomScale * 100).round()}%',
+                  mk.zoomScale * 100,
+                  120,
+                  300,
+                  18,
+                  (v) => mkN.update(mk.copyWith(zoomScale: v.round() / 100)),
+                ),
             ],
             if (purpose == Purpose.game) ...[
               w.tick(
@@ -139,6 +151,7 @@ class QuickOptions extends ConsumerWidget {
                     icon: markerTypeIcon(m),
                   ),
               ]),
+              w.holdSlider(t, mk, mkN),
             ],
           ],
         ),
@@ -210,24 +223,39 @@ class MoreOptions extends ConsumerWidget {
                 icon: markerTypeIcon(m),
               ),
           ]),
-        if (markWhenOf(mk) != MarkWhen.none)
-          w.slider(
-            'more_hold',
-            t.markerHold,
-            mk.holdMs,
-            MarkerTiming.minHoldMs,
-            MarkerTiming.maxHoldMs,
-            (v) => mkN.update(mk.copyWith(holdMs: v)),
-          ),
         if (markWhenOf(mk) == MarkWhen.auto)
           w.slider(
             'more_pause',
             t.pauseTitle,
-            mk.pauseMs,
+            _secs(mk.pauseMs),
+            mk.pauseMs.toDouble(),
             0,
             1500,
-            (v) => mkN.update(mk.copyWith(pauseMs: v)),
+            15,
+            (v) => mkN.update(mk.copyWith(pauseMs: v.round())),
           ),
+        if (markWhenOf(mk) == MarkWhen.auto && mk.autoZoom) ...[
+          w.slider(
+            'more_zoom_ramp',
+            t.zoomIn,
+            _secs(mk.zoomRampMs),
+            mk.zoomRampMs.toDouble(),
+            100,
+            2000,
+            19,
+            (v) => mkN.update(mk.copyWith(zoomRampMs: v.round())),
+          ),
+          w.slider(
+            'more_zoom_hold',
+            t.zoomHold,
+            _secs(mk.zoomHoldMs),
+            mk.zoomHoldMs.toDouble(),
+            0,
+            5000,
+            50,
+            (v) => mkN.update(mk.copyWith(zoomHoldMs: v.round())),
+          ),
+        ],
         fps,
         quality,
         countdown,
@@ -311,40 +339,59 @@ class _Bits {
         ),
       );
 
-  /// A time in milliseconds, shown in seconds, in steps of 0.1 s.
+  /// A slider with its value written at the right: [text] is what is shown, [value] runs from [min] to
+  /// [max] in [divisions] steps.
   Widget slider(
     String id,
     String title,
-    int ms,
-    int min,
-    int max,
-    ValueChanged<int> on,
-  ) {
-    final secs = (ms / 1000).toStringAsFixed(1).replaceAll('.', ',');
-    return Semantics(
-      identifier: id,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(title, style: _tt.labelLarge)),
-              Text('$secs s', style: _tt.labelLarge),
-            ],
-          ),
-          Slider(
-            key: ValueKey(id),
-            value: ms.clamp(min, max).toDouble(),
-            min: min.toDouble(),
-            max: max.toDouble(),
-            divisions: (max - min) ~/ 100,
-            onChanged: (v) => on(v.round()),
-          ),
-        ],
-      ),
-    );
-  }
+    String text,
+    double value,
+    double min,
+    double max,
+    int divisions,
+    ValueChanged<double> on,
+  ) => Semantics(
+    identifier: id,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: Text(title, style: _tt.labelLarge)),
+            Text(text, style: _tt.labelLarge),
+          ],
+        ),
+        Slider(
+          key: ValueKey(id),
+          value: value.clamp(min, max),
+          min: min,
+          max: max,
+          divisions: divisions,
+          onChanged: on,
+        ),
+      ],
+    ),
+  );
+
+  /// How long a mark stays on screen (0.5 to 10 s): the marks drawn by hand and the automatic ones.
+  Widget holdSlider(
+    AppL10n t,
+    MarkerSettings mk,
+    MarkerSettingsNotifier n,
+  ) => slider(
+    'quick_hold',
+    t.holdTitle,
+    _secs(mk.holdMs),
+    mk.holdMs.toDouble(),
+    MarkerTiming.minHoldMs.toDouble(),
+    MarkerTiming.maxHoldMs.toDouble(),
+    (MarkerTiming.maxHoldMs - MarkerTiming.minHoldMs) ~/ 100,
+    (v) => n.update(mk.copyWith(holdMs: v.round())),
+  );
 }
+
+/// Milliseconds as seconds with a comma, like "2,5 s".
+String _secs(int ms) => '${(ms / 1000).toStringAsFixed(1).replaceAll('.', ',')} s';
 
 AudioMode _audio(bool mic, bool system) => mic && system
     ? AudioMode.both

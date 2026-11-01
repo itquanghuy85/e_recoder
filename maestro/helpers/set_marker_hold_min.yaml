@@ -3,8 +3,8 @@ name: Helper - set the marker effect time to its shortest (0.5 s)
 tags:
   - helper
 ---
-# Tutorial purpose, marks by hand, More options. Ends on the Record tab. (The swipe direction cannot come
-# from an env variable.)
+# Tutorial purpose, marks by hand: the time slider is among its main options. Ends on the Record tab.
+# (The swipe direction cannot come from an env variable.)
 - launchApp:
     appId: com.huluca.escreenrecorder
     stopApp: false
@@ -16,20 +16,11 @@ tags:
     id: "quick_marks_live"
 - scrollUntilVisible:
     element:
-      id: "record_more"
-    direction: DOWN
-    timeout: 15000
-- tapOn:
-    id: "record_more"
-- scrollUntilVisible:
-    element:
-      id: "more_hold"
+      id: "quick_hold"
     direction: DOWN
     timeout: 15000
 - swipe:
     from:
-      id: "more_hold"
+      id: "quick_hold"
     direction: LEFT
     duration: 800
-- tapOn:
-    id: "record_more"

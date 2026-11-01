@@ -129,3 +129,22 @@ Kết quả đo:
 - Phần A chạy lại trên giao diện mới (`ux_mark_timing.sh`, flow chọn "Tự động sau khi quay" bằng giao diện): PASS, 6 dấu, "never two full marks: PASS".
 - Cài đặt của app trên S25 đã trả về đúng bản sao lưu trước khi chạy (`test-results/prefs_backup_flows18_modes.xml`, so `cmp` giống hệt). Video thử để lại trên máy, không xoá.
 
+## Đợt 2 (01/11/2026): dấu còn lan sang màn sau, zoom, số bước
+
+Người dùng báo sau đợt 1: dấu vẫn lan sang màn hình sau; muốn thanh thời gian hiện dấu và cài đặt zoom nằm ngay trong các chế độ, zoom tới 300% và lấy điểm chạm làm tâm; video quay sạch không bật đánh số vẫn hiện "Bước 18, 19, 20" gần cuối.
+
+**Nguyên nhân và cách sửa** (`CODE_OBSERVED` + `TEST_VERIFIED`; chưa chạy thật trên S25, xem "Chưa nghiệm thu"):
+- **Dò màn hình đổi quá chặt.** Trước đây tính theo phần trăm điểm ảnh đổi (từ 20%). Trang trắng sang trang trắng khác chữ chỉ đổi rất ít điểm ảnh nên không dò ra, dấu giữ đủ 2,5 s trên màn mới. Nay chia khung thành 12×24 ô và đếm ô đổi (từ 15%): một dòng sáng lên hoặc dãy số đổi (khoảng 7–12% số ô) vẫn không bị tính là màn mới; trang chữ khác thì đổi trên 70% số ô. `TouchScan.changedBlocks`, 3 test Kotlin (nút bấm, trang chữ, dòng sáng).
+- **Chạm do chính thao tác Dừng quay.** `TouchWatcher` nghe cả chạm lên app mình, nên lúc kéo thông báo, mở lại app và bấm "Dừng quay" cũng ghi thành lần bấm. Nay `RecorderService` bỏ chạm khi app đang ở phía trước, và khi app về phía trước thì xoá các chạm trong 1,5 s gần nhất (chạm dẫn về app). `MainActivity.onResume/onPause`.
+- **"Bước N" dù tắt đánh số.** Kiểu dấu mặc định là "Số" nên luôn vẽ số, và lần chạm không rõ vị trí luôn ra chữ "Bước N". Nay tắt "Đánh số các bước" thì dấu kiểu Số được vẽ thành vòng gợn nước, không còn chữ "Bước N" (kiểu dấu do người dùng chọn vẫn giữ). Nhãn đổi từ "Đánh số lại các bước" thành "Đánh số các bước" (đúng nghĩa hơn). `AutoDirector._tapKind`.
+- **Zoom lệch tâm.** Trước đây các lần chạm gần nhau được gộp, tâm zoom là trung điểm và mức phóng bị giảm. Nay mỗi lần chạm có zoom riêng, tâm đúng điểm chạm, mức phóng đúng mức đã đặt: chạm cùng một chỗ thì dùng chung một zoom; chạm chỗ khác trước khi zoom xong thì zoom cũ thu lại sớm; chuỗi chạm quá nhanh chỉ zoom ở lần chạm cuối. Tâm chỉ bị dịch khi điểm chạm sát mép (khung zoom không thể ra ngoài video: ở 300% là ngoài dải 17–83% mỗi chiều). `AutoDirector.autoZoom`.
+
+**Giao diện** (`quick_options.dart`):
+- Hướng dẫn (dấu tự động): thanh "Thời gian hiện dấu" (0,5–10 s, id `quick_hold`) và thanh "Mức phóng" (120–300%, id `quick_zoom_scale`, chỉ hiện khi bật "Phóng to vào dấu"). "Thêm tuỳ chọn" có thêm tốc độ phóng vào/ra (`more_zoom_ramp`) và giữ thêm (`more_zoom_hold`).
+- Game: thanh "Thời gian hiện dấu" cho dấu bấm tay.
+- Nút "Bắt đầu quay" được ghim cố định dưới đáy, phần lựa chọn cuộn phía trên: lựa chọn dài ra không đẩy nút khỏi tầm tay.
+
+**Test tự động:** Flutter 397/397, analyze sạch, Kotlin unit test đạt. Thêm test: tâm zoom đúng điểm chạm ở 300%, chạm cùng chỗ, chạm chỗ khác, chuỗi chạm nhanh, tắt đánh số (không số, không "Bước N"), hai thanh trượt (kể cả 120%…300%).
+
+**Chưa nghiệm thu (BLOCKED):** S25 không kết nối trong lượt này (ADB chỉ thấy hai máy Oppo, không dùng). Chưa chạy lại trên S25: `scripts/qa/ux_mark_timing.sh`, `scripts/qa/ux_modes_record.sh`, hồi quy 19 flow, kiểm tra thật zoom 300% và việc bỏ chạm khi dừng quay. Flow `ux_modes_record.yaml` và `set_marker_hold_max/min` đã sửa theo id mới nhưng chưa chạy. Cần chạy khi S25 kết nối lại.
+

@@ -99,28 +99,60 @@ void main() {
       expect(z.endMs, p.markers.single.endMs + 1500);
     });
 
-    test('markers close in time share one zoom centred between them', () {
+    test('every zoom is centred on its own touch, up to 300 %', () {
       final p = AutoDirector.autoZoom(
         AutoDirector.draft(_base(), [
-          _mark(2000, x: 0.3, y: 0.5),
-          _mark(3500, x: 0.7, y: 0.5),
+          _mark(2000, x: 0.3, y: 0.45),
+          _mark(15000, x: 0.62, y: 0.77),
+        ]),
+        const DirectorOptions(zoomScale: 3.0),
+      );
+      expect(p.zooms.length, 2);
+      expect(p.zooms[0].fx, closeTo(0.3, 1e-9));
+      expect(p.zooms[0].fy, closeTo(0.45, 1e-9));
+      expect(p.zooms[1].fx, closeTo(0.62, 1e-9));
+      expect(p.zooms[1].fy, closeTo(0.77, 1e-9));
+      expect(p.zooms.every((z) => z.scale == 3.0), isTrue);
+    });
+
+    test('touches at one spot share one zoom, centred on it', () {
+      final p = AutoDirector.autoZoom(
+        AutoDirector.draft(_base(), [
+          _mark(2000, x: 0.30, y: 0.50),
+          _mark(3500, x: 0.31, y: 0.50),
         ]),
       );
       expect(p.zooms.length, 1);
-      expect(p.zooms.single.fx, closeTo(0.5, 1e-9));
-      expect(p.zooms.single.scale, lessThan(AutoDirector.zoomScale));
+      expect(p.zooms.single.fx, closeTo(0.30, 1e-9));
+      expect(p.zooms.single.scale, AutoDirector.zoomScale);
       expect(p.zooms.single.endMs, p.markers[1].endMs);
     });
 
-    test('markers too far apart in one frame never get overlapping zooms', () {
+    test('a touch elsewhere ends the zoom before it, never an average of the two', () {
+      final p = AutoDirector.autoZoom(
+        AutoDirector.draft(_base(), [
+          _mark(2000, x: 0.2, y: 0.3),
+          _mark(6000, x: 0.8, y: 0.7),
+        ]),
+        const DirectorOptions(zoomHoldMs: 5000),
+      );
+      expect(p.zooms.length, 2);
+      expect(p.zooms[0].fx, closeTo(0.2, 1e-9));
+      expect(p.zooms[1].fx, closeTo(0.8, 1e-9));
+      expect(p.zooms[0].endMs, lessThan(p.zooms[1].startMs));
+    });
+
+    test('a quick run of touches is zoomed at the last one, centred on it', () {
       final p = AutoDirector.autoZoom(
         AutoDirector.draft(_base(), [
           _mark(2000, x: 0.1, y: 0.1),
-          _mark(3000, x: 0.9, y: 0.9),
+          _mark(2300, x: 0.9, y: 0.9),
+          _mark(2600, x: 0.4, y: 0.6),
         ]),
       );
       expect(p.zooms.length, 1);
-      expect(p.zooms.single.fx, closeTo(0.1, 1e-9));
+      expect(p.zooms.single.fx, closeTo(0.4, 1e-9));
+      expect(p.zooms.single.fy, closeTo(0.6, 1e-9));
     });
 
     test('a zoom the user already made is respected', () {
