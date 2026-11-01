@@ -11,6 +11,12 @@ tags:
     stopApp: false
 - tapOn:
     text: 'Quay\sTab.*'
+# the Record page may still be scrolled down from an earlier flow: bring the mode bar back into view
+- scrollUntilVisible:
+    element:
+      id: "purpose_tutorial"
+    direction: UP
+    timeout: 15000
 - tapOn:
     id: "purpose_tutorial"
 - runFlow:

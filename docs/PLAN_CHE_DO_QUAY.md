@@ -184,8 +184,8 @@ Người dùng yêu cầu thêm: (1) Android tải về dùng được ngay khô
 ### Kiểm thử kỹ thuật
 Flutter test 428+, analyze sạch, Kotlin unit test đạt. Test mới: `swipe_zone_test` (9), `swipe_hint_test` (3), `setup_guide_test` (8), `ios_editor_gate_test` (12), thêm 3 test ở `touch_log_test`.
 
-### Hồi quy S25 sau Đợt 3 (01/11/2026): CHƯA ĐỦ
-- **11/19 flow đạt (RUNTIME_VERIFIED):** e1_edit_core, e2_overlays, e2_pick_probe, e2_pip_s25, e2b_crop_rotate, e3_motion, e8_tools_zoom, e10_regions, e11_region_motion, e14_pip_portrait, e16_build_from_touches.
-- **8 flow chưa chạy được:** g3_editor, g7_auto_direct, s1_icon_audit, store_vi, store_en, store_pro, store_video_a, store_video_b. Nguyên nhân: S25 (`R5CY6323KMX`) mất kết nối adb giữa lúc chạy ("device not found"), không phải lỗi sản phẩm. **Không ghi PASS** cho 8 flow này; cần cắm lại S25 và chạy lại.
-- Cài đặt app trên S25 chưa khôi phục được từ `test-results/prefs_backup_r4.xml` (máy mất kết nối); cần khôi phục khi cắm lại.
-
+### Hồi quy S25 sau Đợt 3 (01/11/2026): 19/19 đạt (RUNTIME_VERIFIED)
+- Lần 1: 11 flow đạt (e1, e2, e2_pick_probe, e2_pip_s25, e2b, e3, e8, e10, e11, e14, e16); 8 flow còn lại không chạy được vì S25 mất kết nối adb giữa chừng.
+- Cắm lại S25, chạy 8 flow còn lại (`test-results/flows18_r5/results.csv`): g3_editor, g7_auto_direct, s1_icon_audit, store_en, store_pro, store_video_a, store_video_b **đạt**; `store_vi` lỗi lần đầu.
+- Nguyên nhân `store_vi`: lỗi của flow, không phải app. Màn Quay còn đang cuộn xuống từ bước trước nên thanh chọn chế độ ra ngoài màn hình, Maestro không thấy `purpose_tutorial`. Sửa `maestro/helpers/set_mark_mode.yaml` (cuộn lên cho tới khi thấy thanh chế độ). Chạy lại `store_vi`: **đạt** (`test-results/flows18_r6`).
+- Cài đặt app trên S25 chưa khôi phục từ `test-results/prefs_backup_r4.xml`.
