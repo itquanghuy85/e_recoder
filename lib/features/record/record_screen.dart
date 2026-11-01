@@ -12,6 +12,7 @@ import '../library/media_repository.dart';
 import '../marker/marker_settings.dart';
 import '../purpose/purpose.dart';
 import '../purpose/quick_options.dart';
+import '../setup/setup_guide_screen.dart';
 import '../purpose/ready_check_screen.dart';
 import '../purpose/result_screen.dart';
 import '../library/media_tile.dart';
@@ -164,7 +165,20 @@ class _IdleView extends ConsumerWidget {
                     identifier: 'ios_notice',
                     child: Text(t.iosNoRecording, style: tt.bodyMedium),
                   ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      key: const ValueKey('ios_more'),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const SetupGuideScreen(),
+                        ),
+                      ),
+                      child: Text(t.iosMore),
+                    ),
+                  ),
                 ],
+                const SetupBanner(),
                 const SizedBox(height: Space.lg),
                 // One tap changes the purpose; each purpose keeps its own settings (see PurposeNotifier).
                 SizedBox(

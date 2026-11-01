@@ -8,6 +8,7 @@ import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import 'editor_controller.dart';
 import 'editor_stage.dart';
+import 'swipe_zone.dart';
 
 /// Full-screen view of the preview: rotates freely, pinch to zoom, with play and a seek bar.
 /// It shows the same stage the editor does, so overlays and cuts look exactly as they will export.
@@ -61,6 +62,13 @@ class _FullscreenPage extends StatefulWidget {
 
 class _FullscreenPageState extends State<_FullscreenPage> {
   bool _controls = true;
+  final _zoom = TransformationController();
+
+  @override
+  void dispose() {
+    _zoom.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,19 +79,27 @@ class _FullscreenPageState extends State<_FullscreenPage> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onDoubleTap: () => setState(() => _controls = !_controls),
-              child: InteractiveViewer(
-                minScale: 1,
-                maxScale: 5,
-                child: Center(
-                  child: EditorStage(
-                    controller: c,
-                    video: widget.video,
-                    pipVideos: widget.pipVideos,
-                    repaint: widget.repaint,
-                    viewZoom: false,
+            // A swipe up gives the room back (not while the picture is pinched in: then it pans).
+            child: SwipeZone(
+              onSwipe: (down) {
+                if (!down) Navigator.of(context).maybePop();
+              },
+              enabled: () => _zoom.value.getMaxScaleOnAxis() < 1.05,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onDoubleTap: () => setState(() => _controls = !_controls),
+                child: InteractiveViewer(
+                  transformationController: _zoom,
+                  minScale: 1,
+                  maxScale: 5,
+                  child: Center(
+                    child: EditorStage(
+                      controller: c,
+                      video: widget.video,
+                      pipVideos: widget.pipVideos,
+                      repaint: widget.repaint,
+                      viewZoom: false,
+                    ),
                   ),
                 ),
               ),

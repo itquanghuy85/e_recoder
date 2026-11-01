@@ -9,6 +9,7 @@ import '../marker/marker_spec.dart';
 import '../marker/marker_timing.dart';
 import '../record/rec_settings.dart';
 import '../record/rec_settings_sheet.dart';
+import '../../core/platform_support.dart';
 import 'purpose.dart';
 
 /// How a tutorial gets its tap marks. [auto]: a clean recording, marks drawn afterwards at every tap.
@@ -89,51 +90,60 @@ class QuickOptions extends ConsumerWidget {
                   () => recN.update(rec.copyWith(resolution: r)),
                 ),
             ]),
-            if (purpose == Purpose.tutorial) ...[
-              w.group(t.markWhenTitle, [
-                for (final m in MarkWhen.values)
-                  w.chip(
-                    'quick_marks_${m.name}',
-                    switch (m) {
-                      MarkWhen.auto => t.markWhenAuto,
-                      MarkWhen.live => t.markWhenLive,
-                      MarkWhen.none => t.markWhenNone,
-                    },
-                    when == m,
-                    () => mkN.update(applyMarkWhen(m, mk)),
-                  ),
-              ]),
-              if (when != MarkWhen.none)
-                Wrap(
+            if (purpose == Purpose.tutorial)
+              AndroidOnly(
+                feature: t.featAutoMarks,
+                gets: t.getsAutoMarks,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    w.tick(
-                      'quick_auto_number',
-                      t.autoNumberOpt,
-                      mk.autoNumber,
-                      (v) => mkN.update(mk.copyWith(autoNumber: v)),
-                    ),
-                    if (when == MarkWhen.auto)
-                      w.tick(
-                        'quick_auto_zoom',
-                        t.autoZoomOpt,
-                        mk.autoZoom,
-                        (v) => mkN.update(mk.copyWith(autoZoom: v)),
+                    w.group(t.markWhenTitle, [
+                      for (final m in MarkWhen.values)
+                        w.chip(
+                          'quick_marks_${m.name}',
+                          switch (m) {
+                            MarkWhen.auto => t.markWhenAuto,
+                            MarkWhen.live => t.markWhenLive,
+                            MarkWhen.none => t.markWhenNone,
+                          },
+                          when == m,
+                          () => mkN.update(applyMarkWhen(m, mk)),
+                        ),
+                    ]),
+                    if (when != MarkWhen.none)
+                      Wrap(
+                        children: [
+                          w.tick(
+                            'quick_auto_number',
+                            t.autoNumberOpt,
+                            mk.autoNumber,
+                            (v) => mkN.update(mk.copyWith(autoNumber: v)),
+                          ),
+                          if (when == MarkWhen.auto)
+                            w.tick(
+                              'quick_auto_zoom',
+                              t.autoZoomOpt,
+                              mk.autoZoom,
+                              (v) => mkN.update(mk.copyWith(autoZoom: v)),
+                            ),
+                        ],
+                      ),
+                    if (when != MarkWhen.none) w.holdSlider(t, mk, mkN),
+                    if (when == MarkWhen.auto && mk.autoZoom)
+                      w.slider(
+                        'quick_zoom_scale',
+                        t.zoomScale,
+                        '${(mk.zoomScale * 100).round()}%',
+                        mk.zoomScale * 100,
+                        120,
+                        300,
+                        18,
+                        (v) =>
+                            mkN.update(mk.copyWith(zoomScale: v.round() / 100)),
                       ),
                   ],
                 ),
-              if (when != MarkWhen.none) w.holdSlider(t, mk, mkN),
-              if (when == MarkWhen.auto && mk.autoZoom)
-                w.slider(
-                  'quick_zoom_scale',
-                  t.zoomScale,
-                  '${(mk.zoomScale * 100).round()}%',
-                  mk.zoomScale * 100,
-                  120,
-                  300,
-                  18,
-                  (v) => mkN.update(mk.copyWith(zoomScale: v.round() / 100)),
-                ),
-            ],
+              ),
             if (purpose == Purpose.game) ...[
               w.tick(
                 'quick_smooth',
@@ -141,17 +151,26 @@ class QuickOptions extends ConsumerWidget {
                 rec.fps >= 60,
                 (v) => recN.update(rec.copyWith(fps: v ? 60 : 30)),
               ),
-              w.group(t.quickGameMark, [
-                for (final m in MarkerType.values)
-                  w.chip(
-                    'quick_tool_${m.name}',
-                    markerTypeLabel(t, m),
-                    mk.tool == m,
-                    () => mkN.update(mk.copyWith(tool: m)),
-                    icon: markerTypeIcon(m),
-                  ),
-              ]),
-              w.holdSlider(t, mk, mkN),
+              AndroidOnly(
+                feature: t.featLiveMarks,
+                gets: t.getsLiveMarks,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    w.group(t.quickGameMark, [
+                      for (final m in MarkerType.values)
+                        w.chip(
+                          'quick_tool_${m.name}',
+                          markerTypeLabel(t, m),
+                          mk.tool == m,
+                          () => mkN.update(mk.copyWith(tool: m)),
+                          icon: markerTypeIcon(m),
+                        ),
+                    ]),
+                    w.holdSlider(t, mk, mkN),
+                  ],
+                ),
+              ),
             ],
           ],
         ),
@@ -194,68 +213,89 @@ class MoreOptions extends ConsumerWidget {
           () => recN.update(rec.copyWith(quality: q)),
         ),
     ]);
-    final countdown = w.group(t.optCountdown, [
-      for (final v in const [0, 3, 5])
-        w.chip(
-          'more_countdown_$v',
-          v == 0 ? t.countdownOff : t.countdownSeconds(v),
-          rec.countdown == v,
-          () => recN.update(rec.copyWith(countdown: v)),
-        ),
-    ]);
-    final floating = w.tick(
-      'more_floating',
-      t.optFloatingBar,
-      rec.floatingBar,
-      (v) => recN.update(rec.copyWith(floatingBar: v)),
+    Widget onlyAndroid(Widget child) => AndroidOnly(
+      feature: t.featFloatingBar,
+      gets: t.getsFloatingBar,
+      child: child,
     );
+    final countdown = onlyAndroid(
+      w.group(t.optCountdown, [
+        for (final v in const [0, 3, 5])
+          w.chip(
+            'more_countdown_$v',
+            v == 0 ? t.countdownOff : t.countdownSeconds(v),
+            rec.countdown == v,
+            () => recN.update(rec.copyWith(countdown: v)),
+          ),
+      ]),
+    );
+    final floating = onlyAndroid(
+      w.tick(
+        'more_floating',
+        t.optFloatingBar,
+        rec.floatingBar,
+        (v) => recN.update(rec.copyWith(floatingBar: v)),
+      ),
+    );
+
+    final autoItems = <Widget>[
+      if (markWhenOf(mk) == MarkWhen.auto)
+        w.group(t.autoMarkerTitle, [
+          for (final m in MarkerType.values)
+            w.chip(
+              'quick_mark_${m.name}',
+              markerTypeLabel(t, m),
+              mk.autoMarker == m,
+              () => mkN.update(mk.copyWith(autoMarker: m)),
+              icon: markerTypeIcon(m),
+            ),
+        ]),
+      if (markWhenOf(mk) == MarkWhen.auto)
+        w.slider(
+          'more_pause',
+          t.pauseTitle,
+          _secs(mk.pauseMs),
+          mk.pauseMs.toDouble(),
+          0,
+          1500,
+          15,
+          (v) => mkN.update(mk.copyWith(pauseMs: v.round())),
+        ),
+      if (markWhenOf(mk) == MarkWhen.auto && mk.autoZoom) ...[
+        w.slider(
+          'more_zoom_ramp',
+          t.zoomIn,
+          _secs(mk.zoomRampMs),
+          mk.zoomRampMs.toDouble(),
+          100,
+          2000,
+          19,
+          (v) => mkN.update(mk.copyWith(zoomRampMs: v.round())),
+        ),
+        w.slider(
+          'more_zoom_hold',
+          t.zoomHold,
+          _secs(mk.zoomHoldMs),
+          mk.zoomHoldMs.toDouble(),
+          0,
+          5000,
+          50,
+          (v) => mkN.update(mk.copyWith(zoomHoldMs: v.round())),
+        ),
+      ],
+    ];
 
     final children = switch (purpose) {
       Purpose.tutorial => [
-        if (markWhenOf(mk) == MarkWhen.auto)
-          w.group(t.autoMarkerTitle, [
-            for (final m in MarkerType.values)
-              w.chip(
-                'quick_mark_${m.name}',
-                markerTypeLabel(t, m),
-                mk.autoMarker == m,
-                () => mkN.update(mk.copyWith(autoMarker: m)),
-                icon: markerTypeIcon(m),
-              ),
-          ]),
-        if (markWhenOf(mk) == MarkWhen.auto)
-          w.slider(
-            'more_pause',
-            t.pauseTitle,
-            _secs(mk.pauseMs),
-            mk.pauseMs.toDouble(),
-            0,
-            1500,
-            15,
-            (v) => mkN.update(mk.copyWith(pauseMs: v.round())),
+        if (autoItems.isNotEmpty)
+          AndroidOnly(
+            feature: t.featAutoMarks,
+            gets: t.getsAutoMarks,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: autoItems,
+            ),
           ),
-        if (markWhenOf(mk) == MarkWhen.auto && mk.autoZoom) ...[
-          w.slider(
-            'more_zoom_ramp',
-            t.zoomIn,
-            _secs(mk.zoomRampMs),
-            mk.zoomRampMs.toDouble(),
-            100,
-            2000,
-            19,
-            (v) => mkN.update(mk.copyWith(zoomRampMs: v.round())),
-          ),
-          w.slider(
-            'more_zoom_hold',
-            t.zoomHold,
-            _secs(mk.zoomHoldMs),
-            mk.zoomHoldMs.toDouble(),
-            0,
-            5000,
-            50,
-            (v) => mkN.update(mk.copyWith(zoomHoldMs: v.round())),
-          ),
-        ],
         fps,
         quality,
         countdown,
@@ -374,24 +414,22 @@ class _Bits {
   );
 
   /// How long a mark stays on screen (0.5 to 10 s): the marks drawn by hand and the automatic ones.
-  Widget holdSlider(
-    AppL10n t,
-    MarkerSettings mk,
-    MarkerSettingsNotifier n,
-  ) => slider(
-    'quick_hold',
-    t.holdTitle,
-    _secs(mk.holdMs),
-    mk.holdMs.toDouble(),
-    MarkerTiming.minHoldMs.toDouble(),
-    MarkerTiming.maxHoldMs.toDouble(),
-    (MarkerTiming.maxHoldMs - MarkerTiming.minHoldMs) ~/ 100,
-    (v) => n.update(mk.copyWith(holdMs: v.round())),
-  );
+  Widget holdSlider(AppL10n t, MarkerSettings mk, MarkerSettingsNotifier n) =>
+      slider(
+        'quick_hold',
+        t.holdTitle,
+        _secs(mk.holdMs),
+        mk.holdMs.toDouble(),
+        MarkerTiming.minHoldMs.toDouble(),
+        MarkerTiming.maxHoldMs.toDouble(),
+        (MarkerTiming.maxHoldMs - MarkerTiming.minHoldMs) ~/ 100,
+        (v) => n.update(mk.copyWith(holdMs: v.round())),
+      );
 }
 
 /// Milliseconds as seconds with a comma, like "2,5 s".
-String _secs(int ms) => '${(ms / 1000).toStringAsFixed(1).replaceAll('.', ',')} s';
+String _secs(int ms) =>
+    '${(ms / 1000).toStringAsFixed(1).replaceAll('.', ',')} s';
 
 AudioMode _audio(bool mic, bool system) => mic && system
     ? AudioMode.both

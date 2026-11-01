@@ -1,5 +1,12 @@
 # Changelog
 
+## [2026-11-01] Vuốt mở rộng vùng làm việc, hướng dẫn thiết lập, báo "chỉ có trên Android"
+- Dấu: lần bấm làm đổi màn gần như ngay thì dấu (và ảnh dừng hình) được lấy sớm hơn lần chạm tối đa 0,45 s để dấu mờ hết trước khi màn mới hiện. Kiểm trên S25.
+- Màn sửa: vuốt xuống trên khung xem trước / thanh phát / timeline: gập công cụ, vuốt nữa: toàn màn hình; vuốt lên thu lại từng bước. Không đè lên kéo timeline, kéo dấu, chụm phóng. Có dòng nhắc 3 lần đầu. Sửa lỗi dòng nhắc làm khung xem trước co về 0 khi ẩn.
+- Cài đặt: mục "Hướng dẫn thiết lập" (Android): từng quyền / chế độ nhà phát triển có trạng thái, "Bạn được gì", "Cách bật", nút mở đúng chỗ và ảnh thật. Màn Quay có thẻ "Còn N bước thiết lập".
+- iPhone: mọi tính năng chỉ có trên Android hiện nhãn Android và bảng giải thích; màn "Trên iPhone" liệt kê làm được gì / chỉ có trên Android.
+- Flutter test, analyze sạch; flow Maestro `ux_swipe_guide` PASS trên S25. Chi tiết: `docs/PLAN_CHE_DO_QUAY.md`, mục "Đợt 3".
+
 ## [2026-11-01] Cài lên iPhone thật qua Mac (SSH)
 - Cài và mở thành công bản release (1.2.0, build 3) từ main `43d835f` lên iPhone "Huy 18PRM (2)", ký bằng team "Huy Bui". Chưa kiểm giao diện từng màn. Repo không đổi cấu hình ký. Chi tiết và lưu ý: `docs/IOS_BUILD_TEST_REPORT.md`, mục 9.
 

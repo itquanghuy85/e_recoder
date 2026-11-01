@@ -1,0 +1,81 @@
+appId: com.huluca.escreenrecorder
+name: Editor swipe for room (tools fold, then full screen, up gives it back) and the setup guide
+tags:
+  - p1
+  - module-ux
+---
+# The editor: a quick swipe down over the timeline folds the tools away (more room), a second one shows
+# the picture over the whole screen, a swipe up gives it back one step at a time. Scrubbing sideways does
+# nothing of the sort.
+- runFlow: helpers/open_edit.yaml
+- runFlow: helpers/ensure_tools_open.yaml
+- assertVisible:
+    id: "tool_cut"
+- takeScreenshot: sw_0_normal
+# a sideways stroke on the timeline is a scrub, not a swipe
+- swipe:
+    start: 30%, 45%
+    end: 75%, 47%
+    duration: 200
+- assertVisible:
+    id: "tool_cut"
+# swipe down once: the tools fold away
+- swipe:
+    start: 50%, 50%
+    end: 50%, 75%
+    duration: 150
+- assertNotVisible:
+    id: "tool_cut"
+- assertVisible:
+    id: "editor_play"
+- takeScreenshot: sw_1_workspace
+# swipe down again, this time over the picture: it fills the whole screen (the editor's controls are gone)
+- swipe:
+    start: 50%, 22%
+    end: 50%, 55%
+    duration: 150
+- assertNotVisible:
+    id: "editor_play"
+- assertVisible: "Thoát toàn màn hình"
+- takeScreenshot: sw_2_full
+# swipe up: back to the folded tools
+- swipe:
+    start: 50%, 75%
+    end: 50%, 40%
+    duration: 150
+- assertVisible:
+    id: "editor_play"
+- assertNotVisible:
+    id: "tool_cut"
+# swipe up again, over the timeline (low on the screen now): the tools are back
+- swipe:
+    start: 50%, 85%
+    end: 50%, 50%
+    duration: 150
+- assertVisible:
+    id: "tool_cut"
+- takeScreenshot: sw_3_back
+# The setup guide: Settings > Setup guide.
+- back
+- back
+- tapOn:
+    text: "Cài đặt.*"
+- scrollUntilVisible:
+    element:
+      id: "settings_setup_guide"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "settings_setup_guide"
+- assertVisible: "Thiết lập để dùng đủ tính năng"
+- assertVisible:
+    id: "setup_step_overlay"
+- takeScreenshot: guide_1_top
+- scrollUntilVisible:
+    element:
+      id: "setup_taps_dev"
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    id: "setup_taps_check"
+- takeScreenshot: guide_2_taps

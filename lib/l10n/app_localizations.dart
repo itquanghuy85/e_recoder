@@ -3822,6 +3822,324 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Thời gian hiện dấu'**
   String get holdTitle;
+
+  /// No description provided for @editorSwipeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vuốt xuống để mở rộng vùng làm việc, vuốt xuống nữa để toàn màn hình, vuốt lên để thu lại'**
+  String get editorSwipeHint;
+
+  /// No description provided for @androidBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Android'**
+  String get androidBadge;
+
+  /// No description provided for @androidOnlyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{feature} chỉ có trên Android'**
+  String androidOnlyTitle(String feature);
+
+  /// No description provided for @androidOnlyGets.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trên Android bạn được: {gets}.'**
+  String androidOnlyGets(String gets);
+
+  /// No description provided for @androidOnlyWhy.
+  ///
+  /// In vi, this message translates to:
+  /// **'iPhone chưa làm được việc này: iOS không cho ứng dụng thao tác như vậy, hoặc ứng dụng chưa hỗ trợ cho iPhone.'**
+  String get androidOnlyWhy;
+
+  /// No description provided for @androidOnlyOk.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hiểu'**
+  String get androidOnlyOk;
+
+  /// No description provided for @androidOnlyNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trên iPhone chưa có: {gets}. Phần này chỉ có trên Android.'**
+  String androidOnlyNote(String gets);
+
+  /// No description provided for @featAutoMarks.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu tự động theo lần bấm'**
+  String get featAutoMarks;
+
+  /// No description provided for @getsAutoMarks.
+  ///
+  /// In vi, this message translates to:
+  /// **'app nghe từng lần bạn bấm lúc quay, rồi tự đặt dấu và phóng to đúng chỗ bấm khi quay xong'**
+  String get getsAutoMarks;
+
+  /// No description provided for @featLiveMarks.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu nổi khi quay'**
+  String get featLiveMarks;
+
+  /// No description provided for @getsLiveMarks.
+  ///
+  /// In vi, this message translates to:
+  /// **'một chấm nhỏ trên màn hình để đặt dấu ngay lúc quay, kể cả khi quay ứng dụng khác'**
+  String get getsLiveMarks;
+
+  /// No description provided for @featFloatingBar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh nổi và đếm ngược'**
+  String get featFloatingBar;
+
+  /// No description provided for @getsFloatingBar.
+  ///
+  /// In vi, this message translates to:
+  /// **'nút Dừng nổi trên màn hình và đếm ngược 3-2-1 trước khi quay'**
+  String get getsFloatingBar;
+
+  /// No description provided for @getsTransition.
+  ///
+  /// In vi, this message translates to:
+  /// **'chuyển cảnh mượt giữa các đoạn'**
+  String get getsTransition;
+
+  /// No description provided for @getsZoom.
+  ///
+  /// In vi, this message translates to:
+  /// **'phóng to vào chỗ quan trọng, đúng tâm điểm chạm'**
+  String get getsZoom;
+
+  /// No description provided for @getsAuto.
+  ///
+  /// In vi, this message translates to:
+  /// **'dựng tự động: đặt dấu, phóng to và tua nhanh đoạn chờ'**
+  String get getsAuto;
+
+  /// No description provided for @getsCover.
+  ///
+  /// In vi, this message translates to:
+  /// **'làm mờ, khảm hoặc tô sáng một vùng'**
+  String get getsCover;
+
+  /// No description provided for @getsLook.
+  ///
+  /// In vi, this message translates to:
+  /// **'bộ lọc màu cho video'**
+  String get getsLook;
+
+  /// No description provided for @getsSpeedFx.
+  ///
+  /// In vi, this message translates to:
+  /// **'tăng tốc dần và phát ngược'**
+  String get getsSpeedFx;
+
+  /// No description provided for @getsPipVideo.
+  ///
+  /// In vi, this message translates to:
+  /// **'video nhỏ lồng trong video'**
+  String get getsPipVideo;
+
+  /// No description provided for @settingsGuideSetup.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn thiết lập'**
+  String get settingsGuideSetup;
+
+  /// No description provided for @settingsGuideSetupSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật những gì cần để dùng đủ tính năng và xem bạn được gì'**
+  String get settingsGuideSetupSub;
+
+  /// No description provided for @setupTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thiết lập để dùng đủ tính năng'**
+  String get setupTitle;
+
+  /// No description provided for @setupIntro.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay màn hình dùng được ngay sau khi cài. Các bước dưới đây mở thêm tính năng, mỗi bước nói rõ bạn được gì.'**
+  String get setupIntro;
+
+  /// No description provided for @setupGetTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn được gì'**
+  String get setupGetTitle;
+
+  /// No description provided for @setupHowTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách bật'**
+  String get setupHowTitle;
+
+  /// No description provided for @setupOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bật'**
+  String get setupOn;
+
+  /// No description provided for @setupOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa bật'**
+  String get setupOff;
+
+  /// No description provided for @setupRecommended.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nên bật'**
+  String get setupRecommended;
+
+  /// No description provided for @setupOptional.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tuỳ chọn'**
+  String get setupOptional;
+
+  /// No description provided for @setupTurnOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật'**
+  String get setupTurnOn;
+
+  /// No description provided for @setupOverlayGet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có thanh nổi và đếm ngược 3-2-1. Khi quay sạch, app nghe được từng lần bạn bấm để tự đặt dấu sau khi quay xong.'**
+  String get setupOverlayGet;
+
+  /// No description provided for @setupOverlayHow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm Bật, chọn E Screen Recorder rồi bật mục cho phép hiển thị trên ứng dụng khác.'**
+  String get setupOverlayHow;
+
+  /// No description provided for @setupMicGet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu giọng nói của bạn cùng video khi bạn chọn Micro.'**
+  String get setupMicGet;
+
+  /// No description provided for @setupMicHow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm Bật và chọn Cho phép (nếu máy không hỏi nữa, mở Cài đặt ứng dụng, mục Quyền).'**
+  String get setupMicHow;
+
+  /// No description provided for @setupNotifGet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có nút Tạm dừng và Dừng ở thanh thông báo, để dừng quay mà không cần mở lại app.'**
+  String get setupNotifGet;
+
+  /// No description provided for @setupNotifHow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm Bật và chọn Cho phép.'**
+  String get setupNotifHow;
+
+  /// No description provided for @setupTapsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiển thị lần chạm (chế độ nhà phát triển)'**
+  String get setupTapsTitle;
+
+  /// No description provided for @setupTapsGet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay như bình thường; quay xong app tự đánh dấu đúng chỗ bạn đã bấm, kể cả chỗ màn hình không có phản hồi. Android vẽ chấm trắng ở chỗ chạm trong video, dấu của app đặt đè lên chấm đó.'**
+  String get setupTapsGet;
+
+  /// No description provided for @setupTapsName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên mục có thể khác theo hãng máy: Hiển thị lần chạm, Hiện thao tác chạm hoặc Show taps.'**
+  String get setupTapsName;
+
+  /// No description provided for @setupBatteryGet.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay lâu (vài chục phút) không bị hệ thống tự tắt giữa chừng.'**
+  String get setupBatteryGet;
+
+  /// No description provided for @setupBatteryHow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở cài đặt ứng dụng, vào Pin và chọn Không hạn chế (tên mục tuỳ hãng máy).'**
+  String get setupBatteryHow;
+
+  /// No description provided for @setupPicCue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vòng dấu hiện trước chỗ sắp bấm'**
+  String get setupPicCue;
+
+  /// No description provided for @setupPicMark.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu đúng chỗ ngón tay, thêm sau khi quay xong'**
+  String get setupPicMark;
+
+  /// No description provided for @setupBannerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn {n} bước thiết lập'**
+  String setupBannerTitle(int n);
+
+  /// No description provided for @setupBannerSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để dùng đủ tính năng, xem bạn được gì ở mỗi bước'**
+  String get setupBannerSub;
+
+  /// No description provided for @setupBannerOpen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem'**
+  String get setupBannerOpen;
+
+  /// No description provided for @iosGuideTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trên iPhone'**
+  String get iosGuideTitle;
+
+  /// No description provided for @iosCanTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm được'**
+  String get iosCanTitle;
+
+  /// No description provided for @iosCanBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay màn hình của chính ứng dụng này cùng giọng nói của bạn; cắt, đổi tốc độ cố định, thêm chữ, hình, nhạc và dấu đặt tay; xuất video.'**
+  String get iosCanBody;
+
+  /// No description provided for @iosOnlyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ có trên Android'**
+  String get iosOnlyTitle;
+
+  /// No description provided for @iosOnlyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'• Quay màn hình khi dùng ứng dụng khác\n• Dấu tự động theo từng lần bấm\n• Dấu nổi, thanh nổi và đếm ngược\n• Phóng to tự động và thủ công, chuyển cảnh\n• Làm mờ, khảm, tô sáng vùng; bộ lọc màu\n• Tăng tốc dần, phát ngược, video lồng video\n• Phụ đề tự động, thu giọng thuyết minh, hiệu ứng giọng, xuất GIF'**
+  String get iosOnlyBody;
+
+  /// No description provided for @iosMore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem chi tiết'**
+  String get iosMore;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

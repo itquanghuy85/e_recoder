@@ -2015,4 +2015,191 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get holdTitle => 'Thời gian hiện dấu';
+
+  @override
+  String get editorSwipeHint =>
+      'Vuốt xuống để mở rộng vùng làm việc, vuốt xuống nữa để toàn màn hình, vuốt lên để thu lại';
+
+  @override
+  String get androidBadge => 'Android';
+
+  @override
+  String androidOnlyTitle(String feature) {
+    return '$feature chỉ có trên Android';
+  }
+
+  @override
+  String androidOnlyGets(String gets) {
+    return 'Trên Android bạn được: $gets.';
+  }
+
+  @override
+  String get androidOnlyWhy =>
+      'iPhone chưa làm được việc này: iOS không cho ứng dụng thao tác như vậy, hoặc ứng dụng chưa hỗ trợ cho iPhone.';
+
+  @override
+  String get androidOnlyOk => 'Đã hiểu';
+
+  @override
+  String androidOnlyNote(String gets) {
+    return 'Trên iPhone chưa có: $gets. Phần này chỉ có trên Android.';
+  }
+
+  @override
+  String get featAutoMarks => 'Dấu tự động theo lần bấm';
+
+  @override
+  String get getsAutoMarks =>
+      'app nghe từng lần bạn bấm lúc quay, rồi tự đặt dấu và phóng to đúng chỗ bấm khi quay xong';
+
+  @override
+  String get featLiveMarks => 'Dấu nổi khi quay';
+
+  @override
+  String get getsLiveMarks =>
+      'một chấm nhỏ trên màn hình để đặt dấu ngay lúc quay, kể cả khi quay ứng dụng khác';
+
+  @override
+  String get featFloatingBar => 'Thanh nổi và đếm ngược';
+
+  @override
+  String get getsFloatingBar =>
+      'nút Dừng nổi trên màn hình và đếm ngược 3-2-1 trước khi quay';
+
+  @override
+  String get getsTransition => 'chuyển cảnh mượt giữa các đoạn';
+
+  @override
+  String get getsZoom => 'phóng to vào chỗ quan trọng, đúng tâm điểm chạm';
+
+  @override
+  String get getsAuto =>
+      'dựng tự động: đặt dấu, phóng to và tua nhanh đoạn chờ';
+
+  @override
+  String get getsCover => 'làm mờ, khảm hoặc tô sáng một vùng';
+
+  @override
+  String get getsLook => 'bộ lọc màu cho video';
+
+  @override
+  String get getsSpeedFx => 'tăng tốc dần và phát ngược';
+
+  @override
+  String get getsPipVideo => 'video nhỏ lồng trong video';
+
+  @override
+  String get settingsGuideSetup => 'Hướng dẫn thiết lập';
+
+  @override
+  String get settingsGuideSetupSub =>
+      'Bật những gì cần để dùng đủ tính năng và xem bạn được gì';
+
+  @override
+  String get setupTitle => 'Thiết lập để dùng đủ tính năng';
+
+  @override
+  String get setupIntro =>
+      'Quay màn hình dùng được ngay sau khi cài. Các bước dưới đây mở thêm tính năng, mỗi bước nói rõ bạn được gì.';
+
+  @override
+  String get setupGetTitle => 'Bạn được gì';
+
+  @override
+  String get setupHowTitle => 'Cách bật';
+
+  @override
+  String get setupOn => 'Đã bật';
+
+  @override
+  String get setupOff => 'Chưa bật';
+
+  @override
+  String get setupRecommended => 'Nên bật';
+
+  @override
+  String get setupOptional => 'Tuỳ chọn';
+
+  @override
+  String get setupTurnOn => 'Bật';
+
+  @override
+  String get setupOverlayGet =>
+      'Có thanh nổi và đếm ngược 3-2-1. Khi quay sạch, app nghe được từng lần bạn bấm để tự đặt dấu sau khi quay xong.';
+
+  @override
+  String get setupOverlayHow =>
+      'Bấm Bật, chọn E Screen Recorder rồi bật mục cho phép hiển thị trên ứng dụng khác.';
+
+  @override
+  String get setupMicGet =>
+      'Thu giọng nói của bạn cùng video khi bạn chọn Micro.';
+
+  @override
+  String get setupMicHow =>
+      'Bấm Bật và chọn Cho phép (nếu máy không hỏi nữa, mở Cài đặt ứng dụng, mục Quyền).';
+
+  @override
+  String get setupNotifGet =>
+      'Có nút Tạm dừng và Dừng ở thanh thông báo, để dừng quay mà không cần mở lại app.';
+
+  @override
+  String get setupNotifHow => 'Bấm Bật và chọn Cho phép.';
+
+  @override
+  String get setupTapsTitle => 'Hiển thị lần chạm (chế độ nhà phát triển)';
+
+  @override
+  String get setupTapsGet =>
+      'Quay như bình thường; quay xong app tự đánh dấu đúng chỗ bạn đã bấm, kể cả chỗ màn hình không có phản hồi. Android vẽ chấm trắng ở chỗ chạm trong video, dấu của app đặt đè lên chấm đó.';
+
+  @override
+  String get setupTapsName =>
+      'Tên mục có thể khác theo hãng máy: Hiển thị lần chạm, Hiện thao tác chạm hoặc Show taps.';
+
+  @override
+  String get setupBatteryGet =>
+      'Quay lâu (vài chục phút) không bị hệ thống tự tắt giữa chừng.';
+
+  @override
+  String get setupBatteryHow =>
+      'Mở cài đặt ứng dụng, vào Pin và chọn Không hạn chế (tên mục tuỳ hãng máy).';
+
+  @override
+  String get setupPicCue => 'Vòng dấu hiện trước chỗ sắp bấm';
+
+  @override
+  String get setupPicMark => 'Dấu đúng chỗ ngón tay, thêm sau khi quay xong';
+
+  @override
+  String setupBannerTitle(int n) {
+    return 'Còn $n bước thiết lập';
+  }
+
+  @override
+  String get setupBannerSub =>
+      'Để dùng đủ tính năng, xem bạn được gì ở mỗi bước';
+
+  @override
+  String get setupBannerOpen => 'Xem';
+
+  @override
+  String get iosGuideTitle => 'Trên iPhone';
+
+  @override
+  String get iosCanTitle => 'Làm được';
+
+  @override
+  String get iosCanBody =>
+      'Quay màn hình của chính ứng dụng này cùng giọng nói của bạn; cắt, đổi tốc độ cố định, thêm chữ, hình, nhạc và dấu đặt tay; xuất video.';
+
+  @override
+  String get iosOnlyTitle => 'Chỉ có trên Android';
+
+  @override
+  String get iosOnlyBody =>
+      '• Quay màn hình khi dùng ứng dụng khác\n• Dấu tự động theo từng lần bấm\n• Dấu nổi, thanh nổi và đếm ngược\n• Phóng to tự động và thủ công, chuyển cảnh\n• Làm mờ, khảm, tô sáng vùng; bộ lọc màu\n• Tăng tốc dần, phát ngược, video lồng video\n• Phụ đề tự động, thu giọng thuyết minh, hiệu ứng giọng, xuất GIF';
+
+  @override
+  String get iosMore => 'Xem chi tiết';
 }

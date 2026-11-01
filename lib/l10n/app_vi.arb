@@ -803,5 +803,78 @@
   "resetModesConfirm": "Đưa cả ba chế độ quay về cài đặt ban đầu?",
   "resetModesAction": "Đưa về mặc định",
   "resetModesDone": "Đã đưa các chế độ quay về mặc định",
-  "holdTitle": "Thời gian hiện dấu"
+  "holdTitle": "Thời gian hiện dấu",
+  "editorSwipeHint": "Vuốt xuống để mở rộng vùng làm việc, vuốt xuống nữa để toàn màn hình, vuốt lên để thu lại",
+  "androidBadge": "Android",
+  "androidOnlyTitle": "{feature} chỉ có trên Android",
+  "@androidOnlyTitle": {
+    "placeholders": {
+        "feature": { "type": "String" }
+    }
+  },
+  "androidOnlyGets": "Trên Android bạn được: {gets}.",
+  "@androidOnlyGets": {
+    "placeholders": {
+        "gets": { "type": "String" }
+    }
+  },
+  "androidOnlyWhy": "iPhone chưa làm được việc này: iOS không cho ứng dụng thao tác như vậy, hoặc ứng dụng chưa hỗ trợ cho iPhone.",
+  "androidOnlyOk": "Đã hiểu",
+  "androidOnlyNote": "Trên iPhone chưa có: {gets}. Phần này chỉ có trên Android.",
+  "@androidOnlyNote": {
+    "placeholders": {
+        "gets": { "type": "String" }
+    }
+  },
+  "featAutoMarks": "Dấu tự động theo lần bấm",
+  "getsAutoMarks": "app nghe từng lần bạn bấm lúc quay, rồi tự đặt dấu và phóng to đúng chỗ bấm khi quay xong",
+  "featLiveMarks": "Dấu nổi khi quay",
+  "getsLiveMarks": "một chấm nhỏ trên màn hình để đặt dấu ngay lúc quay, kể cả khi quay ứng dụng khác",
+  "featFloatingBar": "Thanh nổi và đếm ngược",
+  "getsFloatingBar": "nút Dừng nổi trên màn hình và đếm ngược 3-2-1 trước khi quay",
+  "getsTransition": "chuyển cảnh mượt giữa các đoạn",
+  "getsZoom": "phóng to vào chỗ quan trọng, đúng tâm điểm chạm",
+  "getsAuto": "dựng tự động: đặt dấu, phóng to và tua nhanh đoạn chờ",
+  "getsCover": "làm mờ, khảm hoặc tô sáng một vùng",
+  "getsLook": "bộ lọc màu cho video",
+  "getsSpeedFx": "tăng tốc dần và phát ngược",
+  "getsPipVideo": "video nhỏ lồng trong video",
+  "settingsGuideSetup": "Hướng dẫn thiết lập",
+  "settingsGuideSetupSub": "Bật những gì cần để dùng đủ tính năng và xem bạn được gì",
+  "setupTitle": "Thiết lập để dùng đủ tính năng",
+  "setupIntro": "Quay màn hình dùng được ngay sau khi cài. Các bước dưới đây mở thêm tính năng, mỗi bước nói rõ bạn được gì.",
+  "setupGetTitle": "Bạn được gì",
+  "setupHowTitle": "Cách bật",
+  "setupOn": "Đã bật",
+  "setupOff": "Chưa bật",
+  "setupRecommended": "Nên bật",
+  "setupOptional": "Tuỳ chọn",
+  "setupTurnOn": "Bật",
+  "setupOverlayGet": "Có thanh nổi và đếm ngược 3-2-1. Khi quay sạch, app nghe được từng lần bạn bấm để tự đặt dấu sau khi quay xong.",
+  "setupOverlayHow": "Bấm Bật, chọn E Screen Recorder rồi bật mục cho phép hiển thị trên ứng dụng khác.",
+  "setupMicGet": "Thu giọng nói của bạn cùng video khi bạn chọn Micro.",
+  "setupMicHow": "Bấm Bật và chọn Cho phép (nếu máy không hỏi nữa, mở Cài đặt ứng dụng, mục Quyền).",
+  "setupNotifGet": "Có nút Tạm dừng và Dừng ở thanh thông báo, để dừng quay mà không cần mở lại app.",
+  "setupNotifHow": "Bấm Bật và chọn Cho phép.",
+  "setupTapsTitle": "Hiển thị lần chạm (chế độ nhà phát triển)",
+  "setupTapsGet": "Quay như bình thường; quay xong app tự đánh dấu đúng chỗ bạn đã bấm, kể cả chỗ màn hình không có phản hồi. Android vẽ chấm trắng ở chỗ chạm trong video, dấu của app đặt đè lên chấm đó.",
+  "setupTapsName": "Tên mục có thể khác theo hãng máy: Hiển thị lần chạm, Hiện thao tác chạm hoặc Show taps.",
+  "setupBatteryGet": "Quay lâu (vài chục phút) không bị hệ thống tự tắt giữa chừng.",
+  "setupBatteryHow": "Mở cài đặt ứng dụng, vào Pin và chọn Không hạn chế (tên mục tuỳ hãng máy).",
+  "setupPicCue": "Vòng dấu hiện trước chỗ sắp bấm",
+  "setupPicMark": "Dấu đúng chỗ ngón tay, thêm sau khi quay xong",
+  "setupBannerTitle": "Còn {n} bước thiết lập",
+  "@setupBannerTitle": {
+    "placeholders": {
+        "n": { "type": "int" }
+    }
+  },
+  "setupBannerSub": "Để dùng đủ tính năng, xem bạn được gì ở mỗi bước",
+  "setupBannerOpen": "Xem",
+  "iosGuideTitle": "Trên iPhone",
+  "iosCanTitle": "Làm được",
+  "iosCanBody": "Quay màn hình của chính ứng dụng này cùng giọng nói của bạn; cắt, đổi tốc độ cố định, thêm chữ, hình, nhạc và dấu đặt tay; xuất video.",
+  "iosOnlyTitle": "Chỉ có trên Android",
+  "iosOnlyBody": "• Quay màn hình khi dùng ứng dụng khác\n• Dấu tự động theo từng lần bấm\n• Dấu nổi, thanh nổi và đếm ngược\n• Phóng to tự động và thủ công, chuyển cảnh\n• Làm mờ, khảm, tô sáng vùng; bộ lọc màu\n• Tăng tốc dần, phát ngược, video lồng video\n• Phụ đề tự động, thu giọng thuyết minh, hiệu ứng giọng, xuất GIF",
+  "iosMore": "Xem chi tiết"
 }

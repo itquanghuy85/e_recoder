@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart' show ValueListenable, ValueNotifier;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
@@ -21,6 +22,8 @@ import 'edit_project.dart';
 import 'editor_controller.dart';
 import 'editor_extra_players.dart';
 import 'editor_fullscreen.dart';
+import 'swipe_hint.dart';
+import 'swipe_zone.dart';
 import 'editor_playback.dart';
 import 'editor_pro_tools.dart' show ensureMicrophone;
 import 'project_template.dart';
@@ -339,6 +342,39 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   Future<void> _pause() async => _driver?.pause();
 
+  void _setToolsHidden(bool hidden) {
+    if (hidden == _toolsHidden) return;
+    setState(() => _toolsHidden = hidden);
+    ref.read(settingsStoreProvider).setBool('editor.toolsHidden', hidden);
+  }
+
+  /// A swipe over the picture or the timeline: down gives more room (tools folded away, then the picture
+  /// over the whole screen), up gives it back. The fullscreen page handles its own swipe up.
+  void _swipe(bool down) {
+    final c = _c;
+    final v = _v;
+    final now = _toolsHidden ? EditorSpace.workspace : EditorSpace.normal;
+    final next = now.swiped(down: down);
+    if (next == now) return;
+    HapticFeedback.selectionClick();
+    if (next == EditorSpace.full) {
+      if (c == null || v == null) return;
+      showEditorFullscreen(
+        context,
+        controller: c,
+        video: v,
+        pipVideos: _extras?.pips ?? const {},
+        repaint: _extras,
+        onToggle: _togglePlay,
+      );
+    } else {
+      _setToolsHidden(next == EditorSpace.workspace);
+    }
+  }
+
+  /// The swipe is not for the editor while a mark, text or clip is selected: dragging it is.
+  bool _swipeOk() => _c?.selectedId == null;
+
   Future<void> _openExport() async {
     final c = _c;
     if (c == null) return;
@@ -481,55 +517,66 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           child: Column(
             children: [
               Expanded(
-                child: Container(
-                  color: cs.surfaceContainerLowest,
-                  padding: const EdgeInsets.symmetric(vertical: Space.sm),
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: EditorStage(
-                          controller: c,
-                          video: v,
-                          pipVideos: _extras?.pips ?? const {},
-                          repaint: _extras,
-                          captureKey: _stageKey,
-                        ),
-                      ),
-                      Positioned(
-                        top: 0,
-                        right: Space.sm,
-                        child: Semantics(
-                          identifier: 'editor_fullscreen',
-                          child: IconButton.filledTonal(
-                            tooltip: t.enterFullscreen,
-                            onPressed: () => showEditorFullscreen(
-                              context,
-                              controller: c,
-                              video: v,
-                              pipVideos: _extras?.pips ?? const {},
-                              repaint: _extras,
-                              onToggle: _togglePlay,
-                            ),
-                            icon: const Icon(Icons.fullscreen),
+                child: SwipeZone(
+                  onSwipe: _swipe,
+                  enabled: _swipeOk,
+                  child: Container(
+                    color: cs.surfaceContainerLowest,
+                    padding: const EdgeInsets.symmetric(vertical: Space.sm),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: EditorStage(
+                            controller: c,
+                            video: v,
+                            pipVideos: _extras?.pips ?? const {},
+                            repaint: _extras,
+                            captureKey: _stageKey,
                           ),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          top: 0,
+                          right: Space.sm,
+                          child: Semantics(
+                            identifier: 'editor_fullscreen',
+                            child: IconButton.filledTonal(
+                              tooltip: t.enterFullscreen,
+                              onPressed: () => showEditorFullscreen(
+                                context,
+                                controller: c,
+                                video: v,
+                                pipVideos: _extras?.pips ?? const {},
+                                repaint: _extras,
+                                onToggle: _togglePlay,
+                              ),
+                              icon: const Icon(Icons.fullscreen),
+                            ),
+                          ),
+                        ),
+                        const SwipeHint(),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              _Transport(
-                controller: c,
-                busy: _driver?.busy,
-                onToggle: _togglePlay,
-                onZoomOut: () => _timelineKey.currentState?.zoomBy(1 / 1.5),
-                onZoomIn: () => _timelineKey.currentState?.zoomBy(1.5),
-                onFit: () => _timelineKey.currentState?.zoomToFit(
-                  MediaQuery.sizeOf(context).width,
+              SwipeZone(
+                onSwipe: _swipe,
+                child: _Transport(
+                  controller: c,
+                  busy: _driver?.busy,
+                  onToggle: _togglePlay,
+                  onZoomOut: () => _timelineKey.currentState?.zoomBy(1 / 1.5),
+                  onZoomIn: () => _timelineKey.currentState?.zoomBy(1.5),
+                  onFit: () => _timelineKey.currentState?.zoomToFit(
+                    MediaQuery.sizeOf(context).width,
+                  ),
                 ),
               ),
               _SelectBar(c: c),
-              EditorTimeline(key: _timelineKey, controller: c),
+              SwipeZone(
+                onSwipe: _swipe,
+                child: EditorTimeline(key: _timelineKey, controller: c),
+              ),
               const Divider(),
               EditorTools(
                 controller: c,
@@ -546,12 +593,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                 onAdvanced: _setAdvanced,
                 onExport: _openExport,
                 collapsed: _toolsHidden,
-                onToggleCollapsed: () {
-                  setState(() => _toolsHidden = !_toolsHidden);
-                  ref
-                      .read(settingsStoreProvider)
-                      .setBool('editor.toolsHidden', _toolsHidden);
-                },
+                onToggleCollapsed: () => _setToolsHidden(!_toolsHidden),
               ),
             ],
           ),

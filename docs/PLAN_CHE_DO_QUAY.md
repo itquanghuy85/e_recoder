@@ -148,3 +148,39 @@ Người dùng báo sau đợt 1: dấu vẫn lan sang màn hình sau; muốn th
 
 **Chưa nghiệm thu (BLOCKED):** S25 không kết nối trong lượt này (ADB chỉ thấy hai máy Oppo, không dùng). Chưa chạy lại trên S25: `scripts/qa/ux_mark_timing.sh`, `scripts/qa/ux_modes_record.sh`, hồi quy 19 flow, kiểm tra thật zoom 300% và việc bỏ chạm khi dừng quay. Flow `ux_modes_record.yaml` và `set_marker_hold_max/min` đã sửa theo id mới nhưng chưa chạy. Cần chạy khi S25 kết nối lại.
 
+## Đợt 3 (01/11/2026): dấu hết trước khi đổi màn, vuốt mở rộng vùng làm việc, hướng dẫn thiết lập, báo "chỉ có trên Android"
+
+Người dùng yêu cầu thêm: (1) Android tải về dùng được ngay không, cái nào cần bật quyền hay chế độ nhà phát triển thì phải hướng dẫn, nói rõ kết quả và có ảnh; (2) màn sửa: vuốt xuống ở khung xem trước / timeline để mở rộng vùng làm việc, vuốt lần nữa thì toàn màn hình, vuốt lên để thu lại; (3) iOS làm được gì thì phải báo rõ tính năng chỉ có trên Android.
+
+### Dấu hết hẳn trước khi màn hình đổi (RUNTIME_VERIFIED trên S25)
+- Cài đặt đang có trên S25 (bản sao lưu `test-results/prefs_backup_r3.xml`, có thể do các flow thử để lại): thời gian hiện dấu **0,5 s** (thấp nhất), dừng hình tại lần bấm 0,2 s. Dấu chỉ còn chừng 0,8 s nên chỗ dấu "lan sang màn mới" xảy ra khi màn đổi chỉ khoảng 0,25 s sau lần chạm: dấu mờ dần (0,3 s) đè lên màn mới. Đây là suy luận từ số liệu, chưa tái hiện trên video của người dùng.
+- Sửa: lần bấm làm đổi màn gần như ngay thì dấu được lấy **sớm hơn lần chạm tối đa 0,45 s**, và ảnh dừng hình cũng ở đúng chỗ đó, để người xem thấy dấu bấm xong, mờ hết, rồi mới đổi màn. `AutoDirector.markTimes`, 3 test.
+- Ảnh kiểm trên S25 (máy tính Samsung, bấm "Chuyển đổi đơn vị"): `test-results/ux_mark_timing/last_mark_frames.png` ô 4–5 dấu mờ dần trên màn cũ, ô 6 màn "Chuyển đổi đơn vị" **không còn vòng dấu**. `ux_mark_timing.sh`: 6 dấu, "never two full marks: PASS".
+
+### Vuốt để mở rộng vùng làm việc (RUNTIME_VERIFIED trên S25)
+- Vuốt nhanh xuống trên khung xem trước, thanh phát hoặc timeline: **lần 1** gập công cụ (như nút "Ẩn công cụ"), **lần 2** toàn màn hình (màn xem toàn màn hình có sẵn). Vuốt **lên**: thu lại từng bước (từ toàn màn hình về gập công cụ, rồi về như cũ).
+- Cách làm an toàn (`SwipeZone`): chỉ nghe chạm thô, **không tham gia cuộc đua cử chỉ**, nên kéo timeline, kéo dấu, chụm phóng không bị ảnh hưởng. Chỉ tính là vuốt khi một ngón, dài từ 72 điểm, dốc hơn 2:1, xong trong 0,65 s. Trên khung xem trước, không nhận khi đang chọn một dấu / chữ / hình (lúc đó kéo là di chuyển nó). Trong màn toàn màn hình, không nhận khi ảnh đang được phóng.
+- Gợi ý: 3 lần mở editor đầu có dòng nhắc mờ "Vuốt xuống để mở rộng vùng làm việc…" ở khung xem trước (không nhận chạm, tự ẩn sau 5 s).
+- **Lỗi do mình gây ra rồi đã sửa trong lúc làm:** dòng nhắc, khi ẩn, trả về một ô rỗng không định vị làm khung xem trước co về kích thước 0 (xem trước bị trắng, vuốt không tới). Đã sửa (luôn là phần tử định vị), tách `SwipeHint`, thêm test `swipe_hint_test` (khung xem trước giữ nguyên kích thước sau khi nhắc ẩn).
+- Flow `maestro/ux_swipe_guide.yaml` PASS: kiểm vuốt ngang không đổi gì, xuống 2 lần, lên 2 lần, ảnh `sw_0..sw_3`.
+
+### Hướng dẫn thiết lập (RUNTIME_VERIFIED trên S25 cho Android)
+- **Android dùng được ngay sau khi cài**: quay màn hình chạy được với hộp thoại của hệ thống. Các bước dưới đây mở thêm tính năng:
+  1. **Hiện trên ứng dụng khác** (nên bật): thanh nổi, đếm ngược 3-2-1; khi quay sạch app nghe được từng lần bấm để tự đặt dấu sau khi quay xong.
+  2. **Micro** (nên bật): thu giọng nói khi chọn Micro.
+  3. **Thông báo** (nên bật): nút Tạm dừng / Dừng trên thanh thông báo.
+  4. **Hiển thị lần chạm (chế độ nhà phát triển)** (tuỳ chọn): quay như bình thường, quay xong app tự đánh dấu đúng chỗ đã bấm, kể cả chỗ màn hình không phản hồi. Có nút mở "Thông tin điện thoại" (bấm 7 lần Số hiệu bản dựng) và "Tùy chọn nhà phát triển", hiện trạng thái hiện tại.
+  5. **Quay lâu không bị ngắt** (tuỳ chọn): đặt Pin của app thành không hạn chế.
+- Mỗi bước có: trạng thái Đã bật / Chưa bật, **Bạn được gì**, **Cách bật**, nút mở đúng chỗ, và **ảnh thật** (2 khung hình từ một bản quay thật trên máy tính Samsung: vòng dấu hiện trước chỗ sắp bấm, dấu đúng chỗ ngón tay). Tự kiểm lại trạng thái khi quay về app từ Cài đặt hệ thống.
+- Vào từ: Cài đặt → "Hướng dẫn thiết lập"; và thẻ **"Còn N bước thiết lập"** trên màn Quay (chỉ hiện khi còn thiếu quyền cần thiết). Mã: `lib/features/setup/setup_guide_screen.dart`, ảnh `assets/guide/*.png` (thêm vào `pubspec.yaml`, không thêm thư viện).
+- **Chưa có:** ảnh chụp chính trang Tùy chọn nhà phát triển của hệ thống (tên mục khác nhau theo hãng máy, đã ghi chú trong hướng dẫn) và video minh hoạ. Hình của bước nhà phát triển dùng ảnh kết quả, không phải ảnh trang hệ thống.
+
+### Báo "chỉ có trên Android" ở iPhone (TEST_VERIFIED; kiểm trên Simulator xem bên dưới)
+- Mọi tính năng iPhone chưa có đều hiện nhãn **Android** thay vì lặng lẽ không chạy: bấm vào nhãn thì hiện bảng nói tính năng đó là gì, bạn được gì trên Android, vì sao iPhone chưa có.
+- Màn Quay (iPhone): khối "Dấu tự động theo lần bấm" (tutorial), "Dấu nổi khi quay" (game), "Thanh nổi và đếm ngược" mờ đi, có nhãn, bấm vào để đọc giải thích. Có nút "Xem chi tiết": **Làm được** / **Chỉ có trên Android** (liệt kê đủ).
+- Màn sửa (iPhone): Chuyển cảnh, Phóng to, Dựng tự động: thay bảng bằng giải thích (có biểu tượng Android ở tab); Tốc độ (tăng dần, phát ngược), Hình ảnh (bộ lọc màu), Chèn hình (video lồng video), Che vùng (làm mờ, khảm, tô sáng): dùng được phần có sẵn kèm một dòng nói phần nào chỉ có trên Android. Cơ sở: `ios/Runner/IOSExporter.swift` ("Not done yet: speed ramps, reversed clips, transitions, zoom, blur / mosaic / spotlight, picture-in-picture videos, colour looks, GIF") và các lệnh `unsupported` trong `RecorderChannel.swift` (thu giọng, phụ đề, GIF).
+- Mã: `lib/core/platform_support.dart` (`isIOS`, `AndroidOnly`, `AndroidOnlyPanel`, `AndroidOnlyNote`, `AndroidBadge`).
+
+### Kiểm thử kỹ thuật
+Flutter test 428+, analyze sạch, Kotlin unit test đạt. Test mới: `swipe_zone_test` (9), `swipe_hint_test` (3), `setup_guide_test` (8), `ios_editor_gate_test` (12), thêm 3 test ở `touch_log_test`.
+

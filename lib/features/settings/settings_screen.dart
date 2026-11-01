@@ -5,6 +5,7 @@ import '../../app/settings_store.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
 import '../purpose/purpose.dart';
+import '../setup/setup_guide_screen.dart';
 import '../onboarding/onboarding_screen.dart';
 import 'about_screens.dart';
 import 'permissions_panel.dart';
@@ -45,6 +46,13 @@ class SettingsScreen extends ConsumerWidget {
           icon: Icons.videocam_outlined,
           title: t.settingsGroupRecord,
           sub: t.settingsGroupRecordSub,
+        ),
+        _SettingsTile(
+          id: 'settings_setup_guide',
+          icon: Icons.checklist,
+          title: t.settingsGuideSetup,
+          sub: t.settingsGuideSetupSub,
+          page: const SetupGuideScreen(),
         ),
         Semantics(
           identifier: 'settings_reset_modes',
@@ -125,9 +133,8 @@ Future<void> _resetModes(BuildContext context, WidgetRef ref) async {
   if (ok != true) return;
   await ref.read(purposeProvider.notifier).resetAll();
   if (!context.mounted) return;
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(t.resetModesDone)),
-  );
+  ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(t.resetModesDone)));
 }
 
 class _SettingsTile extends StatelessWidget {

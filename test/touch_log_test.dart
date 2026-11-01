@@ -49,7 +49,10 @@ void main() {
     });
 
     test('two presses low on the screen are buttons, not typing', () {
-      final e = TouchClassifier.classify([_t(1000, 0.5, 0.9), _t(5000, 0.2, 0.9)]);
+      final e = TouchClassifier.classify([
+        _t(1000, 0.5, 0.9),
+        _t(5000, 0.2, 0.9),
+      ]);
       expect(e.every((x) => x.kind == TouchKind.tap), isTrue);
     });
 
@@ -72,7 +75,11 @@ void main() {
   group('freezes', () {
     test('close taps share one freeze', () {
       final f = TouchPlan.freezes(
-        TouchClassifier.classify([_t(1000), _t(1900, 0.2, 0.4), _t(5000, 0.7, 0.2)]),
+        TouchClassifier.classify([
+          _t(1000),
+          _t(1900, 0.2, 0.4),
+          _t(5000, 0.7, 0.2),
+        ]),
         800,
       );
       expect(f.map((x) => x.tMs), [1000, 5000]);
@@ -140,13 +147,19 @@ void main() {
     test('without a chosen mark the old rule stays (number, or ripple)', () {
       final ev = TouchClassifier.classify([_t(3000)]);
       expect(
-        AutoDirector.fromTouches(_base(), ev, const DirectorOptions())
-            .markers.single.spec.type,
+        AutoDirector.fromTouches(
+          _base(),
+          ev,
+          const DirectorOptions(),
+        ).markers.single.spec.type,
         MarkerType.number,
       );
       expect(
-        AutoDirector.fromTouches(_base(), ev, const DirectorOptions(number: false))
-            .markers.single.spec.type,
+        AutoDirector.fromTouches(
+          _base(),
+          ev,
+          const DirectorOptions(number: false),
+        ).markers.single.spec.type,
         MarkerType.ripple,
       );
     });
@@ -257,19 +270,40 @@ void main() {
         hold,
       );
       final m = p.markers.single;
+      // the change is 0.8 s after the touch: room enough, the mark is taken at the touch
       expect(m.takeMs, 3000);
       expect(m.holdMs, 3800 - AutoDirector.screenLeadMs - 3000);
-      // fully gone a little before the change was seen
       expect(m.endMs, lessThanOrEqualTo(3800 - 150));
     });
 
-    test('a screen that changes at once: the mark fades right after the press', () {
+    test('a screen that changes at once: the mark is taken a little earlier and is gone first', () {
       final p = AutoDirector.fromTouches(
         _base(),
-        TouchClassifier.classify([c(3000, 0.5, 0.3, 3300)]),
+        TouchClassifier.classify([c(3000, 0.5, 0.3, 3250)]),
+        const DirectorOptions(markerHoldMs: 2500, pauseMs: 800),
+      );
+      final m = p.markers.single;
+      expect(
+        m.takeMs,
+        3250 - AutoDirector.screenLeadMs,
+      ); // 2800: 0.2 s before the touch
+      expect(m.holdMs, 0);
+      expect(
+        m.endMs,
+        lessThanOrEqualTo(3250 - 150),
+      ); // fully faded before the change
+      // the picture is frozen where the mark is taken, so the mark is shown whole during the freeze
+      final still = p.segments.firstWhere((s) => s.isStill);
+      expect(still.startMs, m.takeMs);
+    });
+
+    test('never taken more than 0.45 s before the touch', () {
+      final p = AutoDirector.fromTouches(
+        _base(),
+        TouchClassifier.classify([c(3000, 0.5, 0.3, 3000)]),
         hold,
       );
-      expect(p.markers.single.holdMs, 0);
+      expect(p.markers.single.takeMs, 3000 - AutoDirector.maxEarlyMs);
     });
 
     test('no change after the tap keeps the full time', () {
@@ -300,26 +334,29 @@ void main() {
       expect(ms.last.holdMs, 2500);
     });
 
-    test('fast taps: each mark fades right after its press, never two full marks', () {
-      final p = AutoDirector.fromTouches(
-        _base(),
-        TouchClassifier.classify([
-          c(3000, 0.2, 0.3, null),
-          c(3500, 0.6, 0.3, null),
-          c(4000, 0.4, 0.3, null),
-        ]),
-        hold,
-      );
-      final ms = [...p.markers]
-        ..sort((a, b) => a.cueStartMs.compareTo(b.cueStartMs));
-      expect(ms.length, 3);
-      expect(ms[0].holdMs, 0);
-      expect(ms[1].holdMs, 0);
-      for (var i = 0; i + 1 < ms.length; i++) {
-        // the next mark's full show (its take) comes after this one is gone
-        expect(ms[i].endMs, lessThanOrEqualTo(ms[i + 1].takeMs));
-      }
-    });
+    test(
+      'fast taps: each mark fades right after its press, never two full marks',
+      () {
+        final p = AutoDirector.fromTouches(
+          _base(),
+          TouchClassifier.classify([
+            c(3000, 0.2, 0.3, null),
+            c(3500, 0.6, 0.3, null),
+            c(4000, 0.4, 0.3, null),
+          ]),
+          hold,
+        );
+        final ms = [...p.markers]
+          ..sort((a, b) => a.cueStartMs.compareTo(b.cueStartMs));
+        expect(ms.length, 3);
+        expect(ms[0].holdMs, 0);
+        expect(ms[1].holdMs, 0);
+        for (var i = 0; i + 1 < ms.length; i++) {
+          // the next mark's full show (its take) comes after this one is gone
+          expect(ms[i].endMs, lessThanOrEqualTo(ms[i + 1].takeMs));
+        }
+      },
+    );
 
     test('a double tap within 0.3 s at the same place is one mark', () {
       final e = TouchClassifier.classify([
@@ -364,7 +401,10 @@ void main() {
         ev,
         off.copyWith(markerType: MarkerType.arrow),
       );
-      expect(arrow.markers.every((m) => m.spec.type == MarkerType.arrow), isTrue);
+      expect(
+        arrow.markers.every((m) => m.spec.type == MarkerType.arrow),
+        isTrue,
+      );
       // numbered: numbers and a caption for the touch without a place
       final on = AutoDirector.fromTouches(
         _base(),
@@ -377,11 +417,13 @@ void main() {
 
     test('changeMs is read from the scan, -1 means none', () {
       expect(
-        RawTouch.fromMap({'tMs': 1, 'x': 0.1, 'y': 0.1, 'changeMs': 400}).changeMs,
+        RawTouch.fromMap({'tMs': 1, 'x': 0.1, 'y': 0.1, 'changeMs': 400})
+            .changeMs,
         400,
       );
       expect(
-        RawTouch.fromMap({'tMs': 1, 'x': 0.1, 'y': 0.1, 'changeMs': -1}).changeMs,
+        RawTouch.fromMap({'tMs': 1, 'x': 0.1, 'y': 0.1, 'changeMs': -1})
+            .changeMs,
         isNull,
       );
       expect(RawTouch.fromMap({'tMs': 1}).changeMs, isNull);

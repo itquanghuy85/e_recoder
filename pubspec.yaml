@@ -38,6 +38,9 @@ flutter:
     # Caption presets: id, name, previewHint, style. Schema: see CaptionStyle.fromJson doc
     # (lib/features/editor/caption_models.dart). Empty until Phase 5.
     - assets/caption_templates.json
+    # Pictures of what a person gets, shown in the setup guide (frames of a real recording).
+    - assets/guide/result_cue.png
+    - assets/guide/result_mark.png
   fonts:
     - family: Barlow
       fonts:

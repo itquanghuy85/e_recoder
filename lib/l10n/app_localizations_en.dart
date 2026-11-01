@@ -2021,4 +2021,192 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get holdTitle => 'How long a mark shows';
+
+  @override
+  String get editorSwipeHint =>
+      'Swipe down for more room, again for full screen, swipe up to go back';
+
+  @override
+  String get androidBadge => 'Android';
+
+  @override
+  String androidOnlyTitle(String feature) {
+    return '$feature is Android only';
+  }
+
+  @override
+  String androidOnlyGets(String gets) {
+    return 'On Android you get: $gets.';
+  }
+
+  @override
+  String get androidOnlyWhy =>
+      'iPhone cannot do this yet: iOS does not let an app do it, or the app does not support it on iPhone yet.';
+
+  @override
+  String get androidOnlyOk => 'Got it';
+
+  @override
+  String androidOnlyNote(String gets) {
+    return 'Not on iPhone: $gets. This part is Android only.';
+  }
+
+  @override
+  String get featAutoMarks => 'Automatic tap marks';
+
+  @override
+  String get getsAutoMarks =>
+      'the app listens to every tap while you record, then places marks and zooms in on the tapped spot once you stop';
+
+  @override
+  String get featLiveMarks => 'Marks while recording';
+
+  @override
+  String get getsLiveMarks =>
+      'a small dot on screen to place marks as you record, even when recording another app';
+
+  @override
+  String get featFloatingBar => 'Floating bar and countdown';
+
+  @override
+  String get getsFloatingBar =>
+      'a floating Stop button and a 3-2-1 countdown before recording';
+
+  @override
+  String get getsTransition => 'smooth transitions between clips';
+
+  @override
+  String get getsZoom => 'zoom in on what matters, centred on the touch';
+
+  @override
+  String get getsAuto =>
+      'automatic editing: marks, zoom and fast-forwarding the idle parts';
+
+  @override
+  String get getsCover => 'blur, pixelate or spotlight an area';
+
+  @override
+  String get getsLook => 'colour looks for the video';
+
+  @override
+  String get getsSpeedFx => 'speed ramps and reverse playback';
+
+  @override
+  String get getsPipVideo => 'a small video inside the video';
+
+  @override
+  String get settingsGuideSetup => 'Setup guide';
+
+  @override
+  String get settingsGuideSetupSub =>
+      'Switch on what you need for every feature and see what you get';
+
+  @override
+  String get setupTitle => 'Set up to use every feature';
+
+  @override
+  String get setupIntro =>
+      'Recording works right after install. The steps below unlock more, and each says what you get.';
+
+  @override
+  String get setupGetTitle => 'What you get';
+
+  @override
+  String get setupHowTitle => 'How to turn it on';
+
+  @override
+  String get setupOn => 'On';
+
+  @override
+  String get setupOff => 'Off';
+
+  @override
+  String get setupRecommended => 'Recommended';
+
+  @override
+  String get setupOptional => 'Optional';
+
+  @override
+  String get setupTurnOn => 'Turn on';
+
+  @override
+  String get setupOverlayGet =>
+      'A floating bar and a 3-2-1 countdown. In a clean recording the app hears every tap, so it can place the marks for you once you stop.';
+
+  @override
+  String get setupOverlayHow =>
+      'Tap Turn on, pick E Screen Recorder and allow display over other apps.';
+
+  @override
+  String get setupMicGet =>
+      'Your voice goes into the video when you choose Microphone.';
+
+  @override
+  String get setupMicHow =>
+      'Tap Turn on and choose Allow (if the phone no longer asks, open the app settings, Permissions).';
+
+  @override
+  String get setupNotifGet =>
+      'Pause and Stop buttons in the notification, to stop recording without opening the app again.';
+
+  @override
+  String get setupNotifHow => 'Tap Turn on and choose Allow.';
+
+  @override
+  String get setupTapsTitle => 'Show taps (developer mode)';
+
+  @override
+  String get setupTapsGet =>
+      'Record as usual; when you stop, the app marks exactly where you tapped, even where the screen gives no feedback. Android draws a white dot at each touch in the video, and the app\'s mark is placed over it.';
+
+  @override
+  String get setupTapsName =>
+      'The name can differ by phone brand: Show taps, Show touches or Hiển thị lần chạm.';
+
+  @override
+  String get setupBatteryGet =>
+      'Long recordings (tens of minutes) are not stopped by the system half way.';
+
+  @override
+  String get setupBatteryHow =>
+      'Open the app settings, go to Battery and choose Unrestricted (the name depends on the phone brand).';
+
+  @override
+  String get setupPicCue => 'The ring shows up before the spot you will tap';
+
+  @override
+  String get setupPicMark =>
+      'The mark sits on the finger, added after you stop';
+
+  @override
+  String setupBannerTitle(int n) {
+    return '$n setup steps left';
+  }
+
+  @override
+  String get setupBannerSub =>
+      'To use every feature; see what you get at each step';
+
+  @override
+  String get setupBannerOpen => 'View';
+
+  @override
+  String get iosGuideTitle => 'On iPhone';
+
+  @override
+  String get iosCanTitle => 'What works';
+
+  @override
+  String get iosCanBody =>
+      'Record this app\'s own screen with your voice; cut, constant speed, text, pictures, music and hand-placed marks; export the video.';
+
+  @override
+  String get iosOnlyTitle => 'Android only';
+
+  @override
+  String get iosOnlyBody =>
+      '• Recording the screen while using other apps\n• Automatic marks at every tap\n• Floating dot, floating bar and countdown\n• Automatic and manual zoom, transitions\n• Blur, pixelate, spotlight; colour looks\n• Speed ramps, reverse, video in video\n• Automatic subtitles, voice-over recording, voice effects, GIF export';
+
+  @override
+  String get iosMore => 'See details';
 }

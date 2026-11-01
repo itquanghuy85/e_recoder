@@ -144,4 +144,5 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
   - Nghiệm thu chế độ: `bash scripts/qa/ux_modes_record.sh` (tự sao lưu và trả cài đặt, đo hai video bằng ffprobe).
   - `run_flows18.ps1` không cần bỏ khoá `purpose` nữa.
 - Đợt 2 (01/11/2026): thanh thời gian dấu nay là `quick_hold` ở lựa chọn chính (không còn `more_hold`); mức phóng là `quick_zoom_scale`. Nút `record_start` ghim ở đáy màn Quay (phần trên cuộn). Nghiệm thu lại trên S25 khi kết nối: `bash scripts/qa/ux_mark_timing.sh` (kiểm cả ảnh dấu sau khi đổi màn), `bash scripts/qa/ux_modes_record.sh`, rồi `run_flows18.ps1`.
+- Đợt 3 (01/11/2026): `maestro/ux_swipe_guide.yaml` (vuốt xuống / lên ở màn sửa, rồi mở Cài đặt → Hướng dẫn thiết lập). Vuốt nằm trong vùng khung xem trước, thanh phát hoặc timeline (không phải thanh "Chọn nhiều"). Mục trong Cài đặt tìm theo id `settings_setup_guide` (chữ của dòng bị gộp với dòng phụ nên khớp chữ không được). Màn hướng dẫn: `setup_step_<overlay|mic|notif|taps|battery>`, nút `setup_*_on`. iPhone: đổi nền tảng trong test bằng `debugDefaultTargetPlatformOverride` và trả lại **trong thân test** (khung test kiểm trước tearDown).
 

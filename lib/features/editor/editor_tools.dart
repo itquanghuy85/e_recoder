@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../core/platform_support.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
 import '../marker/marker_inspector.dart';
@@ -16,6 +17,27 @@ import 'caption_panel.dart';
 import 'srt.dart';
 import 'edit_project.dart';
 import 'touch_log.dart' show InputMode;
+
+/// Tools the iPhone export cannot draw at all, and tools it draws only in part (see IOSExporter).
+const _iosOff = {EditorTool.transition, EditorTool.zoom, EditorTool.auto};
+const _iosPart = {
+  EditorTool.speed,
+  EditorTool.picture,
+  EditorTool.overlay,
+  EditorTool.cover,
+};
+
+/// What the tool gives on Android that the iPhone lacks.
+String _iosGets(AppL10n t, EditorTool e) => switch (e) {
+  EditorTool.transition => t.getsTransition,
+  EditorTool.zoom => t.getsZoom,
+  EditorTool.auto => t.getsAuto,
+  EditorTool.speed => t.getsSpeedFx,
+  EditorTool.picture => t.getsLook,
+  EditorTool.overlay => t.getsPipVideo,
+  EditorTool.cover => t.getsCover,
+  _ => '',
+};
 
 enum EditorTool {
   cut,
@@ -185,7 +207,7 @@ class EditorTools extends StatelessWidget {
                   Space.lg,
                   Space.sm,
                 ),
-                child: switch (tool) {
+                child: _iosGate(context, tool, switch (tool) {
                   EditorTool.cut => _CutPanel(c: controller),
                   EditorTool.speed => _SpeedPanel(c: controller),
                   EditorTool.transition => _TransitionPanel(c: controller),
@@ -207,13 +229,33 @@ class EditorTools extends StatelessWidget {
                   EditorTool.cover => _CoverPanel(c: controller),
                   EditorTool.zoom => _ZoomPanel(c: controller),
                   EditorTool.auto => _AutoPanel(c: controller),
-                },
+                }),
               ),
             ),
           ),
         ],
       ],
     );
+  }
+
+  /// On iPhone some tools do nothing (the export does not draw them yet) and some only in part: say so
+  /// instead of letting a person make an edit that will not show in the video.
+  Widget _iosGate(BuildContext context, EditorTool e, Widget panel) {
+    if (!isIOS) return panel;
+    final t = AppL10n.of(context);
+    if (_iosOff.contains(e)) {
+      return AndroidOnlyPanel(feature: toolLabel(t, e), gets: _iosGets(t, e));
+    }
+    if (_iosPart.contains(e)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AndroidOnlyNote(gets: _iosGets(t, e)),
+          panel,
+        ],
+      );
+    }
+    return panel;
   }
 
   Widget _toolRow(BuildContext context, List<Widget> tabs) => SizedBox(
@@ -270,7 +312,18 @@ class EditorTools extends StatelessWidget {
       selected: tool == e,
       child: InkWell(
         onTap: () => onTool(e),
-        child: _tabBody(context, toolIcon(e), toolLabel(t, e), tool == e),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            _tabBody(context, toolIcon(e), toolLabel(t, e), tool == e),
+            if (isIOS && _iosOff.contains(e))
+              const Positioned(
+                top: 2,
+                right: 6,
+                child: Icon(Icons.android, size: 12),
+              ),
+          ],
+        ),
       ),
     );
   }

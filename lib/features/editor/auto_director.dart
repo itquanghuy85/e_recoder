@@ -306,12 +306,13 @@ abstract final class AutoDirector {
       for (final e in sorted)
         if (e.kind == TouchKind.tap) e else if (keyAsTap(e)) _asTap(e),
     ];
+    final at = markTimes(taps);
     var step = 0;
     for (var i = 0; i < taps.length; i++) {
       final e = taps[i];
       step++;
       if (e.hasPosition) {
-        final cue = (e.tMs - MarkerTiming.cueMs)
+        final cue = (at[i] - MarkerTiming.cueMs)
             .clamp(0, math.max(0, dur - 300))
             .toInt();
         out = out.upsertMarker(
@@ -320,6 +321,7 @@ abstract final class AutoDirector {
             cueStartMs: cue,
             holdMs: tapHoldMs(
               taps,
+              at,
               i,
               cue + MarkerTiming.cueMs,
               o.markerHoldMs,
@@ -349,7 +351,12 @@ abstract final class AutoDirector {
         );
       }
     }
-    freezes.addAll(TouchPlan.freezes(taps, o.pauseMs));
+    // The picture is frozen where the mark is taken (see [markTimes]).
+    freezes.addAll(
+      TouchPlan.freezes([
+        for (var i = 0; i < taps.length; i++) _movedTo(taps[i], at[i]),
+      ], o.pauseMs),
+    );
 
     if (o.inputMode != InputMode.skip) {
       final groups = <int, List<TouchEvent>>{};
@@ -450,7 +457,8 @@ abstract final class AutoDirector {
   /// The mark put at each tap. Step numbers only appear when steps are numbered: without it a "number"
   /// mark (the default kind) is drawn as the plain ripple instead.
   static MarkerType _tapKind(DirectorOptions o) {
-    final k = o.markerType ?? (o.number ? MarkerType.number : MarkerType.ripple);
+    final k =
+        o.markerType ?? (o.number ? MarkerType.number : MarkerType.ripple);
     return k == MarkerType.number && !o.number ? MarkerType.ripple : k;
   }
 
@@ -458,11 +466,43 @@ abstract final class AutoDirector {
   /// shows: the fade itself plus the step the change is looked for with (it can be found that late).
   static const screenLeadMs = MarkerTiming.fadeMs + 150;
 
+  /// A tap that changes the screen almost at once cannot show its mark and let it fade (0.3 s) before the
+  /// new screen if the mark is taken at the touch. So that mark is taken a little earlier (at most
+  /// [maxEarlyMs]): the viewer sees the mark press, it fades, and then the screen changes. Taps keep
+  /// their order, and a tap with no change found is taken at the touch.
+  static List<int> markTimes(List<TouchEvent> taps) {
+    final out = <int>[];
+    for (final e in taps) {
+      var t = e.tMs;
+      final change = e.changeMs;
+      if (change != null) {
+        t = math.max(e.tMs - maxEarlyMs, math.min(t, change - screenLeadMs));
+      }
+      if (out.isNotEmpty) t = math.max(t, out.last + 1);
+      out.add(math.max(0, t));
+    }
+    return out;
+  }
+
+  static const maxEarlyMs = 450;
+
+  static TouchEvent _movedTo(TouchEvent e, int t) => TouchEvent(
+    tMs: t,
+    kind: e.kind,
+    x: e.x,
+    y: e.y,
+    endMs: e.endMs,
+    app: e.app,
+    pauseMs: e.pauseMs,
+    changeMs: e.changeMs,
+  );
+
   /// How long the mark of `taps[i]` stays after its take ([takeMs]): [holdMs], but never past the
   /// moment the screen changed after the tap (it would sit on the new screen) and never into the next
   /// mark, so only one mark is on the screen at a time. 0 means it fades right after the press.
   static int tapHoldMs(
     List<TouchEvent> taps,
+    List<int> at,
     int i,
     int takeMs,
     int holdMs,
@@ -472,7 +512,7 @@ abstract final class AutoDirector {
     if (change != null) fadeAt = math.min(fadeAt, change - screenLeadMs);
     for (var j = i + 1; j < taps.length; j++) {
       if (!taps[j].hasPosition) continue;
-      final nextCue = math.max(0, taps[j].tMs - MarkerTiming.cueMs);
+      final nextCue = math.max(0, at[j] - MarkerTiming.cueMs);
       fadeAt = math.min(fadeAt, nextCue - MarkerTiming.fadeMs);
       break;
     }
