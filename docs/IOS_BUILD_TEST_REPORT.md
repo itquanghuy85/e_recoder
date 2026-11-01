@@ -85,3 +85,27 @@ Phần này rút ra từ đọc mã nguồn, **chưa kiểm thực tế trên iO
 - Bản sao script trong repo: `scripts/qa/ios_qa.sh`.
 - Thư mục `~/e_recorder_ios_qa` (khoảng 1,1 GB) được giữ lại để chạy lần sau.
 - Simulator iPhone 17 đã tắt sau khi kiểm. iPhone 18 Pro đang chạy sẵn trên Mac không bị động tới.
+
+## 9. Cài lên iPhone thật (01/11/2026)
+Làm theo yêu cầu "cài lên máy iPhone": đây là lần đầu có ký ứng dụng, đã được người dùng cho phép.
+
+| Mục | Giá trị |
+|---|---|
+| Mã | main, commit `43d835f` (Mac trùng PC, qua Git Bundle) |
+| Máy | "Huy 18PRM (2)", iPhone 15 Pro Max, UDID `00008130-000241480E04001C`, trạng thái connected |
+| Ký | team "Huy Bui" `F7B6X2BZ6A` (Individual, trả phí); chứng chỉ Apple Development; `codesign` báo `TeamIdentifier=F7B6X2BZ6A` |
+| Bản build | `flutter build ios --release`, 22,0 MB, phiên bản 1.2.0 (3), không đổi version |
+| Kết quả | **PASS**: build (`12_build_gui.log`), cài (`13_install.log`, `install_rc=0`), mở app (`14_launch.log`, `launch_rc=0`). iPhone liệt kê "E Screen Recorder 1.2.0 (3)" và có tiến trình đang chạy |
+
+**Cách đã làm và vì sao:**
+- Cấu hình ký chỉ đặt trong bản sao trên Mac (`DEVELOPMENT_TEAM = F7B6X2BZ6A` trong `ios/Runner.xcodeproj/project.pbxproj` của thư mục `~/e_recorder_ios_qa/src`). **Repo không bị đổi.**
+- Chạy qua SSH trực tiếp bị lỗi `errSecInternalComponent` (xem `11_build_device_signed.log`): khoá đăng nhập trên Mac bị khoá với phiên SSH nên không dùng được khoá ký.
+- Cách xử lý: SSH chỉ chép script `~/e_recorder_ios_qa/install_iphone.command` rồi mở bằng Terminal trên Mac, để lệnh chạy trong phiên giao diện của tài khoản `huy` (đã đăng nhập sẵn trên Mac). Không dùng hay đoán mật khẩu nào. Một cửa sổ Terminal đã mở trên Mac trong lúc build.
+- Lệnh cài và mở: `xcrun devicectl device install app` rồi `devicectl device process launch`.
+
+**Chưa kiểm:**
+- Giao diện trên iPhone: chưa chụp được màn hình iPhone từ xa, nên mới biết app đã chạy chứ chưa xem từng màn. Cần bạn mở app và xem.
+- Nếu iPhone báo "Nhà phát triển chưa được tin cậy": Cài đặt → Cài đặt chung → VPN và quản lý thiết bị → tin cậy chứng chỉ của tài khoản.
+- Các hạn chế iOS ở mục 5 vẫn đúng (chỉ quay được chính app, chưa có phụ đề, nhiều hiệu ứng xuất chưa làm). Các sửa dấu / zoom của Android chưa liên quan tới iPhone.
+- Bản này ký bằng chứng chỉ phát triển nên hết hạn theo hồ sơ cấp phép (thường 7 ngày với team miễn phí, 1 năm với team trả phí). Không đưa lên App Store hay TestFlight.
+

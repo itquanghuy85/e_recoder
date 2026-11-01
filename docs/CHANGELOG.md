@@ -1,5 +1,8 @@
 # Changelog
 
+## [2026-11-01] Cài lên iPhone thật qua Mac (SSH)
+- Cài và mở thành công bản release (1.2.0, build 3) từ main `43d835f` lên iPhone "Huy 18PRM (2)", ký bằng team "Huy Bui". Chưa kiểm giao diện từng màn. Repo không đổi cấu hình ký. Chi tiết và lưu ý: `docs/IOS_BUILD_TEST_REPORT.md`, mục 9.
+
 ## [2026-11-01] Dấu không lan sang màn sau, zoom 300% đúng tâm, bỏ "Bước N" khi tắt đánh số
 - Dò màn hình đổi theo ô (12×24) thay vì theo điểm ảnh: trang trắng sang trang trắng khác chữ cũng dò ra, nên dấu mờ trước khi màn mới hiện. Test Kotlin `changedBlocks`.
 - Bỏ các chạm lúc thao tác Dừng quay (chạm khi app ở phía trước, và chạm dẫn app về phía trước).
