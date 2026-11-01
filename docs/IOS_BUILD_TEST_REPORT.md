@@ -109,3 +109,19 @@ Làm theo yêu cầu "cài lên máy iPhone": đây là lần đầu có ký ứ
 - Các hạn chế iOS ở mục 5 vẫn đúng (chỉ quay được chính app, chưa có phụ đề, nhiều hiệu ứng xuất chưa làm). Các sửa dấu / zoom của Android chưa liên quan tới iPhone.
 - Bản này ký bằng chứng chỉ phát triển nên hết hạn theo hồ sơ cấp phép (thường 7 ngày với team miễn phí, 1 năm với team trả phí). Không đưa lên App Store hay TestFlight.
 
+## 10. Báo "chỉ có trên Android" ngay trong app (01/11/2026)
+Yêu cầu: iPhone làm được gì thì phải cho người dùng biết tính năng nào chỉ có trên Android.
+
+| Mục | Kết quả | Bằng chứng |
+|---|---|---|
+| Mã main `ac494c3` trên Mac trùng PC | PASS | `MAC_HEAD` = `PC_HEAD` |
+| `flutter test` trên Mac | PASS (430 test) | `04_test.log` |
+| `flutter analyze` | PASS | `05_analyze.log` |
+| Build Simulator Debug | PASS | `06_build_sim.log` |
+| Build máy thật không ký | PASS | `07_build_device.log` |
+| Màn Quay trên iPhone 17 Simulator | PASS (nhìn ảnh) | `15_ios_record.png`: thông báo "Xem chi tiết", nhóm "Dấu bấm" mờ đi, có nhãn **Android** |
+| Bảng giải thích khi bấm nhãn, màn "Trên iPhone", nhãn ở tab công cụ sửa | TEST_VERIFIED (widget test giả nền tảng iOS) | `test/setup_guide_test.dart`, `test/ios_editor_gate_test.dart`. Chưa bấm thử trên Simulator (Mac chưa có Java cho Maestro) |
+| Cài lại lên iPhone thật | **Chưa làm** | Chưa được yêu cầu lần này; bản trên iPhone vẫn là bản cũ (`43d835f`) cho tới khi cài lại |
+
+**Lưu ý vận hành Mac:** Mac tự ngủ khi rảnh (SSH báo "timed out" dù vẫn ping được). Gửi gói đánh thức mạng tới địa chỉ MAC của máy thì dậy lại. Khi build lâu nên chạy kèm `caffeinate`, nếu không máy ngủ giữa chừng làm dừng build (lần này test chạy 627 s vì ngủ giữa chừng).
+
