@@ -5,14 +5,25 @@ tags:
   - module-editor
 ---
 - runFlow: helpers/open_edit.yaml
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_overlay"
 - tapOn:
     id: "add_image"
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn:
-    point: 20%, 41%
+# The picker remembers the last folder: open Downloads only when the file is not shown, then pick it by name
+# (fixed screen points differ between phones and between runs).
+- runFlow:
+    when:
+      notVisible: "esr_pic.png"
+    commands:
+      - tapOn:
+          point: 7%, 7%
+      - waitForAnimationToEnd
+      - tapOn: "Tệp đã tải xuống|Tải xuống|Downloads"
+      - waitForAnimationToEnd
+- tapOn: "esr_pic.png"
 - extendedWaitUntil:
     visible:
       id: "editor_play"

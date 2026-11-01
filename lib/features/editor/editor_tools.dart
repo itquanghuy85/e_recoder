@@ -7,10 +7,12 @@ import 'package:video_player/video_player.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
 import '../marker/marker_inspector.dart';
+import '../marker/marker_settings.dart' show MarkerSettings;
 import '../marker/marker_spec.dart';
 import 'editor_controller.dart';
 import 'editor_pro_tools.dart';
 import 'auto_caption_sheet.dart';
+import 'caption_panel.dart';
 import 'srt.dart';
 import 'edit_project.dart';
 import 'touch_log.dart' show InputMode;
@@ -28,6 +30,26 @@ enum EditorTool {
   zoom,
   auto,
 }
+
+/// What a new person sees: the everyday tools. Export is the sixth tab (the same as the button on top).
+const basicTools = [
+  EditorTool.cut,
+  EditorTool.marker,
+  EditorTool.text,
+  EditorTool.speed,
+  EditorTool.audio,
+];
+
+/// Shown on top of the basic ones in Advanced mode. Switching mode only changes what is shown: nothing
+/// that was made with these tools is touched, previewed or exported any differently.
+const advancedTools = [
+  EditorTool.transition,
+  EditorTool.picture,
+  EditorTool.overlay,
+  EditorTool.cover,
+  EditorTool.zoom,
+  EditorTool.auto,
+];
 
 String toolLabel(AppL10n t, EditorTool e) => switch (e) {
   EditorTool.cut => t.toolCut,
@@ -71,7 +93,15 @@ class EditorTools extends StatelessWidget {
     this.onRecordVoice,
     this.collapsed = false,
     this.onToggleCollapsed,
+    this.advanced = false,
+    this.onAdvanced,
+    this.onExport,
   });
+
+  /// Advanced mode shows the second row of tools; Basic hides it (and nothing else changes).
+  final bool advanced;
+  final ValueChanged<bool>? onAdvanced;
+  final VoidCallback? onExport;
 
   /// When true only a slim handle is shown, so the preview gets the room.
   final bool collapsed;
@@ -124,74 +154,16 @@ class EditorTools extends StatelessWidget {
           ),
         ),
         if (!collapsed) ...[
-          // Every tool is one tap away: two rows, no hidden sideways scrolling.
-          for (final row in [
-            EditorTool.values.take(6).toList(),
-            EditorTool.values.skip(6).toList(),
-          ])
-            SizedBox(
-              height: 44,
-              child: Row(
-                children: [
-                  for (final e in row)
-                    Expanded(
-                      child: Semantics(
-                        identifier: 'tool_${e.name}',
-                        button: true,
-                        selected: tool == e,
-                        child: InkWell(
-                          onTap: () => onTool(e),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: tool == e
-                                      ? cs.tertiaryContainer
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  toolIcon(e),
-                                  size: 18,
-                                  color: tool == e
-                                      ? cs.onTertiaryContainer
-                                      : cs.onSurfaceVariant,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                ),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    toolLabel(t, e),
-                                    maxLines: 1,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall
-                                        ?.copyWith(
-                                          fontSize: 10,
-                                          color: tool == e
-                                              ? cs.onSurface
-                                              : cs.onSurfaceVariant,
-                                        ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  // keep the last row's tabs the same width as the first row's
-                  for (var i = row.length; i < 6; i++) const Spacer(),
-                ],
-              ),
-            ),
+          // Every tool shown is one tap away: no hidden sideways scrolling.
+          _toolRow(context, [
+            for (final e in basicTools) _tab(context, e),
+            _exportTab(context),
+          ]),
+          if (advanced)
+            _toolRow(context, [
+              for (final e in advancedTools) _tab(context, e),
+            ]),
+          _modeRow(context),
           const Divider(),
           ConstrainedBox(
             constraints: BoxConstraints(
@@ -201,16 +173,19 @@ class EditorTools extends StatelessWidget {
                 210.0,
               ),
             ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                Space.lg,
-                Space.sm,
-                Space.lg,
-                Space.sm,
-              ),
-              child: ListenableBuilder(
-                listenable: controller,
-                builder: (context, _) => switch (tool) {
+            // A new tool or a new selection opens its panel at the top: the scroll of the previous panel
+            // would otherwise hide the first controls (e.g. the text of a speech bubble).
+            child: ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) => SingleChildScrollView(
+                key: ValueKey('${tool.name}/${controller.selectedId}'),
+                padding: const EdgeInsets.fromLTRB(
+                  Space.lg,
+                  Space.sm,
+                  Space.lg,
+                  Space.sm,
+                ),
+                child: switch (tool) {
                   EditorTool.cut => _CutPanel(c: controller),
                   EditorTool.speed => _SpeedPanel(c: controller),
                   EditorTool.transition => _TransitionPanel(c: controller),
@@ -238,6 +213,121 @@ class EditorTools extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+
+  Widget _toolRow(BuildContext context, List<Widget> tabs) => SizedBox(
+    height: 44,
+    child: Row(children: [for (final w in tabs) Expanded(child: w)]),
+  );
+
+  Widget _tabBody(
+    BuildContext context,
+    IconData icon,
+    String label,
+    bool selected,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 40,
+          height: 24,
+          decoration: BoxDecoration(
+            color: selected ? cs.tertiaryContainer : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: selected ? cs.onTertiaryContainer : cs.onSurfaceVariant,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontSize: 10,
+                color: selected ? cs.onSurface : cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tab(BuildContext context, EditorTool e) {
+    final t = AppL10n.of(context);
+    return Semantics(
+      identifier: 'tool_${e.name}',
+      button: true,
+      selected: tool == e,
+      child: InkWell(
+        onTap: () => onTool(e),
+        child: _tabBody(context, toolIcon(e), toolLabel(t, e), tool == e),
+      ),
+    );
+  }
+
+  Widget _exportTab(BuildContext context) {
+    final t = AppL10n.of(context);
+    return Semantics(
+      identifier: 'tool_export',
+      button: true,
+      child: InkWell(
+        onTap: onExport,
+        child: _tabBody(context, Icons.ios_share, t.toolExport, false),
+      ),
+    );
+  }
+
+  /// Basic / Advanced, with a line saying what each means. The choice is remembered by the screen.
+  Widget _modeRow(BuildContext context) {
+    final t = AppL10n.of(context);
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Space.lg),
+      child: Row(
+        children: [
+          Semantics(
+            identifier: 'editor_mode_basic',
+            child: ChoiceChip(
+              key: const ValueKey('editor_mode_basic'),
+              label: Text(t.editorModeBasic),
+              selected: !advanced,
+              visualDensity: VisualDensity.compact,
+              onSelected: (_) => onAdvanced?.call(false),
+            ),
+          ),
+          const SizedBox(width: Space.xs),
+          Semantics(
+            identifier: 'editor_mode_advanced',
+            child: ChoiceChip(
+              key: const ValueKey('editor_mode_advanced'),
+              label: Text(t.editorModeAdvanced),
+              selected: advanced,
+              visualDensity: VisualDensity.compact,
+              onSelected: (_) => onAdvanced?.call(true),
+            ),
+          ),
+          const SizedBox(width: Space.sm),
+          Expanded(
+            child: Text(
+              advanced ? t.editorModeHintAdvanced : t.editorModeHintBasic,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -797,6 +887,7 @@ class _MarkerPanel extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (c.project.markers.isNotEmpty) _MarkerBatch(c: c),
           Wrap(
             spacing: Space.sm,
             runSpacing: Space.sm,
@@ -825,6 +916,7 @@ class _MarkerPanel extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (c.project.markers.length > 1) _MarkerBatch(c: c),
         inspectorHeader(context, c, t.toolMarker),
         MarkerInspector(
           spec: sel.spec,
@@ -842,6 +934,124 @@ class _MarkerPanel extends StatelessWidget {
           fmt: editorSecs,
         ),
       ],
+    );
+  }
+}
+
+/// Changes every mark (or the ticked ones) in one go: kind, colour, thickness.
+class _MarkerBatch extends StatelessWidget {
+  const _MarkerBatch({required this.c});
+  final EditorController c;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppL10n.of(context);
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final picked = c.multiMarkerIds.length;
+    final total = c.project.markers.length;
+    return Semantics(
+      identifier: 'marker_batch',
+      container: true,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: const ValueKey('marker_batch'),
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: EdgeInsets.zero,
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          title: Text(t.batchTitle, style: tt.titleSmall),
+          children: [
+            Text(
+              picked > 0 ? t.batchScopeSel(picked) : t.batchScopeAll(total),
+              key: const ValueKey('marker_batch_scope'),
+              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            const SizedBox(height: Space.sm),
+            Wrap(
+              spacing: Space.sm,
+              children: [
+                Semantics(
+                  identifier: 'marker_select_all',
+                  child: OutlinedButton(
+                    onPressed: c.selectAllMarkers,
+                    child: Text(t.batchSelectAll),
+                  ),
+                ),
+                if (picked > 0)
+                  Semantics(
+                    identifier: 'marker_select_none',
+                    child: OutlinedButton(
+                      onPressed: c.clearMarkerSelection,
+                      child: Text(t.batchClear),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: Space.sm),
+            Text(t.batchKind, style: tt.labelLarge),
+            Wrap(
+              spacing: Space.sm,
+              runSpacing: Space.xs,
+              children: [
+                for (final m in MarkerType.values)
+                  Semantics(
+                    identifier: 'batch_kind_${m.name}',
+                    button: true,
+                    child: ActionChip(
+                      avatar: Icon(markerTypeIcon(m), size: 18),
+                      label: Text(markerTypeLabel(t, m)),
+                      onPressed: () => c.restyleMarkers(type: m),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: Space.sm),
+            Text(t.batchColor, style: tt.labelLarge),
+            Wrap(
+              spacing: Space.sm,
+              children: [
+                for (var i = 0; i < MarkerPalette.colors.length; i++)
+                  Semantics(
+                    identifier: 'batch_color_$i',
+                    button: true,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () =>
+                          c.restyleMarkers(color: MarkerPalette.colors[i]),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        margin: const EdgeInsets.symmetric(vertical: Space.xs),
+                        decoration: BoxDecoration(
+                          color: MarkerPalette.colors[i],
+                          shape: BoxShape.circle,
+                          border: Border.all(color: cs.outlineVariant),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: Space.sm),
+            Text(t.batchThickness, style: tt.labelLarge),
+            Wrap(
+              spacing: Space.sm,
+              children: [
+                for (final th in MarkerSettings.thicknessOptions)
+                  Semantics(
+                    identifier: 'batch_thickness_${th.round()}',
+                    button: true,
+                    child: ActionChip(
+                      label: Text('${th.round()}'),
+                      onPressed: () => c.restyleMarkers(thickness: th),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -888,6 +1098,15 @@ class _TextPanelState extends State<_TextPanel> {
           ),
           const SizedBox(height: Space.sm),
           Semantics(
+            identifier: 'caption_panel',
+            child: OutlinedButton.icon(
+              onPressed: () => showCaptionPanel(context, c),
+              icon: const Icon(Icons.closed_caption_outlined),
+              label: Text(t.presetSubtitle),
+            ),
+          ),
+          const SizedBox(height: Space.sm),
+          Semantics(
             identifier: 'import_srt',
             child: OutlinedButton.icon(
               onPressed: () => importSubtitleFile(context, c),
@@ -916,6 +1135,24 @@ class _TextPanelState extends State<_TextPanel> {
       _bound = sel.id;
       _ctl.text = sel.text;
     }
+    if (sel.cues != null) {
+      // A caption's text, look and timing live in the caption panel; the plain-text controls below
+      // would not change it.
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          inspectorHeader(context, c, t.presetSubtitle),
+          Semantics(
+            identifier: 'caption_panel',
+            child: FilledButton.tonalIcon(
+              onPressed: () => showCaptionPanel(context, c),
+              icon: const Icon(Icons.closed_caption_outlined),
+              label: Text(t.presetSubtitle),
+            ),
+          ),
+        ],
+      );
+    }
     final len = (sel.endMs - sel.startMs).toDouble();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -938,6 +1175,15 @@ class _TextPanelState extends State<_TextPanel> {
         ),
         const SizedBox(height: Space.sm),
         TextPresetRow(c: c, item: sel),
+        const SizedBox(height: Space.sm),
+        Semantics(
+          identifier: 'caption_panel',
+          child: OutlinedButton.icon(
+            onPressed: () => showCaptionPanel(context, c),
+            icon: const Icon(Icons.closed_caption_outlined),
+            label: Text(t.presetSubtitle),
+          ),
+        ),
         const SizedBox(height: Space.sm),
         Text(t.markerColor, style: tt.titleSmall),
         MarkerColorRow(
@@ -1401,7 +1647,9 @@ class _AutoPanel extends StatelessWidget {
                     stepPrefix: t.stepLabelPrefix,
                   ),
             icon: const Icon(Icons.touch_app),
-            label: Text(c.directing ? t.autoFromTouchesRunning : t.autoFromTouches),
+            label: Text(
+              c.directing ? t.autoFromTouchesRunning : t.autoFromTouches,
+            ),
           ),
         ),
         if (c.lastTouches != null && !c.directing)
@@ -1424,7 +1672,8 @@ class _AutoPanel extends StatelessWidget {
           value: o.pauseMs.toDouble(),
           min: 0,
           max: 1500,
-          onChanged: (v) => c.setDirectorOptions(o.copyWith(pauseMs: v.round())),
+          onChanged: (v) =>
+              c.setDirectorOptions(o.copyWith(pauseMs: v.round())),
           fmt: editorSecs2,
         ),
         editorSlider(
@@ -1438,7 +1687,8 @@ class _AutoPanel extends StatelessWidget {
           onChanged: (v) => c.setDirectorOptions(
             o.copyWith(pauseZoom: v < 1.1 ? 1.0 : v.clamp(1.2, 1.5)),
           ),
-          fmt: (v) => v < 1.1 ? '—' : '${v.toStringAsFixed(1).replaceAll('.', ',')}×',
+          fmt: (v) =>
+              v < 1.1 ? '—' : '${v.toStringAsFixed(1).replaceAll('.', ',')}×',
         ),
         Text(t.inputModeTitle, style: tt.labelLarge),
         Wrap(

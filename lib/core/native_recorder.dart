@@ -79,6 +79,7 @@ class RecSavedEvent extends RecEvent {
     this.width = 0,
     this.height = 0,
     this.marks = const [],
+    this.touches = const [],
   });
   final String uri;
   final String name;
@@ -87,6 +88,9 @@ class RecSavedEvent extends RecEvent {
   final int width;
   final int height;
   final List<RecMark> marks;
+
+  /// Touches heard during a clean recording (time only; the place is found afterwards).
+  final List<RawTouch> touches;
 }
 
 class RecErrorEvent extends RecEvent {
@@ -176,11 +180,15 @@ class StartRequest {
     this.markMode = 'dot',
     this.markCorner = 2,
     this.armShake = false,
+    this.watchTouches = false,
   });
 
   final String markMode;
   final int markCorner;
   final bool armShake;
+
+  /// Clean mode: listen to every touch (its time only) so the edit can be built from them.
+  final bool watchTouches;
 
   final int markerHoldMs;
   final bool markerAutoExit;
@@ -218,6 +226,7 @@ class StartRequest {
     'markMode': markMode,
     'markCorner': markCorner,
     'armShake': armShake,
+    'watchTouches': watchTouches,
   };
 }
 
@@ -246,6 +255,10 @@ class NativeRecorder {
               marks: [
                 for (final raw in (m['marks'] as List<dynamic>? ?? const []))
                   RecMark.fromMap(raw as Map),
+              ],
+              touches: [
+                for (final raw in (m['touches'] as List<dynamic>? ?? const []))
+                  RawTouch.fromMap(raw as Map),
               ],
             );
           case 'error':
@@ -297,6 +310,19 @@ class NativeRecorder {
           'uri': uri,
           'durationMs': durationMs,
           'mode': mode,
+        }) ??
+        const [];
+    return [for (final m in raw) RawTouch.fromMap(m)];
+  }
+
+  /// Where on the picture each of [timesMs] was touched, found from how the screen reacted (or from the
+  /// "show taps" spot). The result has one entry per time, in order; x/y are null when the place is unknown.
+  Future<List<RawTouch>> locateTouches(String uri, List<int> timesMs) async {
+    if (timesMs.isEmpty) return const [];
+    final raw =
+        await _method.invokeListMethod<Map<dynamic, dynamic>>('locateTouches', {
+          'uri': uri,
+          'times': timesMs,
         }) ??
         const [];
     return [for (final m in raw) RawTouch.fromMap(m)];
@@ -400,6 +426,27 @@ class NativeRecorder {
     );
   }
 
+  /// One caption cue drawn natively with [style] (the same renderer the export uses). [timeMs] is the
+  /// playhead in source ms: with it the cue is revealed as its style asks; without it the whole cue shows.
+  Future<({Uint8List png, int w, int h})> renderCue(
+    Map<String, Object> cue,
+    Map<String, Object?>? style,
+    int frameW, {
+    int? timeMs,
+  }) async {
+    final m = (await _method.invokeMapMethod<String, Object?>('renderCue', {
+      'cue': cue,
+      'style': style,
+      'frameW': frameW,
+      'timeMs': ?timeMs,
+    }))!;
+    return (
+      png: m['png'] as Uint8List,
+      w: (m['w'] as num).toInt(),
+      h: (m['h'] as num).toInt(),
+    );
+  }
+
   Future<({Uint8List png, int w, int h})> renderCover(
     Map<String, Object> clip,
     int frameW,
@@ -466,7 +513,10 @@ class NativeRecorder {
   Future<MediaEntry?> pickVideoToEdit() async {
     final m = await _method.invokeMapMethod<String, Object?>('pickVideoToEdit');
     if (m == null) return null;
-    return MediaEntry.fromMap({...m, 'dateAdded': DateTime.now().millisecondsSinceEpoch ~/ 1000});
+    return MediaEntry.fromMap({
+      ...m,
+      'dateAdded': DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    });
   }
 
   Future<PickedMedia> mediaInfo(String path) async {

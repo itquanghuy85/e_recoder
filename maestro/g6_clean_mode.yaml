@@ -59,9 +59,7 @@ tags:
     appId: com.huluca.escreenrecorder
     stopApp: false
 - tapOn: "Dừng quay"
-- extendedWaitUntil:
-    visible: "Đã lưu ESR_.*"
-    timeout: 25000
+- runFlow: helpers/after_stop.yaml
 # The three markers are waiting in the editor, with the automatic zoom.
 - tapOn:
     text: "Thư viện.*"

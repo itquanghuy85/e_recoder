@@ -90,25 +90,26 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
   });
 
-  testWidgets('the knob above the frame turns the text and clicks onto 90 degrees', (
-    tester,
-  ) async {
-    c.addText();
-    await pump(tester);
-    final f = frameOfText();
-    final knob = f.topCenter.translate(0, -26);
-    final g = await tester.startGesture(knob);
-    // swing the knob from straight up to straight right of the centre
-    final r = (knob - f.center).distance;
-    for (var i = 1; i <= 10; i++) {
-      final a = -math.pi / 2 + (math.pi / 2) * i / 10;
-      await g.moveTo(f.center + Offset(math.cos(a), math.sin(a)) * r);
-      await tester.pump(const Duration(milliseconds: 16));
-    }
-    await g.up();
-    await tester.pump();
-    expect(c.project.texts.single.rotation, closeTo(90, 0.5));
-  });
+  testWidgets(
+    'the knob above the frame turns the text and clicks onto 90 degrees',
+    (tester) async {
+      c.addText();
+      await pump(tester);
+      final f = frameOfText();
+      final knob = f.topCenter.translate(0, -26);
+      final g = await tester.startGesture(knob);
+      // swing the knob from straight up to straight right of the centre
+      final r = (knob - f.center).distance;
+      for (var i = 1; i <= 10; i++) {
+        final a = -math.pi / 2 + (math.pi / 2) * i / 10;
+        await g.moveTo(f.center + Offset(math.cos(a), math.sin(a)) * r);
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await g.up();
+      await tester.pump();
+      expect(c.project.texts.single.rotation, closeTo(90, 0.5));
+    },
+  );
 
   testWidgets('dragging the body near the middle snaps to the middle', (
     tester,
@@ -126,5 +127,36 @@ void main() {
     expect(c.project.texts.single.x, closeTo(0.5, 1e-9));
     await g.up();
     await tester.pump();
+  });
+  testWidgets('a caption is resized through its style, not the item size', (
+    tester,
+  ) async {
+    c.addCue();
+    await pump(tester);
+    final item = c.project.texts.single;
+    final style0 = item.captionStyle!.sizeU;
+    final itemSize0 = item.sizeU;
+    // "Câu mới" is the default line: 7 characters at the caption size, on a 360 px wide stage.
+    final f = Rect.fromCenter(
+      center: Offset(item.x * 360, item.y * 800),
+      width: math.max(60, 7 * style0 * 0.55 * 0.5),
+      height: style0 * 1.5 * 0.5,
+    );
+    final g = await tester.startGesture(f.bottomRight);
+    await g.moveBy(const Offset(30, 30));
+    await tester.pump(const Duration(milliseconds: 16));
+    await g.moveBy(const Offset(30, 30));
+    await tester.pump(const Duration(milliseconds: 16));
+    await g.up();
+    await tester.pump();
+    final after = c.project.texts.single;
+    expect(after.captionStyle!.sizeU, greaterThan(style0 * 1.3));
+    expect(
+      after.sizeU,
+      itemSize0,
+      reason: 'the item size is not what a caption shows',
+    );
+    expect(after.cues, isNotNull);
+    await tester.pump(const Duration(milliseconds: 100));
   });
 }

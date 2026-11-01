@@ -149,6 +149,168 @@ object TouchScan {
         return changes(fractions).map { mapOf("tMs" to it, "x" to -1.0, "y" to -1.0, "durMs" to 0L, "dist" to 0.0) }
     }
 
+    /**
+     * Where each touch of [timesMs] happened, found from the picture: the screen reacts to a press at
+     * once, in the spot that was pressed (a button lights up, a ripple spreads, "show taps" draws a
+     * spot). A frame just before the touch is compared with the frames just after it, and the place is
+     * the middle of the part that changed first. When the whole screen changes (a new page, a
+     * scroll) or nothing does, the place stays unknown (-1) and only the moment is used.
+     * "changeMs" is when the screen then changed for real (a new page, a keyboard, a scroll), looked
+     * for until the next touch and at most [CHANGE_SCAN_MS] later; -1 when it did not. The mark of the
+     * touch must be gone by then, or it would sit on the new screen.
+     * Returns one map per time, in the same order, shaped like a scan result.
+     */
+    fun locate(ctx: Context, uri: Uri, timesMs: List<Long>): List<Map<String, Any?>> {
+        val out = ArrayList<Map<String, Any?>>()
+        val sorted = timesMs.sorted()
+        val mmr = MediaMetadataRetriever()
+        try {
+            mmr.setDataSource(ctx, uri)
+            for (t in timesMs) {
+                val before = frameLuma(mmr, (t - 90).coerceAtLeast(0))
+                val bw = lastW
+                val bh = lastH
+                var spot: DoubleArray? = null
+                var changeMs = -1L
+                if (before != null) {
+                    for (dt in LOCATE_OFFSETS) {
+                        val after = frameLuma(mmr, t + dt) ?: continue
+                        if (lastW == bw && lastH == bh) spot = reaction(before, after, bw, bh)
+                        if (spot != null) break
+                    }
+                    val next = sorted.firstOrNull { it > t } ?: Long.MAX_VALUE
+                    val until = minOf(t + CHANGE_SCAN_MS, next)
+                    var dt = CHANGE_STEP_MS
+                    while (t + dt < until) {
+                        val after = frameLuma(mmr, t + dt)
+                        if (after != null && lastW == bw && lastH == bh && changedBlocks(before, after, bw, bh) >= SCREEN_CHANGE) {
+                            changeMs = t + dt
+                            break
+                        }
+                        dt += CHANGE_STEP_MS
+                    }
+                }
+                out.add(
+                    mapOf(
+                        "tMs" to t, "x" to (spot?.get(0) ?: -1.0), "y" to (spot?.get(1) ?: -1.0),
+                        "durMs" to 0L, "dist" to 0.0, "changeMs" to changeMs,
+                    ),
+                )
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("TouchScan", "locate failed", e)
+        } finally {
+            try { mmr.release() } catch (_: Exception) {}
+        }
+        // A reader that failed early leaves the rest without a place.
+        while (out.size < timesMs.size) {
+            out.add(mapOf("tMs" to timesMs[out.size], "x" to -1.0, "y" to -1.0, "durMs" to 0L, "dist" to 0.0))
+        }
+        return out
+    }
+
+    // After a touch, the screen is looked at every [CHANGE_STEP_MS] for a real change: at least
+    // [SCREEN_CHANGE] of the picture's blocks different from just before the touch (a pressed key or a
+    // ripple is a few blocks).
+    private const val CHANGE_SCAN_MS = 3000L
+    private const val CHANGE_STEP_MS = 120L
+    private const val SCREEN_CHANGE = 0.15
+
+    // The picture is cut into blocks of BLOCK_W x BLOCK_H pixels (12 x 24 of them on the 108 x 240 scan); a
+    // block changed when its pixels differ by [BLOCK_DIFF] on average. Counting blocks, not pixels, sees a
+    // white page replaced by another white page with other text (few pixels, spread everywhere).
+    private const val BLOCK_W = 9
+    private const val BLOCK_H = 10
+    private const val BLOCK_DIFF = 8
+
+    /** The share (0..1) of the picture's blocks that changed between two frames of the same size. */
+    internal fun changedBlocks(a: IntArray, b: IntArray, w: Int = W, h: Int = H): Double {
+        if (a.size != b.size || a.size != w * h) return 0.0
+        val cols = (w + BLOCK_W - 1) / BLOCK_W
+        val rows = (h + BLOCK_H - 1) / BLOCK_H
+        var changed = 0
+        for (r in 0 until rows) for (c in 0 until cols) {
+            var sum = 0L
+            var n = 0
+            for (y in r * BLOCK_H until minOf(h, (r + 1) * BLOCK_H)) {
+                for (x in c * BLOCK_W until minOf(w, (c + 1) * BLOCK_W)) {
+                    sum += abs(a[y * w + x] - b[y * w + x])
+                    n++
+                }
+            }
+            if (n > 0 && sum / n >= BLOCK_DIFF) changed++
+        }
+        return changed.toDouble() / (rows * cols)
+    }
+
+    // A press shows for a frame or two (a faint ripple on the key), about 250 ms after the touch on a phone
+    // that records at 30 fps with encoder delay: look at every ~40 ms and take the first reaction.
+    private val LOCATE_OFFSETS = LongArray(17) { 40L * (it + 1) }
+
+    // The frame comes back with its own aspect ratio (not always exactly W x H): keep its real size.
+    private var lastW = W
+    private var lastH = H
+
+    private fun frameLuma(mmr: MediaMetadataRetriever, ms: Long): IntArray? {
+        val bmp = mmr.getScaledFrameAtTime(ms * 1000, MediaMetadataRetriever.OPTION_CLOSEST, W, H) ?: return null
+        lastW = bmp.width
+        lastH = bmp.height
+        val l = lumaOf(bmp)
+        bmp.recycle()
+        return l
+    }
+
+    /**
+     * The middle of the biggest changed area between two frames, as fractions, when that area is a
+     * part of the screen (not a page change: more than [REACT_MAX] of it) and not just noise.
+     */
+    internal fun reaction(a: IntArray, b: IntArray, w: Int = W, h: Int = H): DoubleArray? {
+        if (a.size != b.size || a.size != w * h) return null
+        val changed = BooleanArray(a.size)
+        var n = 0
+        for (i in a.indices) if (abs(a[i] - b[i]) > REACT_DIFF) { changed[i] = true; n++ }
+        val share = n.toDouble() / a.size
+        if (n < REACT_MIN || share > REACT_MAX) return null
+        // The biggest connected area wins; small flecks elsewhere (a clock, an animation) are ignored.
+        val seen = BooleanArray(a.size)
+        val stack = IntArray(a.size)
+        var bestArea = 0
+        var bx = 0.0
+        var by = 0.0
+        for (s in a.indices) {
+            if (!changed[s] || seen[s]) continue
+            var sp = 0
+            stack[sp++] = s
+            seen[s] = true
+            var area = 0
+            var sx = 0L
+            var sy = 0L
+            while (sp > 0) {
+                val p = stack[--sp]
+                val px = p % w
+                val py = p / w
+                area++
+                sx += px; sy += py
+                if (px > 0 && changed[p - 1] && !seen[p - 1]) { seen[p - 1] = true; stack[sp++] = p - 1 }
+                if (px < w - 1 && changed[p + 1] && !seen[p + 1]) { seen[p + 1] = true; stack[sp++] = p + 1 }
+                if (py > 0 && changed[p - w] && !seen[p - w]) { seen[p - w] = true; stack[sp++] = p - w }
+                if (py < h - 1 && changed[p + w] && !seen[p + w]) { seen[p + w] = true; stack[sp++] = p + w }
+            }
+            if (area > bestArea) {
+                bestArea = area
+                bx = (sx.toDouble() / area + 0.5) / w
+                by = (sy.toDouble() / area + 0.5) / h
+            }
+        }
+        return if (bestArea >= REACT_MIN) doubleArrayOf(bx, by) else null
+    }
+
+    // Low on purpose: the ripple of a pressed key is faint. The biggest connected area wins, which is the key
+    // (the digit that appears after it is small), and the first frame with a reaction decides.
+    private const val REACT_DIFF = 4
+    private const val REACT_MIN = 20
+    private const val REACT_MAX = 0.35
+
     private fun lumaOf(b: Bitmap): IntArray {
         val w = b.width
         val h = b.height

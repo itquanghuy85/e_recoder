@@ -59,13 +59,17 @@ class EScreenRecorderApp extends ConsumerWidget {
   }
 }
 
-/// First run shows the short introduction; afterwards the app opens on the recorder.
+/// First run shows the short introduction; afterwards the app opens on the recorder, where the purpose
+/// is picked at the top (tutorial until another one is chosen).
 class _Root extends ConsumerWidget {
   const _Root();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final onboarded = ref.watch(onboardedProvider);
-    return onboarded ? const AppShell() : OnboardingScreen(onDone: () {});
+    if (!onboarded) {
+      return OnboardingScreen(onDone: () {});
+    }
+    return const AppShell();
   }
 }

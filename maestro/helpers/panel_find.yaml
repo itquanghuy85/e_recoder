@@ -1,0 +1,19 @@
+appId: com.huluca.escreenrecorder
+name: Helper - scroll the editor's tool panel until a control shows
+tags:
+  - helper
+---
+# Env ID: the control's id. The tool panel opens at its top and is short on tall phones: swipe inside the
+# panel (the bottom of the screen, never the timeline) until the control is on screen.
+- repeat:
+    times: 8
+    while:
+      notVisible:
+        id: ${ID}
+    commands:
+      - swipe:
+          start: 50%,93%
+          end: 50%,87%
+          duration: 600
+      - waitForAnimationToEnd:
+          timeout: 800

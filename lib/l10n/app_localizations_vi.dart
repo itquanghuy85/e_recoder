@@ -257,7 +257,7 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get settingsMarkersSub =>
-      'Ngón tay, mũi tên, vòng tròn… báo trước chỗ sắp bấm';
+      'Dấu báo trước chỗ sắp bấm, cách đánh dấu khi quay và tự động dựng sau khi quay';
 
   @override
   String get settingsMarkersHint =>
@@ -555,7 +555,7 @@ class AppL10nVi extends AppL10n {
       'Chế độ sạch cũng có nút “Đánh dấu” trong thông báo. Vùng ẩn ở góc không nhìn thấy trong video.';
 
   @override
-  String get toolAuto => 'Tự động';
+  String get toolAuto => 'Dựng tự động';
 
   @override
   String get autoTitle => 'Dựng tự động';
@@ -568,7 +568,7 @@ class AppL10nVi extends AppL10n {
   String get autoZoomOpt => 'Phóng to vào dấu';
 
   @override
-  String get autoNumberOpt => 'Đánh số lại các bước';
+  String get autoNumberOpt => 'Đánh số các bước';
 
   @override
   String get autoIdleOpt => 'Tua nhanh đoạn đứng yên';
@@ -668,13 +668,14 @@ class AppL10nVi extends AppL10n {
   String get settingsPermissions => 'Quyền và pin';
 
   @override
-  String get settingsPermissionsSub => 'Kiểm tra các quyền cần để quay';
+  String get settingsPermissionsSub =>
+      'Kiểm tra app đã đủ quyền để quay và chạy nền chưa';
 
   @override
   String get settingsGuide => 'Hướng dẫn';
 
   @override
-  String get settingsGuideSub => 'Xem lại cách dùng dấu báo trước';
+  String get settingsGuideSub => 'Xem lại các bước dùng app lần đầu';
 
   @override
   String get settingsPrivacy => 'Quyền riêng tư';
@@ -746,10 +747,10 @@ class AppL10nVi extends AppL10n {
   String get toolText => 'Chữ';
 
   @override
-  String get toolCover => 'Che';
+  String get toolCover => 'Che vùng';
 
   @override
-  String get toolZoom => 'Phóng';
+  String get toolZoom => 'Phóng to';
 
   @override
   String get splitHere => 'Cắt tại đây';
@@ -1142,10 +1143,10 @@ class AppL10nVi extends AppL10n {
   String get audioStillHint => 'Khung đóng băng và đoạn trống không có tiếng.';
 
   @override
-  String get toolPicture => 'Hình';
+  String get toolPicture => 'Hình ảnh';
 
   @override
-  String get toolOverlay => 'Lớp phủ';
+  String get toolOverlay => 'Chèn hình';
 
   @override
   String get picRotate => 'Xoay 90°';
@@ -1641,4 +1642,377 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get presetSticker => 'Sticker';
+
+  @override
+  String get captionPanelAdd => '+ Thêm câu';
+
+  @override
+  String get captionPanelOff => 'Tắt phụ đề';
+
+  @override
+  String get captionPanelEmpty => 'Chưa có câu phụ đề nào.';
+
+  @override
+  String get captionPanelStart => 'Bắt đầu (ms)';
+
+  @override
+  String get captionPanelEnd => 'Kết thúc (ms)';
+
+  @override
+  String get captionTabLines => 'Câu';
+
+  @override
+  String get captionTabStyle => 'Kiểu';
+
+  @override
+  String get captionReveal => 'Hiệu ứng hiện chữ';
+
+  @override
+  String get captionRevealNone => 'Hiện hết';
+
+  @override
+  String get captionRevealWord => 'Từng từ';
+
+  @override
+  String get captionRevealChar => 'Từng ký tự';
+
+  @override
+  String get captionRevealKaraoke => 'Karaoke';
+
+  @override
+  String get captionOutlineWidth => 'Dày viền';
+
+  @override
+  String get captionOutlineColor => 'Màu viền';
+
+  @override
+  String get captionShadowBlur => 'Nhoè bóng';
+
+  @override
+  String get captionBoxColor => 'Màu nền';
+
+  @override
+  String get captionBoxRadius => 'Bo góc';
+
+  @override
+  String get captionPosY => 'Dọc';
+
+  @override
+  String get captionPosX => 'Ngang';
+
+  @override
+  String get captionReset => 'Đặt lại kiểu';
+
+  @override
+  String get captionTabTemplates => 'Mẫu';
+
+  @override
+  String get captionTemplateSample => 'Xin chào các bạn';
+
+  @override
+  String captionsCreatedCues(int n) {
+    return 'Đã tạo $n dòng phụ đề. Chọn mẫu hoặc sửa từng dòng trong mục Phụ đề.';
+  }
+
+  @override
+  String get captionsApplyTemplate => 'Dùng mẫu TikTok có sẵn';
+
+  @override
+  String get settingsGroupApp => 'Ứng dụng';
+
+  @override
+  String get settingsGroupRecord => 'Quay màn hình';
+
+  @override
+  String get settingsGroupHelp => 'Trợ giúp và thông tin';
+
+  @override
+  String get markerSecLook => 'Kiểu dấu';
+
+  @override
+  String get markerSecLookSub =>
+      'Chọn dấu và chỉnh màu, độ dày, cỡ. Khung xem thử ở trên cho thấy ngay kết quả.';
+
+  @override
+  String get markerSecTime => 'Dấu hiện bao lâu';
+
+  @override
+  String get markerSecTimeSub =>
+      'Dấu ở lại bao lâu sau khi bạn đặt, và có tự thoát chế độ chỉ điểm hay không.';
+
+  @override
+  String get markerSecHow => 'Cách đánh dấu khi quay';
+
+  @override
+  String get markerSecHowSub =>
+      'Chọn cách đặt dấu lúc đang quay: chấm nhỏ ở góc màn hình, hoặc quay sạch rồi dựng sau.';
+
+  @override
+  String get markerSecAuto => 'Tự động dựng sau khi quay';
+
+  @override
+  String get markerSecAutoSub =>
+      'App tự phóng to vào chỗ bạn đã đánh dấu và đánh số bước ngay khi quay xong. Bạn vẫn sửa được trong trình chỉnh sửa.';
+
+  @override
+  String get markerAutoNeedsClean =>
+      'Tự động dựng chỉ có khi quay sạch, vì lúc đó video chưa có dấu nào chen vào để app dựng lại cho đẹp.';
+
+  @override
+  String get autoMarkerTitle => 'Dấu tự động gắn vào mỗi lần bấm';
+
+  @override
+  String get autoMarkerHint =>
+      'Chọn kiểu dấu; màu, độ dày và thời gian hiện lấy ở mục 1 và 2 phía trên. Quay xong, dấu này tự có ở từng chỗ bạn đã bấm.';
+
+  @override
+  String get markerAutoSwitch => 'Bật Quay sạch, dựng sau';
+
+  @override
+  String get settingsGroupRecordSub =>
+      'Quyền cần để quay và cài đặt của các chế độ quay';
+
+  @override
+  String get settingsGroupHelpSub =>
+      'Xem lại hướng dẫn, quyền riêng tư và thông tin ứng dụng';
+
+  @override
+  String get markCleanLimit =>
+      'Lưu ý: vài màn hình của hệ thống (như Cài đặt hay màn hình xin quyền) chặn vùng ẩn, nên không đánh dấu được ở đó. Ứng dụng thường thì dùng bình thường.';
+
+  @override
+  String get touchSourceAuto => 'Tự động';
+
+  @override
+  String get touchSourceAutoHint =>
+      'Khuyên dùng. Khi quay sạch, app tự nghe mọi lần bạn bấm vào màn hình, không cần lắc máy hay chạm vùng ẩn. Quay xong, app tự tìm chỗ bạn bấm, phóng to và đánh số các bước.';
+
+  @override
+  String get purposeTitle => 'Bạn muốn làm gì?';
+
+  @override
+  String get purposeHint =>
+      'Chọn một mục. App tự cài đặt sẵn cho bạn, sau này vẫn đổi được.';
+
+  @override
+  String get purposeTutorial => 'Làm video hướng dẫn';
+
+  @override
+  String get purposeTutorialSub =>
+      'Quay xong app tự đánh số từng bước, phóng to chỗ bạn bấm. Bạn không cần làm gì thêm.';
+
+  @override
+  String get purposeGame => 'Quay game';
+
+  @override
+  String get purposeGameSub =>
+      'Quay mượt, có chấm nhỏ để bạn đánh dấu lúc cần. Không tự phóng to.';
+
+  @override
+  String get purposePlain => 'Quay thường';
+
+  @override
+  String get purposePlainSub => 'Chỉ quay màn hình, không thêm gì.';
+
+  @override
+  String get purposeSkip => 'Bỏ qua, quay thường';
+
+  @override
+  String get recordTutorial => 'Quay hướng dẫn tự động';
+
+  @override
+  String get recordGame => 'Quay game';
+
+  @override
+  String get recordPlain => 'Quay video';
+
+  @override
+  String get advancedTitle => 'Nâng cao';
+
+  @override
+  String advancedPurpose(String name) {
+    return 'Đổi mục đích: $name';
+  }
+
+  @override
+  String get purposeOffer => 'Chọn mục đích để quay nhanh hơn';
+
+  @override
+  String get purposeOfferSub =>
+      'Hướng dẫn, game hoặc quay thường: app tự cài đặt sẵn cho bạn.';
+
+  @override
+  String get readyTitle => 'Sẵn sàng quay chưa?';
+
+  @override
+  String get readyHint =>
+      'App còn thiếu vài quyền để quay đúng như bạn chọn. Bấm Bật ở từng dòng.';
+
+  @override
+  String get readyMic => 'Micro';
+
+  @override
+  String get readyMicSub =>
+      'Để thu tiếng nói của bạn. Có thể tắt tiếng trong cài đặt quay.';
+
+  @override
+  String get readyOverlay => 'Hiển thị trên ứng dụng khác';
+
+  @override
+  String get readyOverlaySub =>
+      'Để hiện nút dừng, đếm ngược và nghe lần bấm khi bạn đang ở app khác.';
+
+  @override
+  String get readyNotif => 'Thông báo (không bắt buộc)';
+
+  @override
+  String get readyNotifSub => 'Để có nút dừng quay ở thanh thông báo.';
+
+  @override
+  String get readyEnable => 'Bật';
+
+  @override
+  String get readyOn => 'Đã bật';
+
+  @override
+  String get readyGo => 'Sẵn sàng quay';
+
+  @override
+  String get readyWaiting => 'Còn thiếu quyền';
+
+  @override
+  String get resultTitle => 'Quay xong rồi';
+
+  @override
+  String get resultBuilding => 'Đang dựng tự động...';
+
+  @override
+  String get resultExport => 'Xuất ngay';
+
+  @override
+  String get resultEdit => 'Sửa thêm';
+
+  @override
+  String get resultBack => 'Quay lại';
+
+  @override
+  String get resultExporting => 'Đang xuất video...';
+
+  @override
+  String resultExported(String name) {
+    return 'Đã xuất: $name';
+  }
+
+  @override
+  String get resultExportFailed =>
+      'Xuất không được. Bạn thử lại hoặc bấm Sửa thêm.';
+
+  @override
+  String get resultPreviewError => 'Không phát được video này.';
+
+  @override
+  String get quickTitle => 'Chọn nhanh';
+
+  @override
+  String get quickGameMark => 'Dấu khi bạn chạm';
+
+  @override
+  String get quickTouches => 'Ghi mọi lần bấm';
+
+  @override
+  String get batchTitle => 'Đổi tất cả dấu';
+
+  @override
+  String batchScopeAll(int n) {
+    return 'Áp cho tất cả $n dấu';
+  }
+
+  @override
+  String batchScopeSel(int n) {
+    return 'Áp cho $n dấu đã chọn';
+  }
+
+  @override
+  String get batchSelectAll => 'Chọn tất cả';
+
+  @override
+  String get batchClear => 'Bỏ chọn';
+
+  @override
+  String get batchFromHere => 'Từ đây đến hết';
+
+  @override
+  String get batchKind => 'Loại dấu';
+
+  @override
+  String get batchColor => 'Màu';
+
+  @override
+  String get batchThickness => 'Độ dày';
+
+  @override
+  String get readyNoMic => 'Quay không thu tiếng';
+
+  @override
+  String get toolExport => 'Xuất';
+
+  @override
+  String get editorModeBasic => 'Cơ bản';
+
+  @override
+  String get editorModeAdvanced => 'Nâng cao';
+
+  @override
+  String get editorModeHintBasic =>
+      'Đủ để cắt, thêm dấu và chữ. Cần hiệu ứng? Chọn Nâng cao.';
+
+  @override
+  String get editorModeHintAdvanced =>
+      'Hiện đủ công cụ. Về Cơ bản vẫn giữ mọi thứ đã làm.';
+
+  @override
+  String get modeTutorial => 'Hướng dẫn';
+
+  @override
+  String get modeGame => 'Game';
+
+  @override
+  String get modePlain => 'Quay thường';
+
+  @override
+  String get moreOptions => 'Thêm tuỳ chọn';
+
+  @override
+  String get markWhenTitle => 'Dấu bấm';
+
+  @override
+  String get markWhenAuto => 'Tự động sau khi quay';
+
+  @override
+  String get markWhenLive => 'Bấm tay khi quay';
+
+  @override
+  String get markWhenNone => 'Không dấu';
+
+  @override
+  String get optSmooth => 'Mượt (60 hình/giây)';
+
+  @override
+  String get settingsResetModes => 'Đưa các chế độ quay về mặc định';
+
+  @override
+  String get settingsResetModesSub =>
+      'Cài đặt của Hướng dẫn, Game và Quay thường trở về ban đầu';
+
+  @override
+  String get resetModesConfirm => 'Đưa cả ba chế độ quay về cài đặt ban đầu?';
+
+  @override
+  String get resetModesAction => 'Đưa về mặc định';
+
+  @override
+  String get resetModesDone => 'Đã đưa các chế độ quay về mặc định';
+
+  @override
+  String get holdTitle => 'Thời gian hiện dấu';
 }

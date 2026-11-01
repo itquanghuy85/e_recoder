@@ -45,9 +45,7 @@ tags:
     appId: com.huluca.escreenrecorder
     stopApp: false
 - tapOn: "Dừng quay"
-- extendedWaitUntil:
-    visible: "Đã lưu ESR_.*"
-    timeout: 25000
+- runFlow: helpers/after_stop.yaml
 - tapOn:
     text: "Thư viện.*"
 - tapOn:
@@ -59,6 +57,11 @@ tags:
     visible:
       id: "editor_play"
     timeout: 30000
+# The recording already opens with its automatic edit (clean recording hears the taps): remember the timeline
+# as it is now, so "one undo step" is checked against it, not against an empty project.
+- copyTextFrom:
+    text: "Dòng thời gian: .*"
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_auto"
 - swipe:
@@ -79,4 +82,4 @@ tags:
 - assertVisible: "[1-9][0-9]* lần chạm.*"
 - tapOn:
     id: "editor_undo"
-- assertVisible: "Dòng thời gian: 1 đoạn.*"
+- assertVisible: ${maestro.copiedText}

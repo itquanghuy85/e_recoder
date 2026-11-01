@@ -10,6 +10,8 @@ List<SubtitleCue> layoutCaptions(
   int maxLines = 2,
   int minCueMs = 900,
   int gapMs = 40,
+  // Spread a long phrase over its captions evenly, so none is left with one stray word.
+  bool balance = false,
 }) {
   final sorted = [...pieces]..sort((a, b) => a.startMs.compareTo(b.startMs));
   final out = <SubtitleCue>[];
@@ -21,31 +23,20 @@ List<SubtitleCue> layoutCaptions(
         .toList();
     if (words.isEmpty || p.endMs <= p.startMs) continue;
     // 1. words into lines, lines into captions
-    final caps = <List<String>>[]; // each caption: its lines
-    var lines = <String>[];
-    var line = '';
-    void endLine() {
-      if (line.isNotEmpty) lines.add(line);
-      line = '';
-    }
-
-    void endCaption() {
-      endLine();
-      if (lines.isNotEmpty) caps.add(lines);
-      lines = <String>[];
-    }
-
-    for (final w in words) {
-      final next = line.isEmpty ? w : '$line $w';
-      if (next.length <= maxLine || line.isEmpty) {
-        line = next;
-      } else {
-        endLine();
-        if (lines.length >= maxLines) endCaption();
-        line = w;
+    var caps = _wrap(words, maxLine, maxLines);
+    if (balance && caps.length > 1) {
+      // Narrowest line width that still needs no more captions than the full width does.
+      final total = words.fold<int>(0, (n, w) => n + w.length + 1);
+      final longest = words.fold<int>(0, (n, w) => w.length > n ? w.length : n);
+      final lowest = (total / (caps.length * maxLines)).ceil();
+      for (var w = lowest > longest ? lowest : longest; w < maxLine; w++) {
+        final tight = _wrap(words, w, maxLines);
+        if (tight.length <= caps.length) {
+          caps = tight;
+          break;
+        }
       }
     }
-    endCaption();
     // 2. the phrase's time is shared out by text length
     final texts = [for (final c in caps) c.join('\n')];
     final total = texts.fold<int>(0, (s, t) => s + t.length);
@@ -76,4 +67,35 @@ List<SubtitleCue> layoutCaptions(
     fixed.add(c);
   }
   return fixed;
+}
+
+/// [words] into captions of at most [maxLines] lines of [maxLine] characters (a word longer than a
+/// line stays whole).
+List<List<String>> _wrap(List<String> words, int maxLine, int maxLines) {
+  final caps = <List<String>>[];
+  var lines = <String>[];
+  var line = '';
+  void endLine() {
+    if (line.isNotEmpty) lines.add(line);
+    line = '';
+  }
+
+  void endCaption() {
+    endLine();
+    if (lines.isNotEmpty) caps.add(lines);
+    lines = <String>[];
+  }
+
+  for (final w in words) {
+    final next = line.isEmpty ? w : '$line $w';
+    if (next.length <= maxLine || line.isEmpty) {
+      line = next;
+    } else {
+      endLine();
+      if (lines.length >= maxLines) endCaption();
+      line = w;
+    }
+  }
+  endCaption();
+  return caps;
 }

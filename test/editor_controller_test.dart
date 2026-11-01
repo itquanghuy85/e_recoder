@@ -1,4 +1,5 @@
 import 'package:e_screen_recorder/core/native_recorder.dart';
+import 'package:e_screen_recorder/features/editor/caption_models.dart';
 import 'package:e_screen_recorder/features/editor/edit_project.dart';
 import 'package:e_screen_recorder/features/editor/editor_controller.dart';
 import 'package:e_screen_recorder/features/editor/editor_math.dart';
@@ -232,6 +233,63 @@ void main() {
       final mid = zoomAt([z], 3000);
       expect(mid.cx, closeTo(0.75, 1e-9)); // 1 - 0.5/2
       expect(mid.cy, closeTo(0.25, 1e-9)); // 0.5/2
+    });
+  });
+  group('cueImage', () {
+    const base = TextItem(id: 't', text: '', startMs: 0, endMs: 5000);
+    final withCues = base.copyWith(
+      cues: const [
+        CaptionCue(text: 'A', startMs: 0, endMs: 1000),
+        CaptionCue(text: 'B', startMs: 2000, endMs: 3000),
+      ],
+    );
+
+    test('null cues or no active cue gives null and never renders', () async {
+      expect(await c.cueImage(base, 500), isNull);
+      expect(await c.cueImage(withCues, 1500), isNull);
+      expect(fake.calls.where((e) => e == 'renderCue'), isEmpty);
+    });
+
+    test(
+      'without a reveal the cue renders once and then hits the cache',
+      () async {
+        final still = withCues.copyWith(
+          captionStyle: const CaptionStyle(revealMode: RevealMode.none),
+        );
+        expect(await c.cueImage(still, 100), isNotNull);
+        expect(await c.cueImage(still, 900), isNotNull);
+        expect(fake.calls.where((e) => e == 'renderCue').length, 1);
+        expect(fake.cueTimes.single, isNull);
+        expect(await c.cueImage(still, 2500), isNotNull);
+        expect(fake.calls.where((e) => e == 'renderCue').length, 2);
+      },
+    );
+
+    test(
+      'a reveal is redrawn every 50 ms of playhead time, not more often',
+      () async {
+        expect(await c.cueImage(withCues, 110), isNotNull);
+        expect(await c.cueImage(withCues, 140), isNotNull);
+        expect(fake.cueTimes, [100]);
+        expect(await c.cueImage(withCues, 160), isNotNull);
+        expect(fake.cueTimes, [100, 150]);
+        expect(
+          await c.cueImage(withCues, 115),
+          isNotNull,
+        ); // back to a cached step
+        expect(fake.cueTimes.length, 2);
+      },
+    );
+
+    test('the reveal cache keeps the last 12 pictures', () async {
+      for (var i = 0; i < 13; i++) {
+        await c.cueImage(withCues, i * 50);
+      }
+      expect(fake.cueTimes.length, 13);
+      await c.cueImage(withCues, 12 * 50); // newest: still cached
+      expect(fake.cueTimes.length, 13);
+      await c.cueImage(withCues, 0); // oldest: was dropped
+      expect(fake.cueTimes.length, 14);
     });
   });
 }

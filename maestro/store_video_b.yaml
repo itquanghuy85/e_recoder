@@ -61,6 +61,7 @@ tags:
 - hideKeyboard
 - waitForAnimationToEnd:
     timeout: 1500
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_zoom"
 - tapOn:
@@ -86,11 +87,16 @@ tags:
 - tapOn:
     id: "editor_play"
 - back
-- runFlow:
-    when:
-      notVisible: "Quay.*"
+# Back to the main screen (the editor returns to the player first; "Quay lại" on the player also matches
+# "Quay.*", so wait for the bottom bar's Library tab instead).
+- repeat:
+    times: 3
+    while:
+      notVisible: "Thư viện.*"
     commands:
       - back
+      - waitForAnimationToEnd:
+          timeout: 1000
 - runFlow:
     when:
       notVisible: "Quay.*"
@@ -102,6 +108,4 @@ tags:
 - waitForAnimationToEnd:
     timeout: 1500
 - tapOn: "Dừng quay"
-- extendedWaitUntil:
-    visible: "Đã lưu ESR_.*"
-    timeout: 30000
+- runFlow: helpers/after_stop.yaml

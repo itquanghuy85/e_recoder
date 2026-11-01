@@ -1,0 +1,82 @@
+appId: com.huluca.escreenrecorder
+name: Caption auto flow - automatic captions become timed caption lines with a template, reveal and export
+tags:
+  - p1
+  - module-editor
+---
+# Needs stt_sample.mp4 in the phone's Download folder (made by the STT quality probe, see
+# docs/CAPTION_PLAN.md). No clearState: it would wipe the app's whole projects database, which on a
+# shared test phone is not ours to delete; the flow cleans up after itself instead.
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    id: "library_pick_video"
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      notVisible: "stt_sample.mp4"
+    commands:
+      - tapOn: "Hiển thị gốc"
+      - tapOn: "Tải xuống"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- tapOn: "stt_sample.mp4"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 20000
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+# The panel under the tabs scrolls on its own: drag inside it so the button leaves the navigation bar.
+- repeat:
+    times: 2
+    commands:
+      - swipe:
+          start: 50%, 88%
+          end: 50%, 66%
+          duration: 400
+- tapOn:
+    id: "auto_captions"
+- tapOn:
+    id: "stt_lang_vi"
+- tapOn:
+    id: "stt_start"
+# Done: the sheet closes and the caption panel opens on the templates tab.
+- extendedWaitUntil:
+    visible:
+      id: "cap_tab_templates"
+    timeout: 240000
+- takeScreenshot: artifacts/auto_caption_created
+- tapOn:
+    id: "cap_tab_lines"
+- takeScreenshot: artifacts/auto_caption_lines
+- back
+- tapOn:
+    point: 50%, 14%
+# Play for a few seconds: the words appear as they are said.
+- tapOn:
+    id: "editor_play"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: artifacts/auto_caption_playing
+- tapOn:
+    id: "editor_play"
+# Export and leave the project clean
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p720"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000
+- takeScreenshot: artifacts/auto_caption_export_done
+- runFlow:
+    file: helpers/caption_cleanup.yaml

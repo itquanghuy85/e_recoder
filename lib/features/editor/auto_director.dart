@@ -23,7 +23,18 @@ class DirectorOptions {
     this.inputMode = InputMode.merge,
     this.typingLabel = 'Typing…',
     this.typedLabel = 'Typed',
+    this.markerType,
+    this.markerColor = const Color(0xFFFF3B30),
+    this.markerThickness = 5,
+    this.markerHoldMs = 1500,
   });
+
+  /// The mark drawn at each touch of a known place. Null keeps the old rule: a step number when
+  /// [number] is on, a ripple when it is off.
+  final MarkerType? markerType;
+  final Color markerColor;
+  final double markerThickness;
+  final int markerHoldMs;
 
   /// Zoom smoothly into the area of each marker.
   final bool zoom;
@@ -74,7 +85,15 @@ class DirectorOptions {
     InputMode? inputMode,
     String? typingLabel,
     String? typedLabel,
+    MarkerType? markerType,
+    Color? markerColor,
+    double? markerThickness,
+    int? markerHoldMs,
   }) => DirectorOptions(
+    markerType: markerType ?? this.markerType,
+    markerColor: markerColor ?? this.markerColor,
+    markerThickness: markerThickness ?? this.markerThickness,
+    markerHoldMs: markerHoldMs ?? this.markerHoldMs,
     zoom: zoom ?? this.zoom,
     number: number ?? this.number,
     idle: idle ?? this.idle,
@@ -102,7 +121,10 @@ abstract final class AutoDirector {
   static const zoomScale = 1.7;
   static const zoomLeadMs = 200;
   static const zoomMergeGapMs = 700;
-  static const zoomMaxSpan = 0.5;
+
+  /// Touches this close (fractions of the frame) are one spot: their zooms are one.
+  static const zoomSameSpot = 0.06;
+  static const zoomMinMs = 800;
   static const idleSpeed = 4.0;
   static const idleMinMs = 1800;
   static const idleEdgeMs = 350;
@@ -182,6 +204,85 @@ abstract final class AutoDirector {
         : q.insertFreezeAt(i + 1, t, ms: len);
   }
 
+  /// A mark of [type] for a tap at (x, y). Shapes that need a size (circle, box) get one around the
+  /// tap that is square on screen; the arrow points at it from the lower right; the pen underlines it.
+  static MarkerSpec tapSpec(
+    MarkerType type,
+    double x,
+    double y,
+    int step, {
+    required int frameW,
+    required int frameH,
+    Color color = const Color(0xFFFF3B30),
+    double thickness = 5,
+  }) {
+    final ar = frameH > 0
+        ? frameW / frameH
+        : 0.45; // width per height, to keep shapes round
+    double cx(double v) => v.clamp(0.0, 1.0);
+    switch (type) {
+      case MarkerType.circle:
+      case MarkerType.rect:
+        final hw = type == MarkerType.circle ? 0.09 : 0.16;
+        // half height in fractions of the height, from a half height of hw (circle) or 0.06 (box) of the width
+        final h =
+            (type == MarkerType.circle ? hw : 0.06) / (ar == 0 ? 1 : 1 / ar);
+        return MarkerSpec(
+          type: type,
+          color: color,
+          thickness: thickness,
+          x0: cx(x - hw),
+          y0: cx(y - h),
+          x1: cx(x + hw),
+          y1: cx(y + h),
+          number: step,
+        );
+      case MarkerType.arrow:
+        return MarkerSpec(
+          type: type,
+          color: color,
+          thickness: thickness,
+          x0: cx(x + 0.22),
+          y0: cx(y + 0.22 * ar * 2),
+          x1: x,
+          y1: y,
+          number: step,
+        );
+      case MarkerType.pen:
+        return MarkerSpec(
+          type: type,
+          color: color,
+          thickness: thickness,
+          x0: x,
+          y0: y,
+          points: [
+            cx(x - 0.12),
+            cx(y + 0.03),
+            cx(x - 0.06),
+            cx(y + 0.04),
+            cx(x),
+            cx(y + 0.03),
+            cx(x + 0.06),
+            cx(y + 0.04),
+            cx(x + 0.12),
+            cx(y + 0.03),
+          ],
+          number: step,
+        );
+      default:
+        return MarkerSpec(
+          type: type,
+          color: color,
+          thickness: thickness,
+          x0: x,
+          y0: y,
+          x1: x,
+          y1: y,
+          number: step,
+        );
+    }
+  }
+
   /// A project drawn from the touches found in a recording: a mark and (if wanted) a freeze at each
   /// meaningful touch, and one "typing" step for each typing burst instead of a mark per key. Touches
   /// without a known position get a caption instead of a mark, and are never zoomed to.
@@ -203,10 +304,7 @@ abstract final class AutoDirector {
 
     final taps = [
       for (final e in sorted)
-        if (e.kind == TouchKind.tap)
-          e
-        else if (keyAsTap(e))
-          _asTap(e),
+        if (e.kind == TouchKind.tap) e else if (keyAsTap(e)) _asTap(e),
     ];
     var step = 0;
     for (var i = 0; i < taps.length; i++) {
@@ -220,18 +318,34 @@ abstract final class AutoDirector {
           MarkerItem(
             id: 'tp_${i}_${e.tMs}',
             cueStartMs: cue,
-            holdMs: 1500,
-            spec: MarkerSpec(
-              type: o.number ? MarkerType.number : MarkerType.ripple,
-              x0: e.x!.clamp(0.0, 1.0),
-              y0: e.y!.clamp(0.0, 1.0),
-              number: step,
+            holdMs: tapHoldMs(
+              taps,
+              i,
+              cue + MarkerTiming.cueMs,
+              o.markerHoldMs,
+            ),
+            spec: tapSpec(
+              _tapKind(o),
+              e.x!.clamp(0.0, 1.0),
+              e.y!.clamp(0.0, 1.0),
+              step,
+              frameW: base.frameW,
+              frameH: base.frameH,
+              color: o.markerColor,
+              thickness: o.markerThickness,
             ),
           ),
         );
-      } else {
+      } else if (o.number) {
+        // A touch whose place is unknown only gets a step caption, and only when steps are numbered.
         out = out.upsertText(
-          _caption('tpt_${i}_${e.tMs}', '$stepPrefix$step', e.tMs - 100, e.tMs + 1500, dur),
+          _caption(
+            'tpt_${i}_${e.tMs}',
+            '$stepPrefix$step',
+            e.tMs - 100,
+            e.tMs + 1500,
+            dur,
+          ),
         );
       }
     }
@@ -248,9 +362,15 @@ abstract final class AutoDirector {
         gi++;
         final start = keys.first.tMs;
         final end = keys.last.endMs ?? keys.last.tMs;
-        final typing = keys.any((k) => k.sensitive) ? o.typedLabel : o.typingLabel;
-        out = out.upsertText(_caption('typ_$gi', typing, start - 400, end, dur));
-        out = out.upsertText(_caption('typd_$gi', o.typedLabel, end, end + 1500, dur));
+        final typing = keys.any((k) => k.sensitive)
+            ? o.typedLabel
+            : o.typingLabel;
+        out = out.upsertText(
+          _caption('typ_$gi', typing, start - 400, end, dur),
+        );
+        out = out.upsertText(
+          _caption('typd_$gi', o.typedLabel, end, end + 1500, dur),
+        );
         // The field is the last tap before the first key, when its place is known.
         final field = sorted
             .where((e) => e.kind == TouchKind.tap && e.tMs < start)
@@ -262,7 +382,9 @@ abstract final class AutoDirector {
           final zs = math.max(0, start - 500);
           final ze = math.min(dur, end + 500);
           if (ze - zs >= 800 &&
-              !out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100)) {
+              !out.zooms.any(
+                (z) => zs < z.endMs + 100 && ze > z.startMs - 100,
+              )) {
             out = out.upsertZoom(
               ZoomItem(
                 id: 'zi_$gi',
@@ -290,7 +412,9 @@ abstract final class AutoDirector {
         final zs = math.max(0, e.tMs - zoomLeadMs);
         final ze = math.min(dur, e.tMs + 1200);
         if (ze - zs < 800) continue;
-        if (out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100)) continue;
+        if (out.zooms.any((z) => zs < z.endMs + 100 && ze > z.startMs - 100)) {
+          continue;
+        }
         out = out.upsertZoom(
           ZoomItem(
             id: 'zt_${e.tMs}',
@@ -320,7 +444,40 @@ abstract final class AutoDirector {
     y: e.y,
     endMs: e.endMs,
     app: e.app,
+    changeMs: e.changeMs,
   );
+
+  /// The mark put at each tap. Step numbers only appear when steps are numbered: without it a "number"
+  /// mark (the default kind) is drawn as the plain ripple instead.
+  static MarkerType _tapKind(DirectorOptions o) {
+    final k = o.markerType ?? (o.number ? MarkerType.number : MarkerType.ripple);
+    return k == MarkerType.number && !o.number ? MarkerType.ripple : k;
+  }
+
+  /// A mark starts fading this long before the screen changes, so it is gone before the new screen
+  /// shows: the fade itself plus the step the change is looked for with (it can be found that late).
+  static const screenLeadMs = MarkerTiming.fadeMs + 150;
+
+  /// How long the mark of `taps[i]` stays after its take ([takeMs]): [holdMs], but never past the
+  /// moment the screen changed after the tap (it would sit on the new screen) and never into the next
+  /// mark, so only one mark is on the screen at a time. 0 means it fades right after the press.
+  static int tapHoldMs(
+    List<TouchEvent> taps,
+    int i,
+    int takeMs,
+    int holdMs,
+  ) {
+    var fadeAt = takeMs + holdMs;
+    final change = taps[i].changeMs;
+    if (change != null) fadeAt = math.min(fadeAt, change - screenLeadMs);
+    for (var j = i + 1; j < taps.length; j++) {
+      if (!taps[j].hasPosition) continue;
+      final nextCue = math.max(0, taps[j].tMs - MarkerTiming.cueMs);
+      fadeAt = math.min(fadeAt, nextCue - MarkerTiming.fadeMs);
+      break;
+    }
+    return math.max(0, fadeAt - takeMs);
+  }
 
   static TextItem _caption(String id, String text, int from, int to, int dur) {
     final start = from.clamp(0, math.max(0, dur - 300)).toInt();
@@ -370,6 +527,46 @@ abstract final class AutoDirector {
       );
     }
     return out;
+  }
+
+  /// Changes the look of marks in one go: another kind (an arrow becomes a tap mark, a number, ...),
+  /// colour and/or thickness. [ids] limits it to those marks, null means every mark. A mark that changes
+  /// kind is redrawn around the spot it pointed at, and step numbers are renumbered when numbers are
+  /// involved. Timing, text and zoom stay as they were.
+  static EditProject restyleMarkers(
+    EditProject p, {
+    MarkerType? type,
+    Color? color,
+    double? thickness,
+    Set<String>? ids,
+  }) {
+    if (type == null && color == null && thickness == null) return p;
+    MarkerSpec restyle(MarkerSpec s) {
+      if (type != null && type != s.type) {
+        final at = anchorOf(s);
+        return tapSpec(
+          type,
+          at.dx,
+          at.dy,
+          s.number,
+          frameW: p.frameW,
+          frameH: p.frameH,
+          color: color ?? s.color,
+          thickness: thickness ?? s.thickness,
+        ).copyWith(opacity: s.opacity);
+      }
+      return s.copyWith(color: color, thickness: thickness);
+    }
+
+    final out = p.copyWith(
+      markers: [
+        for (final m in p.markers)
+          ids != null && !ids.contains(m.id)
+              ? m
+              : m.copyWith(spec: restyle(m.spec)),
+      ],
+    );
+    return type == MarkerType.number ? renumber(out) : out;
   }
 
   /// Step markers get 1, 2, 3 ... in the order they appear.
@@ -422,17 +619,26 @@ abstract final class AutoDirector {
   ]) {
     final marks = [...p.markers]
       ..sort((a, b) => a.cueStartMs.compareTo(b.cueStartMs));
+    // One zoom per touch, centred on that touch. Touches at the same spot share one zoom; a touch
+    // elsewhere ends the zoom before it (it zooms out) when it comes before that one is over, and a zoom
+    // cut too short to be seen is dropped, so a quick run of touches is zoomed at its last one.
     final windows = <_Win>[];
     for (final m in marks) {
       final start = math.max(0, m.cueStartMs - zoomLeadMs);
       final end = math.min(p.durationMs, m.endMs + o.zoomHoldMs);
-      if (end - start < 800) continue;
+      if (end - start < zoomMinMs) continue;
       final a = anchorOf(m.spec);
       final last = windows.isEmpty ? null : windows.last;
-      if (last != null && start - last.end < zoomMergeGapMs) {
-        // Too far apart to share one frame: keep the first zoom only.
-        last.tryAdd(a, end);
-        continue;
+      if (last != null) {
+        final near = (last.focus - a).distance <= zoomSameSpot;
+        if (near && start - last.end < zoomMergeGapMs) {
+          last.end = math.max(last.end, end);
+          continue;
+        }
+        if (start < last.end + 100) {
+          last.end = start - 100;
+          if (last.end - last.start < zoomMinMs) windows.removeLast();
+        }
       }
       windows.add(_Win(start, end, a));
     }
@@ -443,13 +649,12 @@ abstract final class AutoDirector {
         (z) => w.start < z.endMs + 100 && w.end > z.startMs - 100,
       );
       if (overlaps) continue;
-      final f = w.focus;
       out = out.upsertZoom(
         ZoomItem(
           id: 'zm_${n++}_${w.start}',
-          fx: f.dx,
-          fy: f.dy,
-          scale: w.scaleCapped(o.zoomScale),
+          fx: w.focus.dx,
+          fy: w.focus.dy,
+          scale: o.zoomScale,
           startMs: w.start,
           endMs: w.end,
           inMs: o.zoomRampMs,
@@ -509,33 +714,10 @@ abstract final class AutoDirector {
   }
 }
 
+/// One zoom window: when, and the touch it is centred on.
 class _Win {
-  _Win(this.start, this.end, Offset a)
-    : minX = a.dx,
-      maxX = a.dx,
-      minY = a.dy,
-      maxY = a.dy;
+  _Win(this.start, this.end, this.focus);
   final int start;
   int end;
-  double minX, maxX, minY, maxY;
-
-  void tryAdd(Offset a, int newEnd) {
-    final nx0 = math.min(minX, a.dx), nx1 = math.max(maxX, a.dx);
-    final ny0 = math.min(minY, a.dy), ny1 = math.max(maxY, a.dy);
-    if (math.max(nx1 - nx0, ny1 - ny0) > AutoDirector.zoomMaxSpan) return;
-    minX = nx0;
-    maxX = nx1;
-    minY = ny0;
-    maxY = ny1;
-    end = math.max(end, newEnd);
-  }
-
-  Offset get focus => Offset((minX + maxX) / 2, (minY + maxY) / 2);
-
-  /// A wide spread needs a gentler zoom so both targets stay in frame.
-  double scaleCapped(double cap) {
-    final span = math.max(maxX - minX, maxY - minY);
-    if (span <= 0.05) return cap;
-    return (0.8 / (span + 0.25)).clamp(math.min(1.2, cap), cap).toDouble();
-  }
+  final Offset focus;
 }

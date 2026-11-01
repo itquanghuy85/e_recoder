@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 /// What a touch turned out to be once the whole recording is looked at.
 /// [tap]: a press that means something (button, menu, switch). [input]: one key of a typing burst.
 /// [swipe]: a scroll or drag. [noise]: a stray or repeated touch that is not worth a mark.
@@ -38,6 +36,7 @@ class RawTouch {
     this.durMs = 0,
     this.dist = 0,
     this.app,
+    this.changeMs,
   });
   final int tMs;
   final double? x;
@@ -45,6 +44,9 @@ class RawTouch {
   final int durMs;
   final double dist;
   final String? app;
+
+  /// When the screen changed for real after this touch (a new page, a keyboard), if it did.
+  final int? changeMs;
 
   bool get hasPosition => x != null && y != null;
 
@@ -61,6 +63,10 @@ class RawTouch {
       durMs: (m['durMs'] as num?)?.toInt() ?? 0,
       dist: (m['dist'] as num?)?.toDouble() ?? 0,
       app: m['app'] as String?,
+      changeMs: switch ((m['changeMs'] as num?)?.toInt()) {
+        final int c when c >= 0 => c,
+        _ => null,
+      },
     );
   }
 }
@@ -79,6 +85,7 @@ class TouchEvent {
     this.sensitive = false,
     this.app,
     this.pauseMs,
+    this.changeMs,
   });
   final int tMs;
   final int? endMs;
@@ -93,6 +100,9 @@ class TouchEvent {
   /// Freeze time for this touch alone; null follows the project-wide setting.
   final int? pauseMs;
 
+  /// When the screen changed for real after this touch, if it did: its mark must be gone by then.
+  final int? changeMs;
+
   bool get hasPosition => x != null && y != null;
 }
 
@@ -105,9 +115,8 @@ abstract final class TouchClassifier {
   static const burstGapMs = 2000;
   static const minKeys = 3;
 
-  /// A second touch this close (time and place) to the previous one is a bounce, not a new step.
-  static const bounceMs = 250;
-  static const bounceDist = 0.04;
+  /// A second touch this close in time to the previous one is a bounce, not a new step.
+  static const bounceMs = 300;
   static const swipeDist = 0.05;
 
   static List<TouchEvent> classify(List<RawTouch> raw) {
@@ -121,7 +130,9 @@ abstract final class TouchClassifier {
         continue;
       }
       final p = lastTap;
-      if (p != null && t.tMs - p.tMs < bounceMs && _near(p, t)) {
+      // Two marks this close could never both be seen; the place of the second one is often wrong
+      // too (it is found from how the screen reacted to the first), so it is dropped wherever it is.
+      if (p != null && t.tMs - p.tMs < bounceMs) {
         kinds[i] = TouchKind.noise;
         continue;
       }
@@ -166,6 +177,7 @@ abstract final class TouchClassifier {
           group: groups[n],
           count: counts[n],
           app: sorted[n].app,
+          changeMs: sorted[n].changeMs,
         ),
     ];
   }
@@ -173,12 +185,6 @@ abstract final class TouchClassifier {
   /// Only touches whose place is known can be told to be on the keyboard.
   static bool _isKey(RawTouch t, TouchKind k) =>
       k == TouchKind.tap && t.hasPosition && t.y! >= keyboardTop;
-
-  static bool _near(RawTouch a, RawTouch b) {
-    if (!a.hasPosition || !b.hasPosition) return true;
-    final dx = a.x! - b.x!, dy = a.y! - b.y!;
-    return math.sqrt(dx * dx + dy * dy) < bounceDist;
-  }
 }
 
 /// One merged freeze: where and for how long (source time).

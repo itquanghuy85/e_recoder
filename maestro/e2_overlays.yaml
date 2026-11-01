@@ -6,8 +6,13 @@ tags:
 ---
 # Needs esr_pic.png and esr_pip.mp4 in Download (scripts/qa/push_test_media.ps1) and a short edit in the library.
 - runFlow: helpers/open_edit.yaml
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_picture"
+# On a tall phone (S25) the aspect chips are below the fold of the tool panel: scroll the panel, not the timeline.
+- swipe:
+    start: 50%,94%
+    end: 50%,80%
 - tapOn:
     id: "aspect_r1x1"
 - tapOn:
@@ -18,6 +23,10 @@ tags:
 - takeScreenshot: artifacts/e2_picture
 - tapOn:
     id: "tool_overlay"
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: "add_shape_bubble"
 - tapOn:
     id: "add_shape_bubble"
 - tapOn:
@@ -35,15 +44,22 @@ tags:
     id: "tool_text"
 - tapOn:
     id: "add_text"
-- runFlow: helpers/scroll_panel.yaml
-- runFlow: helpers/scroll_panel.yaml
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: font_serif
 - tapOn:
     id: "font_serif"
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: text_box
 - tapOn:
     id: "text_box"
-- runFlow: helpers/scroll_panel.yaml
-- runFlow: helpers/scroll_panel.yaml
-- runFlow: helpers/scroll_panel.yaml
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: text_motion_enter_pop
 - tapOn:
     id: "text_motion_enter_pop"
 - takeScreenshot: artifacts/e2_text

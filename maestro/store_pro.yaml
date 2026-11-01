@@ -64,9 +64,7 @@ tags:
 - launchApp:
     appId: com.huluca.escreenrecorder
     stopApp: false
-- extendedWaitUntil:
-    visible: "Đã lưu ESR_.*"
-    timeout: 25000
+- runFlow: helpers/after_stop.yaml
 - runFlow:
     file: helpers/open_edit.yaml
     env:
@@ -88,6 +86,10 @@ tags:
     id: "cut_split"
 - tapOn:
     id: "tool_speed"
+# S25 is tall: the ramp switch is below the fold of the tool panel; scroll the panel (not the timeline).
+- swipe:
+    start: 50%,94%
+    end: 50%,84%
 - tapOn:
     id: "speed_ramp"
 - waitForAnimationToEnd:
@@ -99,6 +101,7 @@ tags:
 - waitForAnimationToEnd:
     timeout: 2500
 - takeScreenshot: store/pro_speed
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_transition"
 - tapOn:
@@ -122,6 +125,10 @@ tags:
 - takeScreenshot: store/pro_transition
 - tapOn:
     id: "tool_overlay"
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: "add_shape_bubble"
 - tapOn:
     id: "add_shape_bubble"
 - tapOn:

@@ -64,6 +64,10 @@ class Exporter(private val ctx: Context) {
         cancelled = false
         reversed.clear()
         pipFrames.clear()
+        // An export that was killed half way (the app swiped away, low-memory kill) leaves its working
+        // files in the cache. Only one export runs at a time and this one has not made anything yet, so
+        // whatever is there is left over: clear it, so a long video does not leave gigabytes behind.
+        for (dir in listOf("export", "export_rev", "export_pip")) File(ctx.cacheDir, dir).deleteRecursively()
         val steps = ArrayList<PrepStep>()
         val revDir = File(ctx.cacheDir, "export_rev").also { it.mkdirs() }
         job.segments.filter { it.reverse && !it.isStill }.distinctBy { reverseKey(job, it) }.forEachIndexed { i, seg ->
@@ -371,6 +375,12 @@ class Exporter(private val ctx: Context) {
         }
         for (t in job.texts) {
             if (t.endMs <= winStart || t.startMs >= winEnd) continue
+            val cues = t.cues
+            if (cues != null) {
+                // A caption: the cue on screen changes over time, so the overlay draws it per frame.
+                if (CueFrames.anyIn(cues, winStart, winEnd)) list.add(CueOverlay(t, fw, clock))
+                continue
+            }
             val r = OverlayRenderers.renderText(t, fw)
             list.add(MotionBitmapOverlay(r.bitmap, t.x, t.y, 1f, t.opacity, t.rotation, t.startMs, t.endMs, t.motion, clock))
         }

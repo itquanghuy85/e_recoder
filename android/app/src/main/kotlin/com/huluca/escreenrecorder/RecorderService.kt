@@ -24,6 +24,7 @@ import com.huluca.escreenrecorder.marker.MarkerSpec
 import com.huluca.escreenrecorder.overlay.CountdownOverlay
 import com.huluca.escreenrecorder.overlay.Haptics
 import com.huluca.escreenrecorder.overlay.HotCorner
+import com.huluca.escreenrecorder.overlay.TouchWatcher
 import com.huluca.escreenrecorder.overlay.MarkDot
 import com.huluca.escreenrecorder.overlay.ShakeDetector
 import com.huluca.escreenrecorder.overlay.formatClock
@@ -39,12 +40,16 @@ class RecorderService : Service(), ControlBar.Listener {
     private var layer: MarkerLayer? = null
     private var dot: MarkDot? = null
     private var corner: HotCorner? = null
+    private var watcher: TouchWatcher? = null
     private var shake: ShakeDetector? = null
     private var countdown: CountdownOverlay? = null
     private var config: RecConfig? = null
     private var pausedByPicker = false
     /** Clean mode: markers placed during the recording, saved next to the video for the editor. */
     private val marks = ArrayList<Map<String, Any?>>()
+
+    /** Touches heard while recording clean ({tMs, x, y} like a scan result; x/y -1 = place unknown). */
+    private val touches = ArrayList<Map<String, Any?>>()
     private var tempFile: File? = null
     private var startedAtMs = 0L
     private var pausedAtMs = 0L
@@ -93,6 +98,9 @@ class RecorderService : Service(), ControlBar.Listener {
         val proj = projection ?: return
         countdown = null
         val dir = File(cacheDir, "rec").also { it.mkdirs() }
+        // A recording cut off by the app being killed never gets its index written: the file left here cannot
+        // be played or saved. Nothing else records now, so clear such leftovers before starting.
+        dir.listFiles()?.forEach { it.delete() }
         val file = File(dir, "rec_${System.currentTimeMillis()}.mp4")
         tempFile = file
         try {
@@ -107,6 +115,8 @@ class RecorderService : Service(), ControlBar.Listener {
         paused = false
         this.config = config
         marks.clear()
+        touches.clear()
+        running = this
         pausedByPicker = false
         if (config.floatingBar) {
             if (config.clean) startClean(config) else startDot(config)
@@ -164,6 +174,9 @@ class RecorderService : Service(), ControlBar.Listener {
         l.show()
         layer = l
         if (config.armShake) shake = ShakeDetector(this) { arm() }.also { it.start() }
+        if (config.watchTouches) {
+            watcher = TouchWatcher(this) { eventUptimeMs, _, _ -> addTouch(eventUptimeMs) }.also { it.show() }
+        }
         updateNotification(0)
     }
 
@@ -172,6 +185,24 @@ class RecorderService : Service(), ControlBar.Listener {
         if (paused || config?.clean != true || lay.annotating) return
         Haptics.tick(this, 25)
         lay.arm(ARM_TIMEOUT_MS)
+    }
+
+    /** A touch somewhere on screen: its video time is "now" minus how long ago the event happened. */
+    private fun addTouch(eventUptimeMs: Long) {
+        // A touch while our own app is in front is Pause / Stop on its live view, not part of what is shown.
+        if (paused || appInFront) return
+        val ago = (android.os.SystemClock.uptimeMillis() - eventUptimeMs).coerceIn(0L, 1000L)
+        val t = (elapsedMs() - ago).coerceAtLeast(0L)
+        touches.add(mapOf("tMs" to t, "x" to -1.0, "y" to -1.0, "durMs" to 0L, "dist" to 0.0))
+    }
+
+    /**
+     * Our app came back to the front while recording (to press Stop): the touches of the last moments
+     * were the way back (the notification, the app switcher), not part of what is shown.
+     */
+    private fun dropTrailingTouches() {
+        val from = elapsedMs() - BACK_TO_APP_MS
+        touches.removeAll { ((it["tMs"] as? Long) ?: 0L) > from }
     }
 
     private fun addMark(spec: MarkerSpec, tMs: Long) {
@@ -252,11 +283,13 @@ class RecorderService : Service(), ControlBar.Listener {
             finishAndClose(); return
         }
         ticking = false
+        running = null
         hideOverlays()
         RecorderBus.changePhase(RecorderBus.SAVING)
         session = null
         val cfg = config
         val savedMarks = ArrayList(marks)
+        val savedTouches = ArrayList(touches)
         Thread({
             val ok = try { s.stop() } catch (_: Exception) { false }
             val file = tempFile
@@ -266,7 +299,7 @@ class RecorderService : Service(), ControlBar.Listener {
             if (ok && file != null && file.length() > 0) {
                 saved = MediaRepo.save(this, file, durationMs)
                 if (saved == null) errorCode = "save_failed"
-                else if (cfg != null) saved = saved + mapOf("width" to cfg.width, "height" to cfg.height, "marks" to savedMarks)
+                else if (cfg != null) saved = saved + mapOf("width" to cfg.width, "height" to cfg.height, "marks" to savedMarks, "touches" to savedTouches)
             } else {
                 errorCode = "empty_recording"
             }
@@ -298,6 +331,7 @@ class RecorderService : Service(), ControlBar.Listener {
         dot?.hide(); dot = null
         layer?.hide(); layer = null
         corner?.hide(); corner = null
+        watcher?.hide(); watcher = null
     }
 
     private fun finishAndClose() {
@@ -399,5 +433,16 @@ class RecorderService : Service(), ControlBar.Listener {
         private const val CHANNEL = "esr_recording"
         private const val NOTIF_ID = 4201
         private const val LOW_STORAGE_BYTES = 60L * 1024 * 1024
+        private const val BACK_TO_APP_MS = 1500L
+
+        /** Is our own app in front of the screen (set from MainActivity). */
+        @Volatile var appInFront = false
+            private set
+        @Volatile private var running: RecorderService? = null
+
+        fun appFront(front: Boolean) {
+            appInFront = front
+            if (front) running?.dropTrailingTouches()
+        }
     }
 }

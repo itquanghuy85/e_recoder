@@ -1,0 +1,112 @@
+﻿appId: com.huluca.escreenrecorder
+name: Caption full flow - create, template, drag, save, reopen, edit style, export
+tags:
+  - p1
+  - module-editor
+---
+# Checked afterwards with scripts/qa/verify_caption_export.ps1 (frames, duration, audio).
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_edit_20261030_121019.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "caption_panel"
+- runFlow:
+    when:
+      visible:
+        id: "caption_off"
+    commands:
+      - tapOn:
+          id: "caption_off"
+# 1. Create two lines
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "cue_text_0"
+- eraseText: 40
+- inputText: "Mot hai ba bon"
+- tapOn:
+    id: "cue_end_0"
+- eraseText: 10
+- inputText: "6000"
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "cue_text_1"
+- eraseText: 40
+- inputText: "Goodbye"
+- tapOn:
+    id: "cue_start_1"
+- eraseText: 10
+- inputText: "7000"
+- tapOn:
+    id: "cue_end_1"
+- eraseText: 10
+- inputText: "9000"
+- tapOn:
+    id: "cue_text_1"
+- hideKeyboard
+# 2. One-tap template: yellow label
+- tapOn:
+    id: "cap_tab_templates"
+- scrollUntilVisible:
+    element:
+      id: "tpl_label-yellow"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "tpl_label-yellow"
+- back
+# 3. Drag the caption up on the stage (it is still selected)
+- takeScreenshot: artifacts/full_before_drag
+- swipe:
+    start: 50%, 33%
+    end: 50%, 24%
+    duration: 600
+- takeScreenshot: artifacts/full_after_drag
+# 4. Save and reopen: leave the editor, restart the app, open the project again
+- tapOn:
+    point: 7%, 8%
+- waitForAnimationToEnd:
+    timeout: 3000
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: true
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_edit_20261030_121019.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    point: 50%, 14%
+- tapOn:
+    id: "caption_panel"
+- takeScreenshot: artifacts/full_reopened_lines
+# 5. Edit the look after reopening: karaoke fill
+- tapOn:
+    id: "cap_tab_style"
+- tapOn:
+    id: "reveal_karaokeHighlight"
+- back
+- tapOn:
+    point: 50%, 14%
+- takeScreenshot: artifacts/full_before_export
+# 6. Export
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p720"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000
+- takeScreenshot: artifacts/full_export_done
+- runFlow:
+    file: helpers/caption_cleanup.yaml

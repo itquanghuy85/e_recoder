@@ -550,7 +550,7 @@ abstract class AppL10n {
   /// No description provided for @settingsMarkersSub.
   ///
   /// In vi, this message translates to:
-  /// **'Ngón tay, mũi tên, vòng tròn… báo trước chỗ sắp bấm'**
+  /// **'Dấu báo trước chỗ sắp bấm, cách đánh dấu khi quay và tự động dựng sau khi quay'**
   String get settingsMarkersSub;
 
   /// No description provided for @settingsMarkersHint.
@@ -1096,7 +1096,7 @@ abstract class AppL10n {
   /// No description provided for @toolAuto.
   ///
   /// In vi, this message translates to:
-  /// **'Tự động'**
+  /// **'Dựng tự động'**
   String get toolAuto;
 
   /// No description provided for @autoTitle.
@@ -1120,7 +1120,7 @@ abstract class AppL10n {
   /// No description provided for @autoNumberOpt.
   ///
   /// In vi, this message translates to:
-  /// **'Đánh số lại các bước'**
+  /// **'Đánh số các bước'**
   String get autoNumberOpt;
 
   /// No description provided for @autoIdleOpt.
@@ -1300,7 +1300,7 @@ abstract class AppL10n {
   /// No description provided for @settingsPermissionsSub.
   ///
   /// In vi, this message translates to:
-  /// **'Kiểm tra các quyền cần để quay'**
+  /// **'Kiểm tra app đã đủ quyền để quay và chạy nền chưa'**
   String get settingsPermissionsSub;
 
   /// No description provided for @settingsGuide.
@@ -1312,7 +1312,7 @@ abstract class AppL10n {
   /// No description provided for @settingsGuideSub.
   ///
   /// In vi, this message translates to:
-  /// **'Xem lại cách dùng dấu báo trước'**
+  /// **'Xem lại các bước dùng app lần đầu'**
   String get settingsGuideSub;
 
   /// No description provided for @settingsPrivacy.
@@ -1438,13 +1438,13 @@ abstract class AppL10n {
   /// No description provided for @toolCover.
   ///
   /// In vi, this message translates to:
-  /// **'Che'**
+  /// **'Che vùng'**
   String get toolCover;
 
   /// No description provided for @toolZoom.
   ///
   /// In vi, this message translates to:
-  /// **'Phóng'**
+  /// **'Phóng to'**
   String get toolZoom;
 
   /// No description provided for @splitHere.
@@ -2176,13 +2176,13 @@ abstract class AppL10n {
   /// No description provided for @toolPicture.
   ///
   /// In vi, this message translates to:
-  /// **'Hình'**
+  /// **'Hình ảnh'**
   String get toolPicture;
 
   /// No description provided for @toolOverlay.
   ///
   /// In vi, this message translates to:
-  /// **'Lớp phủ'**
+  /// **'Chèn hình'**
   String get toolOverlay;
 
   /// No description provided for @picRotate.
@@ -3138,6 +3138,690 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Sticker'**
   String get presetSticker;
+
+  /// No description provided for @captionPanelAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'+ Thêm câu'**
+  String get captionPanelAdd;
+
+  /// No description provided for @captionPanelOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt phụ đề'**
+  String get captionPanelOff;
+
+  /// No description provided for @captionPanelEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có câu phụ đề nào.'**
+  String get captionPanelEmpty;
+
+  /// No description provided for @captionPanelStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu (ms)'**
+  String get captionPanelStart;
+
+  /// No description provided for @captionPanelEnd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kết thúc (ms)'**
+  String get captionPanelEnd;
+
+  /// No description provided for @captionTabLines.
+  ///
+  /// In vi, this message translates to:
+  /// **'Câu'**
+  String get captionTabLines;
+
+  /// No description provided for @captionTabStyle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểu'**
+  String get captionTabStyle;
+
+  /// No description provided for @captionReveal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiệu ứng hiện chữ'**
+  String get captionReveal;
+
+  /// No description provided for @captionRevealNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện hết'**
+  String get captionRevealNone;
+
+  /// No description provided for @captionRevealWord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từng từ'**
+  String get captionRevealWord;
+
+  /// No description provided for @captionRevealChar.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từng ký tự'**
+  String get captionRevealChar;
+
+  /// No description provided for @captionRevealKaraoke.
+  ///
+  /// In vi, this message translates to:
+  /// **'Karaoke'**
+  String get captionRevealKaraoke;
+
+  /// No description provided for @captionOutlineWidth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dày viền'**
+  String get captionOutlineWidth;
+
+  /// No description provided for @captionOutlineColor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu viền'**
+  String get captionOutlineColor;
+
+  /// No description provided for @captionShadowBlur.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhoè bóng'**
+  String get captionShadowBlur;
+
+  /// No description provided for @captionBoxColor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu nền'**
+  String get captionBoxColor;
+
+  /// No description provided for @captionBoxRadius.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bo góc'**
+  String get captionBoxRadius;
+
+  /// No description provided for @captionPosY.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dọc'**
+  String get captionPosY;
+
+  /// No description provided for @captionPosX.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngang'**
+  String get captionPosX;
+
+  /// No description provided for @captionReset.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại kiểu'**
+  String get captionReset;
+
+  /// No description provided for @captionTabTemplates.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mẫu'**
+  String get captionTabTemplates;
+
+  /// No description provided for @captionTemplateSample.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xin chào các bạn'**
+  String get captionTemplateSample;
+
+  /// No description provided for @captionsCreatedCues.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tạo {n} dòng phụ đề. Chọn mẫu hoặc sửa từng dòng trong mục Phụ đề.'**
+  String captionsCreatedCues(int n);
+
+  /// No description provided for @captionsApplyTemplate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng mẫu TikTok có sẵn'**
+  String get captionsApplyTemplate;
+
+  /// No description provided for @settingsGroupApp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ứng dụng'**
+  String get settingsGroupApp;
+
+  /// No description provided for @settingsGroupRecord.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay màn hình'**
+  String get settingsGroupRecord;
+
+  /// No description provided for @settingsGroupHelp.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trợ giúp và thông tin'**
+  String get settingsGroupHelp;
+
+  /// No description provided for @markerSecLook.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kiểu dấu'**
+  String get markerSecLook;
+
+  /// No description provided for @markerSecLookSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn dấu và chỉnh màu, độ dày, cỡ. Khung xem thử ở trên cho thấy ngay kết quả.'**
+  String get markerSecLookSub;
+
+  /// No description provided for @markerSecTime.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu hiện bao lâu'**
+  String get markerSecTime;
+
+  /// No description provided for @markerSecTimeSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu ở lại bao lâu sau khi bạn đặt, và có tự thoát chế độ chỉ điểm hay không.'**
+  String get markerSecTimeSub;
+
+  /// No description provided for @markerSecHow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cách đánh dấu khi quay'**
+  String get markerSecHow;
+
+  /// No description provided for @markerSecHowSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn cách đặt dấu lúc đang quay: chấm nhỏ ở góc màn hình, hoặc quay sạch rồi dựng sau.'**
+  String get markerSecHowSub;
+
+  /// No description provided for @markerSecAuto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động dựng sau khi quay'**
+  String get markerSecAuto;
+
+  /// No description provided for @markerSecAutoSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'App tự phóng to vào chỗ bạn đã đánh dấu và đánh số bước ngay khi quay xong. Bạn vẫn sửa được trong trình chỉnh sửa.'**
+  String get markerSecAutoSub;
+
+  /// No description provided for @markerAutoNeedsClean.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động dựng chỉ có khi quay sạch, vì lúc đó video chưa có dấu nào chen vào để app dựng lại cho đẹp.'**
+  String get markerAutoNeedsClean;
+
+  /// No description provided for @autoMarkerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu tự động gắn vào mỗi lần bấm'**
+  String get autoMarkerTitle;
+
+  /// No description provided for @autoMarkerHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn kiểu dấu; màu, độ dày và thời gian hiện lấy ở mục 1 và 2 phía trên. Quay xong, dấu này tự có ở từng chỗ bạn đã bấm.'**
+  String get autoMarkerHint;
+
+  /// No description provided for @markerAutoSwitch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật Quay sạch, dựng sau'**
+  String get markerAutoSwitch;
+
+  /// No description provided for @settingsGroupRecordSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quyền cần để quay và cài đặt của các chế độ quay'**
+  String get settingsGroupRecordSub;
+
+  /// No description provided for @settingsGroupHelpSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem lại hướng dẫn, quyền riêng tư và thông tin ứng dụng'**
+  String get settingsGroupHelpSub;
+
+  /// No description provided for @markCleanLimit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu ý: vài màn hình của hệ thống (như Cài đặt hay màn hình xin quyền) chặn vùng ẩn, nên không đánh dấu được ở đó. Ứng dụng thường thì dùng bình thường.'**
+  String get markCleanLimit;
+
+  /// No description provided for @touchSourceAuto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động'**
+  String get touchSourceAuto;
+
+  /// No description provided for @touchSourceAutoHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khuyên dùng. Khi quay sạch, app tự nghe mọi lần bạn bấm vào màn hình, không cần lắc máy hay chạm vùng ẩn. Quay xong, app tự tìm chỗ bạn bấm, phóng to và đánh số các bước.'**
+  String get touchSourceAutoHint;
+
+  /// No description provided for @purposeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn muốn làm gì?'**
+  String get purposeTitle;
+
+  /// No description provided for @purposeHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn một mục. App tự cài đặt sẵn cho bạn, sau này vẫn đổi được.'**
+  String get purposeHint;
+
+  /// No description provided for @purposeTutorial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Làm video hướng dẫn'**
+  String get purposeTutorial;
+
+  /// No description provided for @purposeTutorialSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay xong app tự đánh số từng bước, phóng to chỗ bạn bấm. Bạn không cần làm gì thêm.'**
+  String get purposeTutorialSub;
+
+  /// No description provided for @purposeGame.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay game'**
+  String get purposeGame;
+
+  /// No description provided for @purposeGameSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay mượt, có chấm nhỏ để bạn đánh dấu lúc cần. Không tự phóng to.'**
+  String get purposeGameSub;
+
+  /// No description provided for @purposePlain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay thường'**
+  String get purposePlain;
+
+  /// No description provided for @purposePlainSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉ quay màn hình, không thêm gì.'**
+  String get purposePlainSub;
+
+  /// No description provided for @purposeSkip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ qua, quay thường'**
+  String get purposeSkip;
+
+  /// No description provided for @recordTutorial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay hướng dẫn tự động'**
+  String get recordTutorial;
+
+  /// No description provided for @recordGame.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay game'**
+  String get recordGame;
+
+  /// No description provided for @recordPlain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay video'**
+  String get recordPlain;
+
+  /// No description provided for @advancedTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nâng cao'**
+  String get advancedTitle;
+
+  /// No description provided for @advancedPurpose.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi mục đích: {name}'**
+  String advancedPurpose(String name);
+
+  /// No description provided for @purposeOffer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn mục đích để quay nhanh hơn'**
+  String get purposeOffer;
+
+  /// No description provided for @purposeOfferSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn, game hoặc quay thường: app tự cài đặt sẵn cho bạn.'**
+  String get purposeOfferSub;
+
+  /// No description provided for @readyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng quay chưa?'**
+  String get readyTitle;
+
+  /// No description provided for @readyHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'App còn thiếu vài quyền để quay đúng như bạn chọn. Bấm Bật ở từng dòng.'**
+  String get readyHint;
+
+  /// No description provided for @readyMic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Micro'**
+  String get readyMic;
+
+  /// No description provided for @readyMicSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để thu tiếng nói của bạn. Có thể tắt tiếng trong cài đặt quay.'**
+  String get readyMicSub;
+
+  /// No description provided for @readyOverlay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiển thị trên ứng dụng khác'**
+  String get readyOverlay;
+
+  /// No description provided for @readyOverlaySub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để hiện nút dừng, đếm ngược và nghe lần bấm khi bạn đang ở app khác.'**
+  String get readyOverlaySub;
+
+  /// No description provided for @readyNotif.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông báo (không bắt buộc)'**
+  String get readyNotif;
+
+  /// No description provided for @readyNotifSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Để có nút dừng quay ở thanh thông báo.'**
+  String get readyNotifSub;
+
+  /// No description provided for @readyEnable.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật'**
+  String get readyEnable;
+
+  /// No description provided for @readyOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã bật'**
+  String get readyOn;
+
+  /// No description provided for @readyGo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sẵn sàng quay'**
+  String get readyGo;
+
+  /// No description provided for @readyWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn thiếu quyền'**
+  String get readyWaiting;
+
+  /// No description provided for @resultTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay xong rồi'**
+  String get resultTitle;
+
+  /// No description provided for @resultBuilding.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dựng tự động...'**
+  String get resultBuilding;
+
+  /// No description provided for @resultExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất ngay'**
+  String get resultExport;
+
+  /// No description provided for @resultEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa thêm'**
+  String get resultEdit;
+
+  /// No description provided for @resultBack.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay lại'**
+  String get resultBack;
+
+  /// No description provided for @resultExporting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang xuất video...'**
+  String get resultExporting;
+
+  /// No description provided for @resultExported.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xuất: {name}'**
+  String resultExported(String name);
+
+  /// No description provided for @resultExportFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất không được. Bạn thử lại hoặc bấm Sửa thêm.'**
+  String get resultExportFailed;
+
+  /// No description provided for @resultPreviewError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không phát được video này.'**
+  String get resultPreviewError;
+
+  /// No description provided for @quickTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn nhanh'**
+  String get quickTitle;
+
+  /// No description provided for @quickGameMark.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu khi bạn chạm'**
+  String get quickGameMark;
+
+  /// No description provided for @quickTouches.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi mọi lần bấm'**
+  String get quickTouches;
+
+  /// No description provided for @batchTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi tất cả dấu'**
+  String get batchTitle;
+
+  /// No description provided for @batchScopeAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp cho tất cả {n} dấu'**
+  String batchScopeAll(int n);
+
+  /// No description provided for @batchScopeSel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp cho {n} dấu đã chọn'**
+  String batchScopeSel(int n);
+
+  /// No description provided for @batchSelectAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tất cả'**
+  String get batchSelectAll;
+
+  /// No description provided for @batchClear.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ chọn'**
+  String get batchClear;
+
+  /// No description provided for @batchFromHere.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ đây đến hết'**
+  String get batchFromHere;
+
+  /// No description provided for @batchKind.
+  ///
+  /// In vi, this message translates to:
+  /// **'Loại dấu'**
+  String get batchKind;
+
+  /// No description provided for @batchColor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu'**
+  String get batchColor;
+
+  /// No description provided for @batchThickness.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ dày'**
+  String get batchThickness;
+
+  /// No description provided for @readyNoMic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay không thu tiếng'**
+  String get readyNoMic;
+
+  /// No description provided for @toolExport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xuất'**
+  String get toolExport;
+
+  /// No description provided for @editorModeBasic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cơ bản'**
+  String get editorModeBasic;
+
+  /// No description provided for @editorModeAdvanced.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nâng cao'**
+  String get editorModeAdvanced;
+
+  /// No description provided for @editorModeHintBasic.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đủ để cắt, thêm dấu và chữ. Cần hiệu ứng? Chọn Nâng cao.'**
+  String get editorModeHintBasic;
+
+  /// No description provided for @editorModeHintAdvanced.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện đủ công cụ. Về Cơ bản vẫn giữ mọi thứ đã làm.'**
+  String get editorModeHintAdvanced;
+
+  /// No description provided for @modeTutorial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng dẫn'**
+  String get modeTutorial;
+
+  /// No description provided for @modeGame.
+  ///
+  /// In vi, this message translates to:
+  /// **'Game'**
+  String get modeGame;
+
+  /// No description provided for @modePlain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay thường'**
+  String get modePlain;
+
+  /// No description provided for @moreOptions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm tuỳ chọn'**
+  String get moreOptions;
+
+  /// No description provided for @markWhenTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu bấm'**
+  String get markWhenTitle;
+
+  /// No description provided for @markWhenAuto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự động sau khi quay'**
+  String get markWhenAuto;
+
+  /// No description provided for @markWhenLive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm tay khi quay'**
+  String get markWhenLive;
+
+  /// No description provided for @markWhenNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không dấu'**
+  String get markWhenNone;
+
+  /// No description provided for @optSmooth.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mượt (60 hình/giây)'**
+  String get optSmooth;
+
+  /// No description provided for @settingsResetModes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa các chế độ quay về mặc định'**
+  String get settingsResetModes;
+
+  /// No description provided for @settingsResetModesSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt của Hướng dẫn, Game và Quay thường trở về ban đầu'**
+  String get settingsResetModesSub;
+
+  /// No description provided for @resetModesConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa cả ba chế độ quay về cài đặt ban đầu?'**
+  String get resetModesConfirm;
+
+  /// No description provided for @resetModesAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa về mặc định'**
+  String get resetModesAction;
+
+  /// No description provided for @resetModesDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đưa các chế độ quay về mặc định'**
+  String get resetModesDone;
+
+  /// No description provided for @holdTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thời gian hiện dấu'**
+  String get holdTitle;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

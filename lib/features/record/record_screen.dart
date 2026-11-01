@@ -10,10 +10,13 @@ import '../../theme/app_theme.dart';
 import '../../theme/app_tokens.dart';
 import '../library/media_repository.dart';
 import '../marker/marker_settings.dart';
+import '../purpose/purpose.dart';
+import '../purpose/quick_options.dart';
+import '../purpose/ready_check_screen.dart';
+import '../purpose/result_screen.dart';
 import '../library/media_tile.dart';
 import '../library/player_screen.dart';
 import 'rec_settings.dart';
-import 'rec_settings_sheet.dart';
 import 'recorder_controller.dart';
 import 'tally_rim.dart';
 
@@ -28,6 +31,20 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   Future<void> _start() async {
     final t = AppL10n.of(context);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    // A missing permission is explained on its own screen before recording starts, instead of failing
+    // after the tap.
+    final rec = ref.read(recSettingsProvider);
+    final needs = ReadyNeeds(
+      mic: rec.mic || rec.system,
+      overlay: rec.floatingBar || rec.countdown > 0,
+    );
+    if (await ReadyCheckScreen.missingAnything(ref, needs)) {
+      if (!mounted) return;
+      final go = await Navigator.of(context).push<bool>(
+        MaterialPageRoute<bool>(builder: (_) => ReadyCheckScreen(needs: needs)),
+      );
+      if (go != true || !mounted) return;
+    }
     final r = await ref.read(recorderProvider.notifier).start();
     if (!mounted) return;
     final msg = switch (r) {
@@ -53,12 +70,26 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       );
   }
 
-  Future<void> _openSaved(String uri) async {
-    final list = await ref.read(mediaListProvider.future);
-    final entry = list.where((e) => e.uri == uri).firstOrNull;
+  /// [result]: the three-choice screen shown after a recording; otherwise the plain player.
+  Future<void> _openSaved(String uri, {bool result = false}) async {
+    // The list may still be the one from before the recording (or the phone's media index may not have
+    // the new file yet): look again a few times instead of silently showing nothing.
+    MediaEntry? entry;
+    for (var i = 0; i < 8 && entry == null && mounted; i++) {
+      if (i > 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        ref.invalidate(mediaListProvider);
+      }
+      final list = await ref.read(mediaListProvider.future);
+      entry = list.where((e) => e.uri == uri).firstOrNull;
+    }
     if (entry != null && mounted) {
       Navigator.of(context).push(
-        MaterialPageRoute<void>(builder: (_) => PlayerScreen(entry: entry)),
+        MaterialPageRoute<void>(
+          builder: (_) => result
+              ? ResultScreen(entry: entry!)
+              : PlayerScreen(entry: entry!),
+        ),
       );
     }
   }
@@ -73,13 +104,8 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       if (n == null) return;
       switch (n) {
         case SavedNotice():
-          _snack(
-            t.savedSnack(n.name),
-            action: SnackBarAction(
-              label: t.actionView,
-              onPressed: () => _openSaved(n.uri),
-            ),
-          );
+          // Show what came out, with Export now / Edit more / Record again.
+          _openSaved(n.uri, result: true);
         case ErrorNotice():
           _snack(switch (n.code) {
             'low_storage' => t.errLowStorage,
@@ -114,29 +140,20 @@ class _IdleView extends ConsumerWidget {
     final t = AppL10n.of(context);
     final tt = Theme.of(context).textTheme;
     final c = Theme.of(context).colorScheme;
-    final s = ref.watch(recSettingsProvider);
     final list = ref.watch(mediaListProvider);
-    final summary = t.profileSummary(
-      resolutionLabel(t, s.resolution),
-      s.fps,
-      qualityLabel(t, s.quality),
-    );
+    final purpose = ref.watch(purposeProvider);
 
-    // Scrolls when the content does not fit (very large system fonts, small screens); otherwise the
-    // spacer keeps the profile card and the record button at the bottom, in the thumb zone.
-    return LayoutBuilder(
-      builder: (context, box) => SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          Space.lg,
-          Space.lg,
-          Space.lg,
-          Space.xl,
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: box.maxHeight - Space.lg - Space.xl,
-          ),
-          child: IntrinsicHeight(
+    // The options scroll; the Start button stays pinned at the bottom whatever their length.
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(
+              Space.lg,
+              Space.lg,
+              Space.lg,
+              Space.md,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -148,7 +165,41 @@ class _IdleView extends ConsumerWidget {
                     child: Text(t.iosNoRecording, style: tt.bodyMedium),
                   ),
                 ],
-                const SizedBox(height: Space.xl),
+                const SizedBox(height: Space.lg),
+                // One tap changes the purpose; each purpose keeps its own settings (see PurposeNotifier).
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<Purpose>(
+                    key: const ValueKey('purpose_selector'),
+                    showSelectedIcon: false,
+                    segments: [
+                      for (final p in Purpose.values)
+                        ButtonSegment(
+                          value: p,
+                          label: Semantics(
+                            identifier: 'purpose_${p.name}',
+                            child: Text(
+                              switch (p) {
+                                Purpose.tutorial => t.modeTutorial,
+                                Purpose.game => t.modeGame,
+                                Purpose.plain => t.modePlain,
+                              },
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                    ],
+                    selected: {purpose},
+                    onSelectionChanged: (v) =>
+                        ref.read(purposeProvider.notifier).choose(v.first),
+                  ),
+                ),
+                const SizedBox(height: Space.md),
+                QuickOptions(purpose: purpose),
+                const SizedBox(height: Space.sm),
+                MoreOptions(purpose: purpose),
+                const SizedBox(height: Space.md),
                 Row(
                   children: [
                     Expanded(child: Text(t.recentTitle, style: tt.titleMedium)),
@@ -161,18 +212,15 @@ class _IdleView extends ConsumerWidget {
                 ),
                 list.when(
                   data: (items) => items.isEmpty
-                      ? Align(
-                          alignment: Alignment.topLeft,
-                          child: Text(
-                            t.libraryEmptyBody,
-                            style: tt.bodyMedium?.copyWith(
-                              color: c.onSurfaceVariant,
-                            ),
+                      ? Text(
+                          t.libraryEmptyBody,
+                          style: tt.bodyMedium?.copyWith(
+                            color: c.onSurfaceVariant,
                           ),
                         )
                       : Column(
                           children: [
-                            for (final e in items.take(3))
+                            for (final e in items.take(1))
                               MediaTile(
                                 entry: e,
                                 onTap: () => Navigator.of(context).push(
@@ -186,71 +234,34 @@ class _IdleView extends ConsumerWidget {
                   loading: () => const SizedBox.shrink(),
                   error: (_, _) => const SizedBox.shrink(),
                 ),
-                const Spacer(),
-                const SizedBox(height: Space.lg),
-                Semantics(
-                  identifier: 'profile_card',
-                  button: true,
-                  label: t.profileEdit,
-                  child: InkWell(
-                    key: const ValueKey('profile_card'),
-                    borderRadius: BorderRadius.circular(Radii.md),
-                    onTap: () => showRecSettingsSheet(context),
-                    child: Ink(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Space.lg,
-                        vertical: Space.md,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: c.outlineVariant),
-                        borderRadius: BorderRadius.circular(Radii.md),
-                        color: c.surfaceContainerLow,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.tune, color: c.onSurfaceVariant),
-                          const SizedBox(width: Space.md),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(summary, style: tt.titleSmall),
-                                const SizedBox(height: Space.xs),
-                                Text(
-                                  audioLabel(t, s.audio),
-                                  style: tt.bodySmall?.copyWith(
-                                    color: c.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(Icons.expand_less, color: c.onSurfaceVariant),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: Space.lg),
-                Center(
-                  child: FilledButton.icon(
-                    key: const ValueKey('record_start'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: c.primary,
-                      foregroundColor: c.onPrimary,
-                      minimumSize: const Size(240, 64),
-                      textStyle: tt.titleMedium,
-                    ),
-                    onPressed: onStart,
-                    icon: const Icon(Icons.fiber_manual_record),
-                    label: Text(t.recordStart),
-                  ),
-                ),
               ],
             ),
           ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Space.lg,
+            Space.sm,
+            Space.lg,
+            Space.md,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              key: const ValueKey('record_start'),
+              style: FilledButton.styleFrom(
+                backgroundColor: c.primary,
+                foregroundColor: c.onPrimary,
+                minimumSize: const Size(double.infinity, 84),
+                textStyle: tt.titleLarge,
+              ),
+              onPressed: onStart,
+              icon: const Icon(Icons.fiber_manual_record),
+              label: Text(t.recordStart),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -315,26 +326,31 @@ class _LiveView extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                FilledButton.tonalIcon(
-                  key: const ValueKey('live_pause'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(148, 56),
+                // Flexible: on a narrow phone the two buttons share the row instead of overflowing it.
+                Flexible(
+                  child: FilledButton.tonalIcon(
+                    key: const ValueKey('live_pause'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(120, 56),
+                    ),
+                    onPressed: paused ? ctl.resume : ctl.pause,
+                    icon: Icon(paused ? Icons.play_arrow : Icons.pause),
+                    label: Text(paused ? t.recordResume : t.recordPause),
                   ),
-                  onPressed: paused ? ctl.resume : ctl.pause,
-                  icon: Icon(paused ? Icons.play_arrow : Icons.pause),
-                  label: Text(paused ? t.recordResume : t.recordPause),
                 ),
-                const SizedBox(width: Space.lg),
-                FilledButton.icon(
-                  key: const ValueKey('live_stop'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: c.primary,
-                    foregroundColor: c.onPrimary,
-                    minimumSize: const Size(148, 56),
+                const SizedBox(width: Space.md),
+                Flexible(
+                  child: FilledButton.icon(
+                    key: const ValueKey('live_stop'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: c.primary,
+                      foregroundColor: c.onPrimary,
+                      minimumSize: const Size(120, 56),
+                    ),
+                    onPressed: ctl.stop,
+                    icon: const Icon(Icons.stop),
+                    label: Text(t.recordStop),
                   ),
-                  onPressed: ctl.stop,
-                  icon: const Icon(Icons.stop),
-                  label: Text(t.recordStop),
                 ),
               ],
             )

@@ -1,0 +1,129 @@
+appId: com.huluca.escreenrecorder
+name: Real user - first run, tutorial purpose, record with real taps, watch the result, edit
+tags:
+  - p1
+  - module-ux
+---
+# Acts like a person: picks "make a tutorial", records the Samsung Calculator while tapping 7, 5, 9,
+# stops, watches the result (marks must show), opens the editor and uses the batch change.
+# Needs the first-run state (scripts/qa/ux_real.ps1 prepares it). Videos are NOT deleted.
+- launchApp:
+    stopApp: true
+- runFlow:
+    when:
+      visible: "Bỏ qua"
+    commands:
+      - tapOn: "Bỏ qua"
+- assertVisible: "Bạn muốn làm gì?"
+- tapOn:
+    id: "purpose_tutorial"
+- takeScreenshot: real_1_record_screen
+- tapOn: "Bắt đầu quay"
+- runFlow:
+    when:
+      visible: "Sẵn sàng quay chưa."
+    commands:
+      - takeScreenshot: real_1b_ready_check
+      - tapOn: "Sẵn sàng quay"
+- retry:
+    maxRetries: 3
+    commands:
+      - runFlow:
+          when:
+            visible: "Bắt đầu quay"
+          commands:
+            - tapOn: "Bắt đầu quay"
+      - runFlow:
+          when:
+            visible: "Trong khi dùng ứng dụng"
+          commands:
+            - tapOn: "Trong khi dùng ứng dụng"
+      - extendedWaitUntil:
+          visible: "Bắt đầu ngay|Chia sẻ màn hình|Dừng quay"
+          timeout: 8000
+- runFlow:
+    when:
+      visible: "Bắt đầu ngay|Chia sẻ màn hình"
+    commands:
+      - tapOn: "Bắt đầu ngay|Chia sẻ màn hình"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 4000
+    optional: true
+- launchApp:
+    appId: com.sec.android.app.popupcalculator
+    stopApp: false
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    text: "7"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    text: "5"
+- waitForAnimationToEnd:
+    timeout: 2500
+- tapOn:
+    text: "9"
+- waitForAnimationToEnd:
+    timeout: 2500
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Dừng quay"
+    timeout: 15000
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Quay xong rồi"
+    timeout: 40000
+# Let the automatic edit be built and the preview come up, then play it and look.
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 6000
+    optional: true
+- takeScreenshot: real_2_result
+- tapOn:
+    id: "result_preview"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 3000
+    optional: true
+- takeScreenshot: real_3_playing_a
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 3000
+    optional: true
+- takeScreenshot: real_3_playing_b
+- tapOn: "Sửa thêm"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- takeScreenshot: real_4_editor
+- tapOn:
+    id: "tool_marker"
+- takeScreenshot: real_5_marker_tool
+- tapOn:
+    id: "marker_batch"
+- takeScreenshot: real_6_batch_open
+# Pick every mark with "Select all" in the batch section and turn them into circles.
+- tapOn:
+    id: "marker_select_all"
+- takeScreenshot: real_7_all_markers_picked
+- swipe:
+    start: 50%,92%
+    end: 50%,78%
+- tapOn:
+    id: "batch_kind_circle"
+- takeScreenshot: real_8_markers_changed
+# Back to the result screen and export: the exported video must carry the marks as they are now.
+- back
+- extendedWaitUntil:
+    visible: "Xuất ngay"
+    timeout: 10000
+- tapOn: "Xuất ngay"
+- extendedWaitUntil:
+    visible: "Đã xuất: .*"
+    timeout: 120000
+- takeScreenshot: real_9_exported

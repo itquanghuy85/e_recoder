@@ -9,6 +9,7 @@ import '../../core/native_recorder.dart';
 import '../marker/marker_spec.dart';
 import '../marker/marker_timing.dart';
 import 'auto_director.dart';
+import 'caption_models.dart';
 import 'edit_project.dart';
 import 'touch_log.dart';
 import 'captions_from_speech.dart';
@@ -202,12 +203,7 @@ class EditorController extends ChangeNotifier {
         base = AutoDirector.speedUpIdle(base, ranges);
       }
       _apply(
-        AutoDirector.fromTouches(
-          base,
-          events,
-          options,
-          stepPrefix: stepPrefix,
-        ),
+        AutoDirector.fromTouches(base, events, options, stepPrefix: stepPrefix),
       );
     } finally {
       directing = false;
@@ -260,8 +256,13 @@ class EditorController extends ChangeNotifier {
   bool multiSelect = false;
   final Set<int> multiSelected = {};
 
+  /// Marks picked while multi-select is on (the batch look change applies to these, or to every mark
+  /// when none is picked).
+  final Set<String> multiMarkerIds = {};
+
   void setMultiSelect(bool on) {
     multiSelect = on;
+    multiMarkerIds.clear();
     multiSelected
       ..clear()
       ..addAll(on ? {selectedSegment} : const <int>{});
@@ -272,6 +273,76 @@ class EditorController extends ChangeNotifier {
   List<int> get activeSegments {
     if (!multiSelect || multiSelected.isEmpty) return [selectedSegment];
     return multiSelected.toList()..sort();
+  }
+
+  /// Selects every clip of the video row (multi-select on).
+  void selectAllSegments() {
+    multiSelect = true;
+    multiMarkerIds.clear();
+    multiSelected
+      ..clear()
+      ..addAll([for (var i = 0; i < _project.segments.length; i++) i]);
+    selectedId = null;
+    notifyListeners();
+  }
+
+  /// Selects clip [i] and every clip after it.
+  void selectSegmentsFrom(int i) {
+    multiSelect = true;
+    multiMarkerIds.clear();
+    multiSelected
+      ..clear()
+      ..addAll([for (var k = i; k < _project.segments.length; k++) k]);
+    selectedSegment = i;
+    selectedId = null;
+    notifyListeners();
+  }
+
+  /// Multi-select only keeps the current clip.
+  void clearSegmentSelection() {
+    multiSelected
+      ..clear()
+      ..add(selectedSegment);
+    notifyListeners();
+  }
+
+  void toggleMarker(String id) {
+    final cur = selectedId;
+    if (cur != null && cur != id && _project.markers.any((m) => m.id == cur)) {
+      multiMarkerIds.add(cur);
+    }
+    selectedId = null;
+    if (!multiMarkerIds.remove(id)) multiMarkerIds.add(id);
+    notifyListeners();
+  }
+
+  void selectAllMarkers() {
+    multiSelect = true;
+    multiMarkerIds
+      ..clear()
+      ..addAll(_project.markers.map((m) => m.id));
+    selectedId = null;
+    notifyListeners();
+  }
+
+  void clearMarkerSelection() {
+    multiMarkerIds.clear();
+    notifyListeners();
+  }
+
+  /// One undo step: change kind / colour / thickness of the picked marks (every mark when none picked).
+  void restyleMarkers({MarkerType? type, Color? color, double? thickness}) {
+    final ids = multiMarkerIds.isEmpty ? null : Set<String>.of(multiMarkerIds);
+    _apply(
+      AutoDirector.restyleMarkers(
+        _project,
+        type: type,
+        color: color,
+        thickness: thickness,
+        ids: ids,
+      ),
+    );
+    notifyListeners();
   }
 
   void toggleSegment(int i) {
@@ -730,22 +801,9 @@ class EditorController extends ChangeNotifier {
     sttProgress = null;
     notifyListeners();
     try {
-      await native.sttStart(_project.sourceUri, lang);
-      while (true) {
-        await Future<void>.delayed(sttPoll);
-        if (_disposed) return 0;
-        final s = await native.sttStatus();
-        sttProgress = s;
-        notifyListeners();
-        if (s.finished) break;
-      }
-      final s = sttProgress!;
-      if (s.state == 'cancelled') return 0;
-      if (s.state == 'error') {
-        sttError = s.error.isEmpty ? 'error' : s.error;
-        return 0;
-      }
-      final cues = layoutCaptions(s.pieces);
+      final pieces = await _runStt(lang);
+      if (pieces == null) return 0;
+      final cues = layoutCaptions(pieces);
       if (cues.isEmpty) {
         sttError = 'no_speech';
         return 0;
@@ -760,10 +818,234 @@ class EditorController extends ChangeNotifier {
     }
   }
 
+  /// Runs the on-device recogniser over the video's sound and returns the phrases it heard (each with
+  /// its start / end), or null when it was cancelled or failed ([sttError] says why for a failure).
+  Future<List<SttPiece>?> _runStt(String lang) async {
+    await native.sttStart(_project.sourceUri, lang);
+    while (true) {
+      await Future<void>.delayed(sttPoll);
+      if (_disposed) return null;
+      final s = await native.sttStatus();
+      sttProgress = s;
+      notifyListeners();
+      if (s.finished) break;
+    }
+    final s = sttProgress!;
+    if (s.state == 'cancelled') return null;
+    if (s.state == 'error') {
+      sttError = s.error.isEmpty ? 'error' : s.error;
+      return null;
+    }
+    return s.pieces;
+  }
+
+  /// Id prefix of the caption item the automatic captions make; making them again replaces it.
+  static const autoCaptionPrefix = 'autocap';
+
+  /// Longest line (characters) that fits the frame at [style]'s size, from the renderer's own rule of
+  /// thumb (a character is about 0.55 of the size wide) and 90 % of the 360 U frame.
+  static int captionLineLength(CaptionStyle style) =>
+      (324 / (style.sizeU * 0.55)).floor().clamp(12, 40);
+
+  /// Automatic captions as caption lines: listens to the video, lays the phrases out as lines that
+  /// fit the frame, gives each line its words with timing (shared by length, as the recogniser only
+  /// times whole phrases), and shows them with [template]'s look (or the standard look), revealed
+  /// word by word as the speech goes. One undo step; replaces the captions made this way before.
+  /// Returns how many lines were made (0 when cancelled or nothing was heard; see [sttError]).
+  Future<int> generateCaptionCues(String lang, {CaptionStyle? style}) async {
+    if (sttBusy) return 0;
+    sttBusy = true;
+    sttError = null;
+    sttProgress = null;
+    notifyListeners();
+    try {
+      final pieces = await _runStt(lang);
+      if (pieces == null) return 0;
+      final look = style ?? CaptionStyle.standard;
+      final dur = _project.durationMs;
+      final lines = layoutCaptions(
+        pieces,
+        maxLine: captionLineLength(look),
+        balance: true,
+      );
+      final cues = <CaptionCue>[];
+      for (final l in lines) {
+        final start = l.startMs.clamp(0, dur);
+        final end = l.endMs.clamp(0, dur);
+        if (end - start < 100 || l.text.trim().isEmpty) continue;
+        cues.add(
+          CaptionCue(
+            text: l.text.trim(),
+            startMs: start,
+            endMs: end,
+            words: CaptionCue.splitByLength(l.text, startMs: start, endMs: end),
+          ),
+        );
+      }
+      if (cues.isEmpty) {
+        sttError = 'no_speech';
+        return 0;
+      }
+      final item = TextItem(
+        id: '${autoCaptionPrefix}_${DateTime.now().microsecondsSinceEpoch}',
+        text: '',
+        startMs: 0,
+        endMs: math.max(1, dur),
+        x: look.x,
+        y: look.y,
+        cues: cues,
+        captionStyle: look,
+      );
+      final kept = _project.texts
+          .where((t) => !t.id.startsWith('${autoCaptionPrefix}_'))
+          .toList();
+      _apply(_project.copyWith(texts: kept).upsertText(item));
+      selectedId = item.id;
+      return cues.length;
+    } catch (e) {
+      sttError = 'error';
+      return 0;
+    } finally {
+      sttBusy = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
   Future<void> cancelCaptions() => native.sttCancel();
 
   void updateText(TextItem t, {bool record = true}) =>
       _apply(_project.upsertText(t), record: record);
+
+  // ---- captions (progressive subtitles) -------------------------------------------------------
+
+  /// Sets [cues] on [item] without the `Object?` cast at every call site. `null` turns captions off.
+  TextItem withCues(TextItem item, List<CaptionCue>? cues) =>
+      item.copyWith(cues: cues);
+
+  /// Sets [style] on [item] without the `Object?` cast at every call site. `null` clears it.
+  TextItem withCaptionStyle(TextItem item, CaptionStyle? style) =>
+      item.copyWith(captionStyle: style);
+
+  /// The selected text item, if one is selected.
+  TextItem? get selectedTextItem =>
+      _project.texts.where((t) => t.id == selectedId).firstOrNull;
+
+  /// The text item captions are shown / edited on: the selected text, else the first one that
+  /// already carries cues.
+  TextItem? get captionItem =>
+      selectedTextItem ??
+      _project.texts.where((t) => t.cues != null).firstOrNull;
+
+  TextItem _newCaptionItem() => TextItem(
+    id: _newId('cap'),
+    text: '',
+    startMs: 0,
+    endMs: math.max(1, _project.durationMs),
+    y: 0.85,
+    cues: const [],
+    captionStyle: CaptionStyle.standard,
+  );
+
+  static int _byStart(CaptionCue a, CaptionCue b) =>
+      a.startMs.compareTo(b.startMs);
+
+  /// Adds a cue at the playhead (3 s by default) to [on], or to the current caption item.
+  /// Creates a caption item when there is none.
+  void addCue({CaptionCue? cue, TextItem? on}) {
+    final item = on ?? captionItem ?? _newCaptionItem();
+    final dur = _project.durationMs;
+    final start = sourceMs.clamp(0, dur <= 0 ? 0 : dur - 1);
+    final from = cue?.startMs ?? start;
+    final to = cue?.endMs ?? math.min(dur, start + 3000);
+    final added =
+        cue ??
+        CaptionCue(
+          text: 'Câu mới',
+          startMs: from,
+          endMs: to <= from ? from + 1 : to,
+        );
+    selectedId = item.id;
+    updateText(withCues(item, [...?item.cues, added]..sort(_byStart)));
+  }
+
+  /// Adds the lines of a subtitle file (SRT) to the caption item as caption lines, creating the item
+  /// when there is none. Lines shorter than 100 ms are dropped, times are clamped to the video.
+  /// Returns how many lines were added. Word timings are not in an SRT: the words of a line share its
+  /// time equally when it is revealed.
+  int importCaptionCues(List<SubtitleCue> lines, {TextItem? on}) {
+    final dur = _project.durationMs;
+    final added = <CaptionCue>[];
+    for (final l in lines) {
+      final start = l.startMs.clamp(0, dur);
+      final end = l.endMs.clamp(0, dur);
+      if (end - start < 100 || l.text.trim().isEmpty) continue;
+      added.add(CaptionCue(text: l.text.trim(), startMs: start, endMs: end));
+    }
+    if (added.isEmpty) return 0;
+    final item = on ?? captionItem ?? _newCaptionItem();
+    selectedId = item.id;
+    updateText(withCues(item, [...?item.cues, ...added]..sort(_byStart)));
+    return added.length;
+  }
+
+  /// Replaces cue [index] of [on] (or the current caption item).
+  void updateCue(int index, CaptionCue cue, {TextItem? on}) {
+    final item = on ?? captionItem;
+    final cues = item?.cues;
+    if (item == null || cues == null || index < 0 || index >= cues.length) {
+      return;
+    }
+    final next = [...cues]..[index] = cue;
+    updateText(withCues(item, next..sort(_byStart)));
+  }
+
+  /// Removes cue [index] of [on] (or the current caption item).
+  void removeCue(int index, {TextItem? on}) {
+    final item = on ?? captionItem;
+    final cues = item?.cues;
+    if (item == null || cues == null || index < 0 || index >= cues.length) {
+      return;
+    }
+    updateText(withCues(item, [...cues]..removeAt(index)));
+  }
+
+  /// Replaces the cue list of the caption item. Empty keeps captions on (nothing shows);
+  /// `null` turns them off (Phase 1 look). Used by the caption panel.
+  void setCues(List<CaptionCue>? cues, {TextItem? on}) {
+    final item = on ?? captionItem ?? _newCaptionItem();
+    selectedId = item.id;
+    updateText(withCues(item, cues));
+  }
+
+  /// Turns captions off. A caption item made only for subtitles (no text of its own) goes away, so
+  /// turning captions off leaves nothing behind; a text item that also carries cues keeps its text.
+  void turnOffCaptions({TextItem? on}) {
+    final item = on ?? captionItem;
+    if (item == null) return;
+    if (item.text.isEmpty) {
+      if (selectedId == item.id) selectedId = null;
+      _apply(_project.removeOverlay(item.id));
+    } else {
+      setCues(null, on: item);
+    }
+  }
+
+  /// Style of the caption text (font, colour, position, reveal mode).
+  ///
+  /// The item's own `x` / `y` are what the preview and the export place the caption by (so dragging it
+  /// on the stage works); a style with a position moves the item there. [record] false is for the
+  /// frames of a slider drag (see [beginGesture] / [flush]).
+  void setCaptionStyle(
+    CaptionStyle? style, {
+    TextItem? on,
+    bool record = true,
+  }) {
+    final item = on ?? captionItem;
+    if (item == null) return;
+    var next = withCaptionStyle(item, style);
+    if (style != null) next = next.copyWith(x: style.x, y: style.y);
+    updateText(next, record: record);
+  }
 
   void addCover([CoverStyle style = CoverStyle.solid]) {
     final s = sourceMs;
@@ -1134,6 +1416,50 @@ class EditorController extends ChangeNotifier {
       final r = await native.renderText(t.toNative(), o.width.round());
       return RenderedImage(r.png, r.w.toDouble(), r.h.toDouble());
     });
+  }
+
+  // Small LRU: a caption changes picture only when the active cue changes, so a few entries are plenty.
+  static const _cueCacheMax = 12;
+
+  /// A reveal is redrawn at most every this many ms of playhead time.
+  static const cueRevealStepMs = 50;
+  final Map<String, Future<RenderedImage>> _cueImages = {};
+
+  /// The picture of the cue showing at [sourceMs] for [t], or null when no cue is active.
+  Future<RenderedImage?> cueImage(TextItem t, int sourceMs) async {
+    final cues = t.cues;
+    if (cues == null) return null;
+    final i = cues.indexWhere((e) => e.isActiveAt(sourceMs));
+    if (i < 0) return null;
+    final cue = cues[i];
+    final style = t.captionStyle;
+    final w = outFrameSize.width.round();
+    // Without a reveal the picture is the same whatever the time, so it is not part of the key.
+    final reveals =
+        (style?.revealMode ?? const CaptionStyle().revealMode) !=
+        RevealMode.none;
+    final step = reveals ? sourceMs ~/ cueRevealStepMs * cueRevealStepMs : null;
+    final key = '${style?.toJson()}|${cue.toJson()}|$w|$step';
+    var f = _cueImages.remove(key);
+    f ??= () async {
+      final r = await native.renderCue(
+        cue.toJson(),
+        style?.toJson(),
+        w,
+        timeMs: step,
+      );
+      return RenderedImage(r.png, r.w.toDouble(), r.h.toDouble());
+    }();
+    _cueImages[key] = f;
+    while (_cueImages.length > _cueCacheMax) {
+      _cueImages.remove(_cueImages.keys.first);
+    }
+    try {
+      return await f;
+    } catch (_) {
+      _cueImages.remove(key);
+      return null;
+    }
   }
 
   Future<RenderedImage> coverImage(CoverItem c) {

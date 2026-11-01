@@ -1,5 +1,4 @@
 import 'package:e_screen_recorder/core/native_recorder.dart';
-import 'package:e_screen_recorder/features/marker/marker_settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -64,20 +63,21 @@ void main() {
     expect(find.textContaining('24,0 MB'), findsWidgets);
   });
 
-  testWidgets('profile card opens the capture settings sheet', (tester) async {
+  testWidgets('frame rate is picked under More options', (tester) async {
     _phone(tester);
-    final (:app, fake: _) = await buildTestApp();
+    final (:app, fake: _) = await buildTestApp(prefs: {'purpose': 2});
     await tester.pumpWidget(app);
     await tester.pumpAndSettle();
-    expect(find.textContaining('1080p · 30 fps · Cân bằng'), findsOneWidget);
-    await tester.tap(find.byKey(const ValueKey('profile_card')));
+    await tester.ensureVisible(find.text('Thêm tuỳ chọn'));
+    await tester.tap(find.text('Thêm tuỳ chọn'));
     await tester.pumpAndSettle();
-    expect(find.text('Cấu hình quay'), findsOneWidget);
-    await tester.tap(find.text('60 fps'));
+    await tester.ensureVisible(find.byKey(const ValueKey('more_fps_60')));
+    await tester.tap(find.byKey(const ValueKey('more_fps_60')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Đóng'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('1080p · 60 fps · Cân bằng'), findsOneWidget);
+    final chip = tester.widget<ChoiceChip>(
+      find.byKey(const ValueKey('more_fps_60')),
+    );
+    expect(chip.selected, isTrue);
   });
 
   testWidgets('recording state shows timer, pause and stop', (tester) async {
@@ -103,68 +103,36 @@ void main() {
     expect(fake.calls, containsAllInOrder(['pause', 'stop']));
   });
 
-  testWidgets('marker settings: pick a tool, preview re-renders natively', (
+  testWidgets('tutorial: mark time and zoom level are sliders on the main options', (
     tester,
   ) async {
     _phone(tester);
-    final (:app, :fake) = await buildTestApp();
+    final (:app, fake: _) = await buildTestApp(
+      prefs: {'purpose': 0, 'marker.mode': 1, 'marker.touchSourceV2': 3},
+    );
     await tester.pumpWidget(app);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Cài đặt'));
+    final hold = find.byKey(const ValueKey('quick_hold'));
+    await tester.ensureVisible(hold);
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('settings_markers')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    final scroller = find
-        .descendant(
-          of: find.byType(MarkerSettingsScreen),
-          matching: find.byType(Scrollable),
-        )
-        .first;
-    expect(find.text('Xem thử'), findsOneWidget);
-    expect(fake.calls, contains('renderMarker:finger'));
-    await tester.scrollUntilVisible(
-      find.text('Mũi tên'),
-      200,
-      scrollable: scroller,
-    );
-    await tester.tap(find.text('Mũi tên'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(fake.calls, contains('renderMarker:arrow'));
-
-    // The effect time is a seconds slider from 0,5 s to 10 s; it shows its value and is kept.
-    final holdSlider = find.descendant(
-      of: find.byKey(const ValueKey('marker_hold_slider')),
-      matching: find.byType(Slider),
-    );
-    await tester.scrollUntilVisible(holdSlider, 200, scrollable: scroller);
-    expect(find.text('2,5 giây'), findsWidgets);
-    expect(find.textContaining('0,5 s'), findsOneWidget);
-    expect(find.textContaining('10 s'), findsOneWidget);
-    await tester.drag(holdSlider, const Offset(2000, 0)); // far right = longest
-    await tester.pump();
-    expect(find.text('10 giây'), findsWidgets);
-    await tester.drag(
-      holdSlider,
-      const Offset(-4000, 0),
-    ); // far left = shortest
-    await tester.pump();
-    expect(find.text('0,5 giây'), findsWidgets);
-  });
-
-  testWidgets('saved event shows a snackbar with a View action', (
-    tester,
-  ) async {
-    final (:app, :fake) = await buildTestApp(media: [_entry('ESR_9.mp4')]);
-    await tester.pumpWidget(app);
+    expect(find.text('2,5 s'), findsOneWidget);
+    await tester.drag(hold, const Offset(2000, 0)); // far right = longest
     await tester.pumpAndSettle();
-    fake.controller.add(
-      RecSavedEvent('content://media/ESR_9.mp4', 'ESR_9.mp4', 83000, 1000),
-    );
-    await tester.pump();
-    await tester.pump();
-    expect(find.text('Đã lưu ESR_9.mp4'), findsOneWidget);
-    expect(find.text('Xem'), findsOneWidget);
+    expect(find.text('10,0 s'), findsOneWidget);
+    await tester.drag(hold, const Offset(-4000, 0)); // far left = shortest
+    await tester.pumpAndSettle();
+    expect(find.text('0,5 s'), findsOneWidget);
+
+    // zoom level: 170 % by default, up to 300 %
+    final zoom = find.byKey(const ValueKey('quick_zoom_scale'));
+    await tester.ensureVisible(zoom);
+    await tester.pumpAndSettle();
+    expect(find.text('170%'), findsOneWidget);
+    await tester.drag(zoom, const Offset(2000, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('300%'), findsOneWidget);
+    await tester.drag(zoom, const Offset(-4000, 0));
+    await tester.pumpAndSettle();
+    expect(find.text('120%'), findsOneWidget);
   });
 }

@@ -90,3 +90,58 @@ Máy thử có thể bị 3uTools (PC) kéo ứng dụng khác lên trước: `a
 - `e15_touch_settings`: chọn "Chấm trắng", hộp hướng dẫn 3 bước, nút mở "Thông tin điện thoại" và quay lại app — PASS.
 - `e16_build_from_touches`: quay sạch trên Cài đặt, mở editor, "Dựng từ lần chạm" (đổi khung, không có vị trí) → "3 lần chạm", chú thích "Bước 1" + đoạn dừng 0,8 s, hoàn tác về 1 đoạn — PASS.
 - Chưa kiểm: chế độ chấm trắng thật. `screenrecord` của adb trên S25 không thấy chấm "Hiển thị lần chạm" khi tiêm chạm bằng `adb input`; cần thử với ghi hình của app và chạm thật.
+
+## Phụ đề tự động (Auto Caption) — S25 Ultra, bản debug
+Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
+- Flow: `maestro/caption_phase2_smoke`, `caption_phase3_reveal`, `caption_phase4_style`, `caption_phase5_templates`, `caption_rollback_effects` (preview), `caption_phase7_full` (tạo, mẫu, kéo, lưu, mở lại, xuất), `caption_phase7_speed` (xuất khi tăng tốc 2x), `caption_rollback_export` (chữ thường vẫn xuất như cũ).
+- Chạy Maestro trên máy này: lệnh `maestro` trong PATH (npm) không chạy; dùng `D:\JOB\_tools\maestro\x\maestro\bin` + `JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8` (xem `scripts/run_flow.ps1`), `--test-output-dir test-results/<tên>` để lấy ảnh. Toạ độ `point:` phải là số nguyên %.
+- Kiểm tra video xuất: `scripts\qa\verify_caption_export.ps1 [-At "0.6,2.2"] [-Record]` kéo bản xuất mới nhất, in độ dài video/âm thanh (đồng bộ), tạo ảnh lưới khung hình (`sheet.png`). Video thử có timecode in sẵn nên mỗi khung cho thấy thời gian nguồn.
+- Dọn dữ liệu thử: `scripts\qa\qa_data.ps1 -Action list|clean [-Apply]` (mặc định chạy thử). Chỉ xoá file có trong `test-results/qa_created_files.txt`; xem quy tắc an toàn ở đầu script.
+- Thư viện chỉ liệt kê video do chính app tạo (quyền truy cập MediaStore), nên video thử phải là bản xuất của app (`maestro/qa_make_test_source.yaml`), không thể chép tay bằng adb.
+
+### Phụ đề tự động và nhập SRT (S25 Ultra)
+- `maestro/qa_stt_probe.yaml -e SAMPLE=<file>`: đo STT trên video mẫu trong Download (kết quả đọc từ dự án bằng `adb run-as`, chỉ bản debug). Mẫu và văn bản gốc: `test-results/stt/` (tạo lại bằng TTS, xem `docs/CAPTION_PLAN.md` Phần 12).
+- `maestro/caption_auto_flow.yaml`: chọn video mẫu qua hộp chọn tệp, "Tạo phụ đề tự động", panel mở tab Mẫu, phát, xuất. Kiểm video: `scripts\qa\verify_caption_export.ps1 -At "0.8,2,..." -Record`.
+- `maestro/caption_srt_import.yaml`: cần `test.srt` (3 dòng) trong Download; chọn qua hộp chọn tệp thật.
+- Dọn video test chọn từ Download: `scripts\qa\qa_data.ps1 -Action clean -Apply -PickedProject "<đuôi uri dự án>"`.
+- Không dùng `clearState` trong flow: nó xoá cả cơ sở dữ liệu dự án của app.
+
+## Nghiệm thu dựng tự động dùng đúng dấu đã chọn (2026-10-31)
+- `maestro/clean_auto_touches.yaml`: quay sạch không lắc, bấm 7/5/9 của máy tính Samsung, chọn dấu tự động "Vòng tròn" (`auto_marker_circle`), mở trình chỉnh sửa rồi tua mỗi 3 giây và chụp 9 ảnh (`test-results/clean_auto_N`). Chạy với `--test-output-dir <thư mục>` thì ảnh mới được lưu; không có cờ này ảnh chụp không ghi ra file.
+- Kết quả trên S25 Ultra: vòng tròn nằm quanh phím 5 và 9 kèm phóng to; thử `auto_marker_arrow` thì mũi tên chỉ vào phím 9. Vòng lệch nhẹ sang phải so với tâm phím (chỗ bấm tìm từ hình, xem CHANGELOG). Bước cuối là dấu ở nút "Dừng quay" (đã ghi ở hạn chế).
+- `settings_layout` PASS, Android `testDebugUnitTest` 92/92, Flutter 347/347.
+- Lưu ý: nếu lần chạy trước kẹt ở màn phát video, `am force-stop com.huluca.escreenrecorder` trước khi chạy flow tiếp theo.
+
+## Nghiệm thu UX đơn giản (2026-10-31)
+- `scripts/qa/ux_flow.ps1` chạy `maestro/ux_simple_flow.yaml`: cần trạng thái "lần đầu mở app", nên script sao lưu file cài đặt của app (`adb run-as`, bản debug), bỏ riêng hai khoá `onboarded` và `purpose`, chạy flow, kiểm file `ESR_edit_*` đã xuất, rồi trả file cài đặt về như cũ. Ảnh từng màn nằm trong `test-results/ux_flow/` (`ux_1_purpose` ... `ux_6_back_to_record`). Video thử xoá bằng `qa_data.ps1` (ghi tên vào danh sách rồi `clean -Apply`).
+- Flow: chọn mục đích → nút Quay hướng dẫn tự động → quay ~5 s → Dừng → màn kết quả → Sửa thêm → back → Xuất ngay → "Đã xuất: ESR_edit_..." → Quay lại.
+- Khi quay, app tự thu xuống nền, flow phải `launchApp` lại (stopApp false) trước khi bấm Dừng. Maestro khớp chữ theo cả nhãn gộp của thẻ, nên chọn thẻ mục đích bằng id `purpose_tutorial|game|plain` và mục gập bằng id `record_advanced`.
+- Kết quả trên S25 Ultra: flow đạt, file xuất tồn tại; `clean_auto_touches` và `settings_layout` (đường cũ) vẫn đạt; Flutter 368 đạt.
+- Mục đích khác: `ux_flow.ps1 -Purpose game` và `-Purpose plain` (nút "Quay game" / "Quay video") đạt trên S25, có file xuất.
+- Màn "Sẵn sàng quay chưa?": `scripts/qa/ux_ready.ps1` (`maestro/ux_ready_a|b.yaml`) thu hồi quyền hiển thị trên ứng dụng khác bằng `appops`, kiểm màn liệt kê quyền và không bắt đầu quay (A), cấp lại, về màn hình chính rồi mở lại: app thấy quyền đã bật, "Sẵn sàng quay" mở và quay được (B). Đạt trên S25; giá trị app-op và file cài đặt của máy được trả về như cũ. Maestro không đọc được trạng thái khóa của nút Flutter, nên nút khóa ở A xem qua ảnh chụp.
+- Lưu ý khi sửa file cài đặt bằng `run-as`: Flutter lưu số nguyên dạng `<long>`, ghi `<int>` làm app đọc lỗi và hiện màn trắng.
+
+## Trình chỉnh sửa Cơ bản / Nâng cao
+- `scripts/qa/ux_modes.ps1` chạy `maestro/ux_editor_modes.yaml`: xoá riêng khoá `editor.advanced` rồi kiểm mặc định Cơ bản, chuyển hai chiều, chữ/dấu/zoom còn nguyên, xuất từ tab Xuất, nhớ chế độ sau khi mở lại app. Cần một video quay có bản dựng tự động (chạy `ux_real.ps1` trước). Video thử được giữ.
+- Editor mở ở Cơ bản: flow cần công cụ nâng cao gọi `runFlow: helpers/editor_advanced.yaml` trước khi bấm `tool_cover`, `tool_zoom`, `tool_transition`...
+- `scripts/qa/marks_of_latest.py <projects.db>` in các dấu của dự án lưu gần nhất (loại, số bước, vị trí); lấy `projects.db` bằng `adb exec-out run-as com.huluca.escreenrecorder cat databases/projects.db`.
+- Mic bị từ chối: `scripts/qa/ux_mic.ps1`. Làm thử như người dùng: `scripts/qa/ux_real.ps1`.
+
+## Nghiệm thu 31/10/2026 (S25)
+- 18 flow editor: `scripts/qa/run_flows18.ps1 [-Flows a,b] [-OutDir ...]` (app nguội từng flow, dọn trình chọn tệp/Cài đặt giữa các flow, `OTHER_APP` = máy tính Samsung). Chạy ở "đường cũ": bỏ khoá `purpose` trước (các flow viết cho màn Quay cũ). Kết quả: `results.csv`.
+- App bên thứ ba: `scripts/qa/ux_third_party.ps1` (Google Calculator cài từ Play; in các dấu của dự án).
+- Xuất video dài: `scripts/qa/ux_long.ps1` (nền + mở lại), `scripts/qa/ux_long_kill.ps1` (giết hẳn tiến trình giữa lúc xuất). Tệp thử `QA_long_5min.mp4` trong Download, mở bằng "Chọn video".
+- Giết app giữa lúc dựng bản tự động: `scripts/qa/ux_draft_kill.ps1` (cần chế độ quay sạch, `marker.mode = 1`).
+- Lưu ý: Maestro `stopApp` không giết dịch vụ xuất nền; muốn giết hẳn dùng `adb shell am force-stop`. Maestro tự cấp mọi quyền khi `launchApp`.
+- Báo cáo: `docs/NGHIEM_THU_2026-10-31.md`.
+- Lượt QA cuối: giết app trong lúc quay `scripts/qa/ux_kill_recording.ps1`. `helpers/panel_find.yaml` (env `ID`) vuốt trong bảng công cụ đến khi thấy điều khiển: bảng mở ở đầu mỗi khi đổi công cụ. `run_flows18.ps1` tự đánh thức màn hình, tự đặt/khôi phục tiếng Anh cho store_en và chạy store_video_a trước store_video_b. Editor mở từ màn phát: lùi một lần về màn phát, lùi tiếp về màn chính.
+- Thời gian hiện dấu (quay sạch): `bash scripts/qa/ux_mark_timing.sh` (máy tính Samsung). Script tự đặt `marker.mode = 1` rồi trả giá trị cũ, đọc dự án bằng `scripts/qa/marks_timing.py` (kiểm "never two full marks") và ghép khung hình quanh dấu cuối vào `test-results/ux_mark_timing/last_mark_frames.png`.
+- Từ 01/11/2026 (cài đặt theo chế độ quay): không còn "đường cũ".
+  - Sau khi dừng quay, app luôn mở màn kết quả. Các flow dùng `helpers/after_stop.yaml` (chờ rồi bấm "Quay lại").
+  - Bấm tab Quay bằng `'Quay\sTab.*'` (nháy đơn): "Quay.*" khớp nhầm nút "Quay thường".
+  - Mục "Thêm tuỳ chọn" tìm theo id `record_more`. Trạng thái "đang chọn" của chip không đọc được theo id; kiểm bằng ảnh hoặc bằng cài đặt đã lưu.
+  - Bắt đầu quay thì app tự lùi xuống nền: muốn bấm "Dừng quay" trong app phải `launchApp` lại.
+  - Nghiệm thu chế độ: `bash scripts/qa/ux_modes_record.sh` (tự sao lưu và trả cài đặt, đo hai video bằng ffprobe).
+  - `run_flows18.ps1` không cần bỏ khoá `purpose` nữa.
+- Đợt 2 (01/11/2026): thanh thời gian dấu nay là `quick_hold` ở lựa chọn chính (không còn `more_hold`); mức phóng là `quick_zoom_scale`. Nút `record_start` ghim ở đáy màn Quay (phần trên cuộn). Nghiệm thu lại trên S25 khi kết nối: `bash scripts/qa/ux_mark_timing.sh` (kiểm cả ảnh dấu sau khi đổi màn), `bash scripts/qa/ux_modes_record.sh`, rồi `run_flows18.ps1`.
+

@@ -1,0 +1,24 @@
+appId: com.huluca.escreenrecorder
+name: Helper - open the newest raw recording in the editor
+tags:
+  - helper
+---
+# From a fresh launch: Library -> the newest raw recording (ESR_2026..., not an export) -> its editor.
+- launchApp:
+    stopApp: true
+- runFlow:
+    when:
+      visible: "Bỏ qua"
+    commands:
+      - tapOn: "Bỏ qua"
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    text: "ESR_2026.*"
+    index: 0
+- tapOn:
+    id: "player_edit"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000

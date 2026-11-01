@@ -54,6 +54,7 @@ tags:
 - hideKeyboard
 - takeScreenshot: artifacts/g3_text
 # Cover and zoom
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_cover"
 - tapOn:

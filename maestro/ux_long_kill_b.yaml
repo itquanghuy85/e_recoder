@@ -1,0 +1,41 @@
+appId: com.huluca.escreenrecorder
+name: Long video - after the app was killed while exporting, the edit is still there, a new export works
+tags:
+  - p1
+  - module-editor
+---
+# Part B of the kill test: open the same video again; the text is still in the project; export again.
+- launchApp:
+    stopApp: false
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    id: "library_pick_video"
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      notVisible: "QA_long_5min.mp4"
+    commands:
+      - tapOn: "Hiển thị gốc"
+      - tapOn: "Tải xuống"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- tapOn: "QA_long_5min.mp4"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- assertVisible: "Dòng thời gian: .* [1-9][0-9]* chữ.*"
+- takeScreenshot: kill_b_reopened
+- tapOn:
+    id: "tool_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 600000
+- takeScreenshot: kill_b_exported

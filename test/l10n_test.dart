@@ -38,6 +38,7 @@ void main() {
     expect(find.text('Start recording'), findsOneWidget);
     expect(find.text('Library'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
-    expect(find.textContaining('1080p · 30 fps · Balanced'), findsOneWidget);
+    expect(find.text('Tutorial'), findsOneWidget);
+    expect(find.text('More options'), findsOneWidget);
   });
 }

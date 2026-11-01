@@ -1,0 +1,94 @@
+appId: com.huluca.escreenrecorder
+name: Caption phase 5 - twelve templates, one tap applies a look to the preview
+tags:
+  - p1
+  - module-editor
+---
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_edit_20261030_121019.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "caption_panel"
+- runFlow:
+    when:
+      visible:
+        id: "caption_off"
+    commands:
+      - tapOn:
+          id: "caption_off"
+- tapOn:
+    id: "caption_add"
+- tapOn:
+    id: "cue_text_0"
+- eraseText: 40
+- inputText: "Mot hai ba bon"
+- tapOn:
+    id: "cue_end_0"
+- eraseText: 10
+- inputText: "6000"
+- tapOn:
+    id: "cue_text_0"
+- hideKeyboard
+
+# All twelve cards, drawn by the native renderer.
+- tapOn:
+    id: "cap_tab_templates"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: artifacts/phase5_grid_1
+- swipe:
+    start: 50%, 80%
+    end: 50%, 35%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase5_grid_2
+- swipe:
+    start: 50%, 80%
+    end: 50%, 35%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase5_grid_3
+
+# One tap: karaoke gold, then look at the stage.
+- scrollUntilVisible:
+    element:
+      id: "tpl_karaoke-gold"
+    direction: UP
+    timeout: 15000
+- tapOn:
+    id: "tpl_karaoke-gold"
+- back
+- tapOn:
+    point: 50%, 14%
+- swipe:
+    start: 62%, 46%
+    end: 29%, 46%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase5_applied_karaoke_gold
+
+# Another one: the pastel pill. The style tab shows it is no longer a template once edited.
+- tapOn:
+    id: "caption_panel"
+- tapOn:
+    id: "cap_tab_templates"
+- scrollUntilVisible:
+    element:
+      id: "tpl_pastel"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "tpl_pastel"
+- back
+- tapOn:
+    point: 50%, 14%
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: artifacts/phase5_applied_pastel
+
+- runFlow:
+    file: helpers/caption_cleanup.yaml

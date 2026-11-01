@@ -1,0 +1,51 @@
+appId: com.huluca.escreenrecorder
+name: Caption rollback export - a plain glow text (no cues) is still exported as before
+tags:
+  - p1
+  - module-editor
+---
+# Checked afterwards with: scripts/qa/verify_caption_export.ps1 -At "1,2" -Record
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_edit_20261030_121019.*"
+- runFlow: helpers/ensure_tools_open.yaml
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "add_text"
+- repeat:
+    times: 3
+    commands:
+      - swipe:
+          start: 15%, 92%
+          end: 90%, 92%
+- repeat:
+    while:
+      notVisible:
+        id: "text_preset_glow"
+    commands:
+      - swipe:
+          start: 85%, 92%
+          end: 35%, 92%
+- tapOn:
+    id: "text_preset_glow"
+- tapOn:
+    point: 50%, 12%
+- tapOn:
+    id: "editor_export"
+- tapOn:
+    id: "quality_p720"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 300000
+# Leave the project as it was: delete the text.
+- back
+- tapOn:
+    point: 50%, 25%
+- tapOn:
+    id: "overlay_delete"
+- takeScreenshot: artifacts/rollback_export_cleaned

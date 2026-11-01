@@ -23,10 +23,10 @@ tags:
       - tapOn:
           id: "onb_skip"
 - extendedWaitUntil:
-    visible: "Quay.*"
+    visible: 'Quay\sTab.*'
     timeout: 40000
 - tapOn:
-    text: "Quay.*"
+    text: 'Quay\sTab.*'
 # A previous run that failed mid-way can leave a recording running: stop it first.
 - runFlow:
     when:
@@ -41,20 +41,23 @@ tags:
           visible: "Bắt đầu quay"
           timeout: 20000
 - extendedWaitUntil:
-    visible:
-      id: "profile_card"
+    visible: "Bắt đầu quay"
     timeout: 30000
+# Every recording mode back to its first settings (Settings > Reset the recording modes).
 - tapOn:
-    id: "profile_card"
-- tapOn:
-    id: "rec_reset"
-# On short screens the close button sits below the fold.
+    text: "Cài đặt.*"
 - scrollUntilVisible:
-    element: "Đóng"
+    element:
+      id: "settings_reset_modes"
     direction: DOWN
     timeout: 15000
-- tapOn: "Đóng"
-# Marker mode is persisted too: always start from the small dot in the bottom-left corner.
+- tapOn:
+    id: "settings_reset_modes"
+- tapOn:
+    id: "reset_modes_ok"
+- tapOn:
+    text: 'Quay\sTab.*'
+# Marker mode is persisted too: always start from the small dot (tutorial, marks by hand).
 - runFlow:
     file: set_mark_mode.yaml
     env:

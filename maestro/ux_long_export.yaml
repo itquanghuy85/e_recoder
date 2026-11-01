@@ -1,0 +1,113 @@
+appId: com.huluca.escreenrecorder
+name: Long video export survives the app going to the background; a killed export loses nothing
+tags:
+  - p1
+  - module-editor
+---
+# Opens QA_long_5min.mp4 (a 5-minute test pattern, nothing personal) from Download with "pick a video";
+# scripts/qa/ux_long.ps1 puts it there and checks the files and the cache around this flow. Exports at 480p to keep it short.
+- launchApp:
+    stopApp: true
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    id: "library_pick_video"
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      notVisible: "QA_long_5min.mp4"
+    commands:
+      - tapOn: "Hiển thị gốc"
+      - tapOn: "Tải xuống"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- tapOn: "QA_long_5min.mp4"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+# A change to keep: one text.
+- tapOn:
+    id: "tool_text"
+- tapOn:
+    id: "add_text"
+- assertVisible: "Dòng thời gian: .* [1-9][0-9]* chữ.*"
+# 1. Export, go to the background for 15 s, come back: it must go on and finish.
+- tapOn:
+    id: "tool_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_progress"
+    timeout: 20000
+- pressKey: Home
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 15000
+    optional: true
+- launchApp:
+    stopApp: false
+- takeScreenshot: long_1_back_from_background
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 600000
+- takeScreenshot: long_2_export_done
+# The sheet keeps the last result (so an export finished in the background can still be seen): close it.
+- tapOn: "Đóng"
+# 2. Export again and kill the app half way.
+- tapOn:
+    id: "tool_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_progress"
+    timeout: 20000
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_STILL_PAGE"
+    timeout: 8000
+    optional: true
+- stopApp
+# 3. Open again: the project still has its text.
+- launchApp:
+    stopApp: false
+- tapOn:
+    text: "Thư viện.*"
+- tapOn:
+    id: "library_pick_video"
+- waitForAnimationToEnd:
+    timeout: 3000
+- runFlow:
+    when:
+      notVisible: "QA_long_5min.mp4"
+    commands:
+      - tapOn: "Hiển thị gốc"
+      - tapOn: "Tải xuống"
+      - waitForAnimationToEnd:
+          timeout: 3000
+- tapOn: "QA_long_5min.mp4"
+- extendedWaitUntil:
+    visible:
+      id: "editor_play"
+    timeout: 30000
+- assertVisible: "Dòng thời gian: .* [1-9][0-9]* chữ.*"
+- takeScreenshot: long_3_reopened
+# 4. Export once more: it must work after the killed one (and clears what the killed one left).
+- tapOn:
+    id: "tool_export"
+- tapOn:
+    id: "quality_p480"
+- tapOn:
+    id: "export_start"
+- extendedWaitUntil:
+    visible:
+      id: "export_view"
+    timeout: 600000
+- takeScreenshot: long_4_export_after_kill

@@ -1,0 +1,17 @@
+appId: com.huluca.escreenrecorder
+name: Helper - after Stop, wait until the recording is saved and go back to the recorder
+tags:
+  - helper
+---
+# After a recording the app shows what came out (Export now / Edit more / Record again). The flows go on
+# from the recorder's tabs: wait for that screen (or the old "Saved" line) and go back.
+- extendedWaitUntil:
+    visible: "Đã lưu ESR_.*|Quay xong rồi"
+    timeout: 40000
+- runFlow:
+    when:
+      visible:
+        id: "result_back"
+    commands:
+      - tapOn:
+          id: "result_back"

@@ -89,6 +89,176 @@ object OverlayRenderers {
         return Rendered(bmp, w, h)
     }
 
+    /**
+     * One caption cue rendered at rest (no per-word reveal yet), drawn with [style] only.
+     *
+     * Like [renderText], the bitmap is anchored at its centre and [Rendered.wPx]/[Rendered.hPx] tell
+     * the caller how big it is, so this function does not position anything: the caller places the
+     * bitmap (Dart preview and the export both already do this for text). [CaptionStyle.x] /
+     * [CaptionStyle.y] are therefore ignored here, and no `frameH` is needed.
+     *
+     * [frameW] is used only to convert U units to pixels and to wrap lines. A null [style] falls back
+     * to [CaptionStyle] defaults. Text effects use the style's own colour/width/blur/radius; the
+     * `drawFx` presets are for [TextClip.fx] only and are not used here.
+     *
+     * [timeMs] is the playhead in source milliseconds. With it, [CaptionStyle.revealMode] decides how
+     * much of the cue is drawn (word by word, character by character, karaoke fill). The bitmap keeps
+     * the size of the whole cue at every time, so the caption does not jump as words appear. Null (or
+     * [RevealMode.none]) draws the whole cue.
+     */
+    fun renderCue(cue: CaptionCue, style: CaptionStyle?, frameW: Int, timeMs: Long? = null): Rendered {
+        val st = style ?: CaptionStyle()
+        val u = frameW / 360f
+        val fontSizePx = st.sizeU * u
+        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = st.color
+            textSize = fontSizePx
+            typeface = typefaceFor(st.fontId, st.bold)
+            textAlign = Paint.Align.LEFT
+        }
+        val outlineW = if (st.outlineColor != null && st.outlineWidth > 0f) st.outlineWidth * u else 0f
+        val shadowR = if (st.shadowColor != null && st.shadowBlur > 0f) st.shadowBlur * u else 0f
+        val boxPad = if (st.boxColor != null) fontSizePx * 0.35f else 0f
+        val padding = 4f * u + outlineW + shadowR * 2f + boxPad
+        val maxW = (frameW - padding * 2f).coerceAtLeast(fontSizePx)
+
+        val lines = wrapCueText(cue.text, maxW, fill)
+        val lineH = fontSizePx * 1.2f
+        val widths = lines.map { fill.measureText(it) }
+        val textW = widths.maxOrNull() ?: 0f
+        val w = ceil(textW + padding * 2f).toInt().coerceAtLeast(8)
+        val h = ceil(lineH * lines.size + padding * 2f).toInt().coerceAtLeast(8)
+        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val c = Canvas(bmp)
+
+        if (st.boxColor != null) {
+            val inset = (padding - boxPad - shadowR).coerceAtLeast(0f)
+            val bp = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = st.boxColor }
+            val r = st.boxRadius * u
+            c.drawRoundRect(RectF(inset, inset, w - inset, h - inset), r, r, bp)
+        }
+        val halo = if (outlineW > 0f) {
+            Paint(fill).apply {
+                setStyle(Paint.Style.STROKE)
+                strokeWidth = outlineW
+                strokeJoin = Paint.Join.ROUND
+                color = st.outlineColor ?: 0xFF000000.toInt()
+            }
+        } else {
+            null
+        }
+        if (shadowR > 0f) {
+            fill.setShadowLayer(shadowR, shadowR * 0.5f, shadowR * 0.7f, st.shadowColor ?: 0xFF000000.toInt())
+        }
+        val reveal = if (timeMs == null) RevealMode.none else st.revealMode
+        val times = if (reveal == RevealMode.none) emptyList() else cueTokenTimes(cue, lines.sumOf { l -> l.split(' ').count { it.isNotEmpty() } })
+        val dim = Paint(fill).apply { alpha = (alpha * 0.4f).toInt() }
+        val space = fill.measureText(" ")
+        var tok = 0
+        lines.forEachIndexed { i, line ->
+            val lw = widths[i]
+            val x = when (st.align) {
+                "left" -> padding
+                "right" -> w - padding - lw
+                else -> (w - lw) / 2f
+            }
+            val y = padding + lineH * i + fontSizePx * 0.95f
+            if (reveal == RevealMode.none) {
+                if (halo != null) c.drawText(line, x, y, halo)
+                c.drawText(line, x, y, fill)
+                return@forEachIndexed
+            }
+            var cursor = x
+            for (word in line.split(' ')) {
+                if (word.isEmpty()) continue
+                val (ws, we) = times[tok++]
+                val t = timeMs ?: 0L
+                val ww = fill.measureText(word)
+                when (reveal) {
+                    RevealMode.wordByWord -> if (t >= ws) {
+                        if (halo != null) c.drawText(word, cursor, y, halo)
+                        c.drawText(word, cursor, y, fill)
+                    }
+                    RevealMode.charByChar -> {
+                        val shown = shownChars(word.length, ws, we, t)
+                        if (shown > 0) {
+                            val part = word.substring(0, shown)
+                            if (halo != null) c.drawText(part, cursor, y, halo)
+                            c.drawText(part, cursor, y, fill)
+                        }
+                    }
+                    else -> {
+                        if (halo != null) c.drawText(word, cursor, y, halo)
+                        c.drawText(word, cursor, y, dim)
+                        if (t >= ws) {
+                            val f = if (we <= ws) 1f else ((t - ws).toFloat() / (we - ws)).coerceIn(0f, 1f)
+                            c.save()
+                            c.clipRect(cursor, 0f, cursor + ww * f, h.toFloat())
+                            c.drawText(word, cursor, y, fill)
+                            c.restore()
+                        }
+                    }
+                }
+                cursor += ww + space
+            }
+        }
+        return Rendered(bmp, w, h)
+    }
+
+    /**
+     * Start / end of every word of [cue] as laid out. Uses the cue's own word timings when they match
+     * the text word for word, otherwise shares the cue's span equally (text typed by hand).
+     */
+    internal fun cueTokenTimes(cue: CaptionCue, count: Int): List<Pair<Long, Long>> {
+        if (count <= 0) return emptyList()
+        if (cue.words.size == count) return cue.words.map { it.startMs to it.endMs }
+        val span = (cue.endMs - cue.startMs).coerceAtLeast(0L)
+        return List(count) { i -> (cue.startMs + span * i / count) to (cue.startMs + span * (i + 1) / count) }
+    }
+
+    /** How many characters of a [len]-character word are on screen at [t]; they share the word's span equally. */
+    internal fun shownChars(len: Int, start: Long, end: Long, t: Long): Int {
+        if (len <= 0 || t < start) return 0
+        if (t >= end) return len
+        val span = end - start
+        var n = 0
+        for (j in 0 until len) if (t >= start + span * j / len) n = j + 1
+        return n
+    }
+
+    /** Splits [text] into lines no wider than [maxWidth] px, measuring words with [paint]. */
+    private fun wrapCueText(text: String, maxWidth: Float, paint: Paint): List<String> {
+        val out = mutableListOf<String>()
+        for (para in text.split('\n')) {
+            val words = para.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+            if (words.isEmpty()) {
+                out.add("")
+                continue
+            }
+            val sb = StringBuilder()
+            var lineW = 0f
+            for (word in words) {
+                val wordW = paint.measureText(word)
+                val spaceW = if (sb.isEmpty()) 0f else paint.measureText(" ")
+                if (sb.isNotEmpty() && lineW + spaceW + wordW > maxWidth) {
+                    out.add(sb.toString())
+                    sb.setLength(0)
+                    sb.append(word)
+                    lineW = wordW
+                } else {
+                    if (sb.isNotEmpty()) {
+                        sb.append(' ')
+                        lineW += spaceW
+                    }
+                    sb.append(word)
+                    lineW += wordW
+                }
+            }
+            out.add(sb.toString())
+        }
+        return out.ifEmpty { listOf("") }
+    }
+
     private fun scaleRgb(color: Int, f: Float): Int {
         val r = (((color shr 16) and 0xFF) * f).toInt().coerceIn(0, 255)
         val g = (((color shr 8) and 0xFF) * f).toInt().coerceIn(0, 255)

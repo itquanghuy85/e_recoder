@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
+import 'caption_models.dart';
+import 'caption_panel.dart';
+import 'caption_templates.dart';
 import 'editor_controller.dart';
 
 /// Opens the "automatic captions" sheet: language, what is needed, progress. The recognition runs on
@@ -31,6 +34,7 @@ class _AutoCaptionSheetState extends State<AutoCaptionSheet> {
   String _lang = 'vi-VN';
   ({bool available, Map<String, String> languages})? _support;
   bool _downloading = false;
+  bool _useTemplate = true;
   Timer? _poll;
 
   EditorController get c => widget.controller;
@@ -83,15 +87,29 @@ class _AutoCaptionSheetState extends State<AutoCaptionSheet> {
     final t = AppL10n.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final nav = Navigator.of(context);
-    final n = await c.generateCaptions(_lang);
+    final context0 = context;
+    // The look the captions start with: the TikTok template (the first one when it is missing).
+    CaptionStyle? look;
+    if (_useTemplate) {
+      final all = await CaptionTemplate.load();
+      if (all.isNotEmpty) {
+        look =
+            (all.where((e) => e.id == 'tiktok').firstOrNull ?? all.first).style;
+      }
+    }
+    final n = await c.generateCaptionCues(_lang, style: look);
     if (!mounted) return;
     final err = c.sttError;
     nav.pop();
+    if (n > 0 && context0.mounted) {
+      // Straight to the templates, so the person can change the look at once.
+      unawaited(showCaptionPanel(nav.context, c, initialTab: 1));
+    }
     messenger.showSnackBar(
       SnackBar(
         content: Text(
           n > 0
-              ? t.captionsCreated(n)
+              ? t.captionsCreatedCues(n)
               : switch (err) {
                   null => t.captionsCancelled,
                   'no_audio' => t.captionsNoAudio,
@@ -222,6 +240,17 @@ class _AutoCaptionSheetState extends State<AutoCaptionSheet> {
                         label: Text(t.captionsStart),
                       ),
                     ),
+                  Semantics(
+                    identifier: 'stt_use_template',
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: _useTemplate,
+                      onChanged: busy
+                          ? null
+                          : (v) => setState(() => _useTemplate = v),
+                      title: Text(t.captionsApplyTemplate),
+                    ),
+                  ),
                   const SizedBox(height: Space.sm),
                   Text(
                     t.captionsReplaceNote,

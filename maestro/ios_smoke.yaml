@@ -1,0 +1,31 @@
+appId: com.huluca.escreenrecorder
+name: iOS smoke - first launch, iOS notice on Record, Library and Settings tabs
+tags:
+  - ios
+---
+# iOS Simulator only. Checks the shared Flutter UI starts and the iOS branch shows; recording itself
+# (ReplayKit) needs a real iPhone and is not covered here.
+- launchApp:
+    clearState: true
+- runFlow:
+    when:
+      visible:
+        id: onb_skip
+    commands:
+      - tapOn:
+          id: onb_skip
+- extendedWaitUntil:
+    visible:
+      id: ios_notice
+    timeout: 20000
+- takeScreenshot: ios_record
+- tapOn: "Library|Thư viện"
+- assertVisible: "Library|Thư viện"
+- takeScreenshot: ios_library
+- tapOn: "Settings|Cài đặt"
+- assertVisible:
+    id: settings_reset_modes
+- takeScreenshot: ios_settings
+- tapOn: "Record|Quay"
+- assertVisible:
+    id: ios_notice

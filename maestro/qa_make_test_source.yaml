@@ -1,0 +1,12 @@
+appId: com.huluca.escreenrecorder
+name: QA - make a clean throwaway copy of the test video (an ESR_edit export) to edit in destructive tests
+tags:
+  - qa
+---
+# The copy is a new library item with its own project, so tests may cut / speed it up freely.
+# Remove it afterwards with scripts/qa/clean_test_data.ps1.
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_edit_20261030_121019.*"
+- runFlow: helpers/export_plain.yaml

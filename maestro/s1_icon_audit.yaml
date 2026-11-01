@@ -26,13 +26,24 @@ tags:
 - tapOn:
     id: "tool_audio"
 - takeScreenshot: artifacts/s1_editor_audio
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_cover"
 - takeScreenshot: artifacts/s1_editor_cover
+# Back from the editor lands on the player it was opened from (by design), back again to the main screen.
+- back
 - back
 - tapOn:
     text: "Cài đặt.*"
 - takeScreenshot: artifacts/s1_settings
+# The marks have no page of their own any more: each purpose's options are on the Record tab.
 - tapOn:
-    id: "settings_markers"
-- takeScreenshot: artifacts/s1_marker_settings
+    text: 'Quay\sTab.*'
+- scrollUntilVisible:
+    element:
+      id: "record_more"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: "record_more"
+- takeScreenshot: artifacts/s1_record_more

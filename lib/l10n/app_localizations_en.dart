@@ -257,7 +257,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get settingsMarkersSub =>
-      'Finger, arrow, circle… shown before the tap';
+      'Markers shown before a tap, how you mark while recording, and automatic editing afterwards';
 
   @override
   String get settingsMarkersHint =>
@@ -570,7 +570,7 @@ class AppL10nEn extends AppL10n {
   String get autoZoomOpt => 'Zoom into markers';
 
   @override
-  String get autoNumberOpt => 'Renumber the steps';
+  String get autoNumberOpt => 'Number the steps';
 
   @override
   String get autoIdleOpt => 'Speed up still stretches';
@@ -670,13 +670,14 @@ class AppL10nEn extends AppL10n {
   String get settingsPermissions => 'Permissions and battery';
 
   @override
-  String get settingsPermissionsSub => 'Check the permissions needed to record';
+  String get settingsPermissionsSub =>
+      'Check the app has what it needs to record and run in the background';
 
   @override
   String get settingsGuide => 'How to use';
 
   @override
-  String get settingsGuideSub => 'See how point-ahead markers work again';
+  String get settingsGuideSub => 'See the first-use steps again';
 
   @override
   String get settingsPrivacy => 'Privacy';
@@ -1646,4 +1647,378 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get presetSticker => 'Sticker';
+
+  @override
+  String get captionPanelAdd => '+ Add line';
+
+  @override
+  String get captionPanelOff => 'Turn captions off';
+
+  @override
+  String get captionPanelEmpty => 'No caption lines yet.';
+
+  @override
+  String get captionPanelStart => 'Start (ms)';
+
+  @override
+  String get captionPanelEnd => 'End (ms)';
+
+  @override
+  String get captionTabLines => 'Lines';
+
+  @override
+  String get captionTabStyle => 'Style';
+
+  @override
+  String get captionReveal => 'Reveal effect';
+
+  @override
+  String get captionRevealNone => 'All at once';
+
+  @override
+  String get captionRevealWord => 'Word by word';
+
+  @override
+  String get captionRevealChar => 'Letter by letter';
+
+  @override
+  String get captionRevealKaraoke => 'Karaoke';
+
+  @override
+  String get captionOutlineWidth => 'Outline';
+
+  @override
+  String get captionOutlineColor => 'Outline colour';
+
+  @override
+  String get captionShadowBlur => 'Shadow blur';
+
+  @override
+  String get captionBoxColor => 'Box colour';
+
+  @override
+  String get captionBoxRadius => 'Corners';
+
+  @override
+  String get captionPosY => 'Vertical';
+
+  @override
+  String get captionPosX => 'Horizontal';
+
+  @override
+  String get captionReset => 'Reset style';
+
+  @override
+  String get captionTabTemplates => 'Templates';
+
+  @override
+  String get captionTemplateSample => 'Hello everyone';
+
+  @override
+  String captionsCreatedCues(int n) {
+    return '$n caption lines made. Pick a template or edit the lines in Captions.';
+  }
+
+  @override
+  String get captionsApplyTemplate => 'Use the TikTok template';
+
+  @override
+  String get settingsGroupApp => 'App';
+
+  @override
+  String get settingsGroupRecord => 'Screen recording';
+
+  @override
+  String get settingsGroupHelp => 'Help and information';
+
+  @override
+  String get markerSecLook => 'Marker look';
+
+  @override
+  String get markerSecLookSub =>
+      'Pick a marker and adjust its colour, thickness and size. The preview above shows the result at once.';
+
+  @override
+  String get markerSecTime => 'How long a marker shows';
+
+  @override
+  String get markerSecTimeSub =>
+      'How long a marker stays after you place it, and whether pointer mode ends by itself.';
+
+  @override
+  String get markerSecHow => 'How you mark while recording';
+
+  @override
+  String get markerSecHowSub =>
+      'Choose how you place markers during a recording: a small dot in a corner, or record clean and edit afterwards.';
+
+  @override
+  String get markerSecAuto => 'Automatic editing after recording';
+
+  @override
+  String get markerSecAutoSub =>
+      'The app zooms in on the spots you marked and numbers the steps as soon as the recording ends. You can still change it in the editor.';
+
+  @override
+  String get markerAutoNeedsClean =>
+      'Automatic editing is only available with clean recording: nothing is drawn into the video, so the app can redraw the markers properly.';
+
+  @override
+  String get autoMarkerTitle => 'Mark added at every tap';
+
+  @override
+  String get autoMarkerHint =>
+      'Pick the kind of mark; its colour, thickness and time come from groups 1 and 2 above. When the recording ends it is placed at every tap.';
+
+  @override
+  String get markerAutoSwitch => 'Turn on clean recording';
+
+  @override
+  String get settingsGroupRecordSub =>
+      'Permissions for recording and the recording modes';
+
+  @override
+  String get settingsGroupHelpSub => 'The guide, privacy, and app information';
+
+  @override
+  String get markCleanLimit =>
+      'Note: a few system screens (such as Settings or permission prompts) block the hidden zone, so you cannot mark there. Normal apps work as usual.';
+
+  @override
+  String get touchSourceAuto => 'Automatic';
+
+  @override
+  String get touchSourceAutoHint =>
+      'Recommended. While you record clean, the app hears every touch on the screen, with no shaking or hidden corner needed. When you stop, it finds where you tapped, zooms in and numbers the steps.';
+
+  @override
+  String get purposeTitle => 'What do you want to do?';
+
+  @override
+  String get purposeHint =>
+      'Pick one. The app sets everything up for you, and you can change it later.';
+
+  @override
+  String get purposeTutorial => 'Make a tutorial video';
+
+  @override
+  String get purposeTutorialSub =>
+      'When you stop, the app numbers every step and zooms in where you tapped. Nothing more to do.';
+
+  @override
+  String get purposeGame => 'Record a game';
+
+  @override
+  String get purposeGameSub =>
+      'Smooth recording with a small dot to mark moments. No automatic zoom.';
+
+  @override
+  String get purposePlain => 'Plain recording';
+
+  @override
+  String get purposePlainSub => 'Just records the screen, nothing added.';
+
+  @override
+  String get purposeSkip => 'Skip, plain recording';
+
+  @override
+  String get recordTutorial => 'Record tutorial automatically';
+
+  @override
+  String get recordGame => 'Record game';
+
+  @override
+  String get recordPlain => 'Record video';
+
+  @override
+  String get advancedTitle => 'Advanced';
+
+  @override
+  String advancedPurpose(String name) {
+    return 'Change purpose: $name';
+  }
+
+  @override
+  String get purposeOffer => 'Pick a purpose to record faster';
+
+  @override
+  String get purposeOfferSub =>
+      'Tutorial, game or plain: the app sets everything up for you.';
+
+  @override
+  String get readyTitle => 'Ready to record?';
+
+  @override
+  String get readyHint =>
+      'The app is missing a few permissions to record the way you chose. Tap Turn on on each line.';
+
+  @override
+  String get readyMic => 'Microphone';
+
+  @override
+  String get readyMicSub =>
+      'To record your voice. You can mute it in the recording settings.';
+
+  @override
+  String get readyOverlay => 'Display over other apps';
+
+  @override
+  String get readyOverlaySub =>
+      'To show the stop button, the countdown and to hear taps while you are in another app.';
+
+  @override
+  String get readyNotif => 'Notifications (optional)';
+
+  @override
+  String get readyNotifSub =>
+      'To have a stop button in the notification shade.';
+
+  @override
+  String get readyEnable => 'Turn on';
+
+  @override
+  String get readyOn => 'On';
+
+  @override
+  String get readyGo => 'Ready to record';
+
+  @override
+  String get readyWaiting => 'Permissions missing';
+
+  @override
+  String get resultTitle => 'Recording done';
+
+  @override
+  String get resultBuilding => 'Building the edit...';
+
+  @override
+  String get resultExport => 'Export now';
+
+  @override
+  String get resultEdit => 'Edit more';
+
+  @override
+  String get resultBack => 'Record again';
+
+  @override
+  String get resultExporting => 'Exporting video...';
+
+  @override
+  String resultExported(String name) {
+    return 'Exported: $name';
+  }
+
+  @override
+  String get resultExportFailed =>
+      'The export failed. Try again or tap Edit more.';
+
+  @override
+  String get resultPreviewError => 'This video cannot be played.';
+
+  @override
+  String get quickTitle => 'Quick options';
+
+  @override
+  String get quickGameMark => 'Mark when you tap';
+
+  @override
+  String get quickTouches => 'Record every tap';
+
+  @override
+  String get batchTitle => 'Change all marks';
+
+  @override
+  String batchScopeAll(int n) {
+    return 'Applies to all $n marks';
+  }
+
+  @override
+  String batchScopeSel(int n) {
+    return 'Applies to the $n selected marks';
+  }
+
+  @override
+  String get batchSelectAll => 'Select all';
+
+  @override
+  String get batchClear => 'Clear selection';
+
+  @override
+  String get batchFromHere => 'From here to the end';
+
+  @override
+  String get batchKind => 'Mark kind';
+
+  @override
+  String get batchColor => 'Colour';
+
+  @override
+  String get batchThickness => 'Thickness';
+
+  @override
+  String get readyNoMic => 'Record without sound';
+
+  @override
+  String get toolExport => 'Export';
+
+  @override
+  String get editorModeBasic => 'Basic';
+
+  @override
+  String get editorModeAdvanced => 'Advanced';
+
+  @override
+  String get editorModeHintBasic =>
+      'Enough to cut, mark and add text. Need effects? Choose Advanced.';
+
+  @override
+  String get editorModeHintAdvanced =>
+      'All tools shown. Back to Basic keeps everything you made.';
+
+  @override
+  String get modeTutorial => 'Tutorial';
+
+  @override
+  String get modeGame => 'Game';
+
+  @override
+  String get modePlain => 'Plain';
+
+  @override
+  String get moreOptions => 'More options';
+
+  @override
+  String get markWhenTitle => 'Tap marks';
+
+  @override
+  String get markWhenAuto => 'Added after recording';
+
+  @override
+  String get markWhenLive => 'By hand while recording';
+
+  @override
+  String get markWhenNone => 'No marks';
+
+  @override
+  String get optSmooth => 'Smooth (60 fps)';
+
+  @override
+  String get settingsResetModes => 'Reset the recording modes';
+
+  @override
+  String get settingsResetModesSub =>
+      'Tutorial, Game and Plain go back to their first settings';
+
+  @override
+  String get resetModesConfirm =>
+      'Put all three recording modes back to their first settings?';
+
+  @override
+  String get resetModesAction => 'Reset';
+
+  @override
+  String get resetModesDone => 'The recording modes are back to their defaults';
+
+  @override
+  String get holdTitle => 'How long a mark shows';
 }

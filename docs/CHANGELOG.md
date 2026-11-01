@@ -1,5 +1,114 @@
 # Changelog
 
+## [2026-11-01] Dấu không lan sang màn sau, zoom 300% đúng tâm, bỏ "Bước N" khi tắt đánh số
+- Dò màn hình đổi theo ô (12×24) thay vì theo điểm ảnh: trang trắng sang trang trắng khác chữ cũng dò ra, nên dấu mờ trước khi màn mới hiện. Test Kotlin `changedBlocks`.
+- Bỏ các chạm lúc thao tác Dừng quay (chạm khi app ở phía trước, và chạm dẫn app về phía trước).
+- Tắt "Đánh số các bước": không còn dấu số và chữ "Bước N". Nhãn đổi thành "Đánh số các bước".
+- Zoom tự động: mỗi lần chạm một zoom riêng, tâm đúng điểm chạm, mức phóng tới 300% (trước đây gộp và lấy trung điểm).
+- Thanh "Thời gian hiện dấu" và "Mức phóng" nằm trong các chế độ Hướng dẫn / Game; tốc độ phóng và giữ thêm trong "Thêm tuỳ chọn". Nút "Bắt đầu quay" ghim ở đáy màn Quay.
+- Flutter 397/397, analyze sạch, Kotlin đạt. Chưa chạy lại trên S25 (không kết nối). Chi tiết: `docs/PLAN_CHE_DO_QUAY.md`, mục "Đợt 2".
+
+## [2026-11-01] Cài đặt theo từng chế độ quay
+- Màn Quay, từ trên xuống: thanh chọn chế độ `[Hướng dẫn | Game | Quay thường]` → lựa chọn chính của chế độ → nút "Bắt đầu quay" → "Thêm tuỳ chọn" (riêng theo chế độ).
+- Mỗi chế độ nhớ cài đặt riêng (`purpose.profile.<chế độ>`). Khoá cũ giữ nguyên tên; người dùng cũ giữ cài đặt và mặc định ở "Hướng dẫn".
+- Hướng dẫn có "Dấu bấm": Tự động sau khi quay / Bấm tay khi quay / Không dấu.
+- Bỏ: màn chọn mục đích lúc mới cài, trang Dấu trong Cài đặt, thẻ cài đặt / "Nâng cao" / "Đổi mục đích", thông báo "Đã lưu… Xem" (luôn mở màn kết quả).
+- Cài đặt thêm "Đưa các chế độ quay về mặc định".
+- Test: `purpose_test` viết lại; Flutter 394/394, analyze sạch. Maestro mới: `ux_modes_record` PASS (video Game 1440×3120, Hướng dẫn 720×1560). Hồi quy 19/19 flow PASS. Kịch bản cập nhật theo giao diện mới; 7 flow chỉ kiểm giao diện đã bỏ được xoá. Chi tiết: `docs/PLAN_CHE_DO_QUAY.md`.
+
+## [2026-10-31] Dấu trong bản dựng tự động: không lan sang màn mới, mỗi lúc một dấu
+- `TouchScan.locate` (Kotlin) trả thêm `changeMs`: lúc màn hình đổi hẳn sau lần bấm (đổi từ 20% hình, dò tới lần bấm kế, tối đa 3 s). Có test `changedShare`.
+- `AutoDirector.tapHoldMs`: dấu mờ xong trước khi màn hình đổi và trước khi dấu kế hiện; dừng hình vẫn giữ dấu hiện đủ.
+- `TouchClassifier`: hai lần chạm cách nhau dưới 0,3 s chỉ giữ một dấu, bất kể vị trí (trước đây 0,25 s và phải gần nhau).
+- Bản dựng sau khi quay dùng chữ "Đang nhập…" / "Đã nhập" tiếng Việt (trước đây ra tiếng Anh).
+- Nghiệm thu S25: `scripts/qa/ux_mark_timing.sh` + `maestro/ux_mark_timing.yaml` PASS (lượt 3). Flutter test 395/395, analyze sạch, Kotlin unit test đạt. Chi tiết: `docs/PLAN_CHE_DO_QUAY.md`.
+
+## [2026-10-31] Build và kiểm thử iOS qua Mac (SSH)
+- iOS build được: Simulator Debug và máy thật `--no-codesign` (22 MB). Trên Mac: Flutter test 387/387, analyze sạch. App mở trên iPhone 17 Simulator, không crash.
+- BLOCKED: smoke test Maestro (Mac thiếu Java), kiểm trên iPhone thật (chưa có máy và chứng chỉ ký).
+- Phát hiện chưa sửa: `Info.plist` trùng 3 khoá quyền; repo chưa ghi phần tích hợp CocoaPods.
+- Thêm `scripts/qa/ios_qa.sh` (chạy trên Mac) và `maestro/ios_smoke.yaml`. Báo cáo: `docs/IOS_BUILD_TEST_REPORT.md`.
+
+## [2026-10-31] Lượt QA cuối
+- Sửa: bảng công cụ của editor cuộn về đầu khi đổi công cụ hoặc mục chọn (trước đó giữ vị trí cuộn của công cụ trước, che các điều khiển đầu bảng).
+- Sửa: `RecorderService` dọn tệp tạm của bản ghi bị giết (`cache/rec`) khi bắt đầu quay.
+- Độ bền: giết app trong lúc quay làm mất toàn bộ bản ghi (video chỉ hoàn tất khi Dừng); ghi nhận là giới hạn, chưa sửa (cần đổi cách ghi tệp).
+- Kịch bản Maestro: e16, g7, s1_icon_audit, store_vi, store_en, store_video_a/b, e2_overlays, e3_motion, store_pro; flow phụ `panel_find`; flow + script `ux_kill_recording`.
+- 18 flow: 14 PASS, 4 FAIL (đã có sửa kịch bản, chưa chạy lại vì S25 mất kết nối). Flutter test 387/387, analyze sạch. Chi tiết: `docs/NGHIEM_THU_2026-10-31.md`, mục "Lượt QA cuối".
+
+## [2026-10-31] Nghiệm thu tồn đọng: app bên thứ ba, 18 flow, phục hồi khi dựng/xuất dài
+- Báo cáo đầy đủ (PASS / FAIL / BLOCKED): `docs/NGHIEM_THU_2026-10-31.md`.
+- Sửa `Exporter.kt`: bắt đầu xuất thì dọn tệp tạm của lần xuất bị giết (`cache/export`, `export_rev`, `export_pip`).
+- Sửa `recorder_controller.dart`: việc dựng bản tự động từ lần bấm được ghi lại trước khi dựng (`draft.pending`) và làm tiếp ở lần mở app sau nếu bị giết giữa chừng (tối đa 2 lần). `SettingsStore` thêm `getString/setString/remove`. Test mới `draft_resume_test` (5).
+- Kịch bản Maestro (không đổi kỳ vọng sản phẩm): e2_pick_probe, e2_pip_s25 chọn tệp theo tên; e2_overlays, e8_tools_zoom, store_pro thêm bước vuốt bảng trên S25. Flow mới: `ux_third_party`, `ux_long_export`, `ux_long_kill_a/b`. Script mới: `run_flows18.ps1`, `ux_third_party.ps1`, `ux_long.ps1`, `ux_long_kill.ps1`, `ux_draft_kill.ps1`.
+- Flutter test 387/387, analyze sạch.
+
+## [2026-10-31] Trình chỉnh sửa hai chế độ Cơ bản / Nâng cao
+- **Cơ bản (mặc định):** 6 tab: Cắt, Dấu, Chữ, Tốc độ, Âm thanh, Xuất (tab Xuất mở hộp xuất, giống nút Xuất ở trên). **Nâng cao** thêm hàng thứ hai: Chuyển cảnh, Hình ảnh, Chèn hình, Che vùng, Phóng to, Dựng tự động. Hai nút chọn chế độ kèm một dòng giải thích ngay dưới các tab; chế độ được nhớ giữa các lần mở (`editor.advanced`).
+- **Chuyển chế độ chỉ đổi cái hiện ra**, không đụng dữ liệu bản dựng (dấu, chữ, zoom, tốc độ, vùng che...). Chọn một clip của công cụ nâng cao trên timeline khi đang ở Cơ bản thì tự hiện Nâng cao trong phiên đó (không ghi nhớ). Về Cơ bản từ một công cụ nâng cao thì rơi về Cắt.
+- Tên hiển thị rõ hơn (id và mã nhận diện không đổi): Hình → Hình ảnh, Lớp phủ → Chèn hình, Che → Che vùng, Phóng → Phóng to, Tự động → Dựng tự động.
+- Các flow Maestro cũ dùng công cụ nâng cao gọi thêm `helpers/editor_advanced.yaml` (tự bật Nâng cao nếu đang bị ẩn; 18 flow, chưa chạy lại từng cái trên máy).
+- Nghiệm thu S25 (RUNTIME_VERIFIED, `scripts/qa/ux_modes.ps1` + `maestro/ux_editor_modes.yaml`): mặc định Cơ bản (6 tab, không có Che/Phóng/Chuyển cảnh), thêm chữ ở Cơ bản, sang Nâng cao thấy đủ 12 tab, về Cơ bản chữ/dấu/zoom/tốc độ vẫn còn trên timeline, xuất từ tab Xuất: video có chữ "Văn bản", zoom và 3 dấu vòng ở phím 7, 5, 9; thoát và mở lại app thì chế độ còn nguyên (cả Nâng cao lẫn Cơ bản). Flutter test 382 (mới `editor_modes_test` 4), analyze sạch.
+- **Chưa kiểm được:** dấu tự động trên app không phải Samsung. Thử với Chrome không dùng được: Chrome hiện trang chủ cá nhân và lần bấm làm đổi cả trang; script đọc dự án khi bản dựng còn chạy nên kết quả (2 dấu, lệch chỗ) không đáng tin. Đã bỏ flow đó. Cần một app có thay đổi nhỏ tại chỗ bấm (như máy tính) và không chứa dữ liệu cá nhân. Ghi chú thêm: vị trí dấu tìm từ hình nên bấm làm đổi cả màn hình thì vị trí dễ lệch.
+- Việc phát hiện khi thử: bản dựng tự động của video dài mất hơn 5 giây; tắt app ngay lúc đó sẽ cắt ngang bản dựng (chưa kiểm xem app có tự dựng lại khi mở lại).
+
+## [2026-10-31] Quyền micro bị từ chối: nghiệm thu và lối thoát "Quay không thu tiếng"
+- Nghiệm thu S25 (RUNTIME_VERIFIED, `scripts/qa/ux_mic.ps1` + `maestro/ux_mic_denied.yaml`): thu hồi quyền micro, bấm Quay -> "Sẵn sàng quay chưa?" liệt kê Micro với nút Bật, nút chính xám "Còn thiếu quyền"; bấm Bật rồi "Không cho phép" -> vẫn ở màn đó, chưa quay.
+- Thêm nút "Quay không thu tiếng" (`ready_check_screen.dart`, chỉ hiện khi thiếu micro): đặt âm thanh = Không rồi quay tiếp, người từ chối micro không bị kẹt. Test `purpose_test` +1 (Flutter 378).
+- Lưu ý khi kiểm thử: Maestro tự cấp mọi quyền khi `launchApp`, nên flow phải khai `permissions: android.permission.RECORD_AUDIO: deny`; hộp "Chia sẻ màn hình" bị bỏ lại từ lần chạy trước làm kết quả sai. Script trả lại quyền và xoá khoá `rec.audio` (về mặc định Micro) sau khi chạy.
+
+## [2026-10-31] Sửa lỗi: chỉnh sửa trong "Sửa thêm" không vào bản "Xuất ngay"
+- Lỗi tìm ra khi làm thử như người dùng: quay, bấm Sửa thêm, đổi dấu, quay lại, bấm Xuất ngay thì video xuất vẫn là bản cũ. Nguyên nhân: màn kết quả giữ bộ điều khiển cũ; đóng nó (khi rời màn hoặc xuất) tự lưu bản cũ đè lên bản editor vừa lưu.
+- Sửa (`result_screen.dart`): đóng bộ điều khiển TRƯỚC khi mở editor (chưa có thay đổi nào nên lưu vô hại), quay về thì chờ 0,8 giây cho editor ghi xong rồi nạp lại dự án; xem trước và xuất dùng bản mới.
+- Nghiệm thu S25 (RUNTIME_VERIFIED): `ux_real.ps1` quay + bấm 7/5/9, "Chọn tất cả" dấu, đổi sang Vòng tròn, quay lại, Xuất ngay. Dự án trong cơ sở dữ liệu: 3 dấu `circle`; video xuất (`ESR_edit_20261031_161052`) có vòng tròn ở phím 7, 5, 9, không còn số. Trước khi sửa cùng quy trình ra 3 dấu số.
+- Chọn riêng một dấu trên timeline rồi đổi: dự án chỉ đổi dấu đó (`circle`, `number`, `number`), xác nhận bằng cơ sở dữ liệu.
+
+## [2026-10-31] Làm thử như người dùng thật (quay có bấm, xem kết quả, sửa)
+- `maestro/ux_real_user.yaml` + `scripts/qa/ux_real.ps1`: bắt đầu như người mới (file cài đặt được sao lưu vào `test-results/prefs_backup_real.xml`, không trả lại), chọn "Quay hướng dẫn tự động", quay máy tính Samsung và bấm 7/5/9, dừng, xem kết quả, mở editor, mở "Đổi tất cả dấu". Video thử được GIỮ để người dùng tự xem và tự xoá; script không xoá gì.
+- Thấy được khi chạy thật (RUNTIME_VERIFIED trên S25 Ultra): màn kết quả phát đúng kèm dấu số 2 và zoom vào phím; editor mở ra có 4 clip, 3 dấu, 3 đoạn tăng tốc.
+- Sửa sau khi xem như người dùng: vùng xem trước ở màn kết quả thiếu mã nhận diện (`result_preview`); editor mở ra phóng timeline quá gần nên không thấy dấu và clip, nay tự thu vừa cả video khi đã có dấu/chữ/zoom/nhiều đoạn (`zoomToFit(share: 0.46)`), giới hạn thu nhỏ timeline hạ từ 0,01 xuống 0,003 px/ms để video 30 giây vừa màn hình.
+
+## [2026-10-31] Chọn nhanh bằng ô tick, xem trước có dấu, đổi dấu hàng loạt, chọn nhiều trên timeline
+- **Chọn nhanh** (`features/purpose/quick_options.dart`, dưới nút Quay to): ô tick Micro / Âm thanh máy, chọn Độ nét; Hướng dẫn thêm: Ghi mọi lần bấm, Đánh số bước, Phóng to vào chỗ bấm và chọn dấu tự động; Game: chọn dấu khi chạm. Mỗi lần tick lưu ngay qua `recSettingsProvider` / `markerSettingsProvider` (test `purpose_test` kiểm khoá `rec.audio` đã ghi). Nút Quay lên trước phần này để luôn thấy không cần cuộn; khi đã chọn mục đích chỉ hiện 1 video gần đây.
+- **Màn kết quả** (`result_screen.dart`): xem trước dùng chính `EditorStage` + `PlaybackDriver` của editor nên thấy dấu, zoom, số bước của bản dựng tự động; chạm để phát/tạm dừng, có thanh tua. Xem trước lỗi vẫn xuất được.
+- **Đổi dấu hàng loạt** (`AutoDirector.restyleMarkers`, `EditorController.restyleMarkers`, mục gập "Đổi tất cả dấu" đầu bảng Dấu): đổi loại (mũi tên → chạm, số...), màu, độ dày. Áp cho các dấu đã chọn, không chọn gì thì áp cho tất cả; một lần hoàn tác. Dấu đổi loại được vẽ lại đúng chỗ nó chỉ vào; đổi sang Số bước thì đánh số lại.
+- **Chọn nhiều trên timeline**: hàng nút trên timeline: Chọn nhiều, Chọn tất cả, Từ đây đến hết, Bỏ chọn; chạm dấu để chọn thêm khi đang bật.
+- Test: Flutter 377/377 (mới `batch_markers_test` 8, `purpose_test` +1), analyze sạch. Maestro `ux_simple_flow` (chọn nhanh, mở xem trước, đổi dấu hàng loạt, Chọn nhiều/Chọn tất cả, xuất 720p) đạt trên S25 Ultra.
+- Chưa nghiệm thu trên máy: bản quay thử không có lần bấm nên chưa xem được dấu tự động trong xem trước; dấu đổi loại mới xác nhận bằng unit test và ảnh editor, chưa so sánh từng điểm ảnh. Đổi dấu theo nhóm đã chọn (chạm từng dấu) mới có unit test.
+- Lỗi đã sửa dọc đường: khung chọn nhanh dùng `Container` có màu bọc ô tick làm mất hiệu ứng chạm (đổi sang `Material`); hàng nút chọn nhiều không vẽ lại khi bật (thiếu `ListenableBuilder`).
+
+## [2026-10-31] Màn kết quả: chọn chất lượng xuất
+- `result_screen.dart`: thêm hàng chọn chất lượng (Gốc / 1080p / 720p / 480p) trên nút "Xuất ngay"; mặc định Gốc, dùng lại nhãn đã có. Chọn xong "Xuất ngay" xuất đúng mức đó.
+- `maestro/ux_simple_flow.yaml`: chọn 720p trước khi xuất. `scripts/qa/ux_flow.ps1`: chữ nút "hướng dẫn" đổi sang regex ASCII (dòng lệnh Windows làm hỏng chữ có dấu) và thêm BOM cho file.
+- Nghiệm thu S25 (RUNTIME_VERIFIED): `ux_flow.ps1 -Purpose tutorial` đạt; file xuất rộng 720 px (720x1560). Flutter 368/368, analyze sạch. Video thử đã dọn bằng `qa_data.ps1`; hai video thật 093649 và 094748 còn nguyên.
+- Sự cố khi nghiệm thu: `flutter install` đã gỡ bản app cũ trên S25 (mất cài đặt và dự án sửa dở; video không mất). Cài đặt khôi phục từ bản sao lưu cũ. Lần sau dùng `adb install -r`, không dùng `flutter install`.
+- Chưa làm: dựng sẵn xem trước theo mẫu; trình chỉnh sửa Cơ bản / Nâng cao; quyền micro bị từ chối trên máy thật; dấu tự động trên app khác.
+
+## [2026-10-31] UX đơn giản: chọn mục đích, một nút Quay, kiểm quyền, màn kết quả
+- **Bước 1** `features/purpose/purpose.dart`, `purpose_screen.dart`: lần đầu mở app (sau phần giới thiệu) hỏi "Bạn muốn làm gì?": Làm video hướng dẫn / Quay game / Quay thường (có "Bỏ qua, quay thường"). Lưu khoá `purpose` (0/1/2, không có = chưa chọn) trong SharedPreferences hiện có, và áp bộ cài đặt sẵn qua `applyPurposeToMarkers`: hướng dẫn = quay sạch + nghe lần bấm + dấu số + phóng to; game = chấm tay, không phóng to; thường = tắt hết. Màu, kiểu, độ dày dấu của người dùng giữ nguyên.
+- **Bước 2** `record_screen.dart`: một nút lớn, chữ theo mục đích ("Quay hướng dẫn tự động" / "Quay game" / "Quay video"). Thẻ cấu hình quay và "Đổi mục đích" nằm trong mục gập "Nâng cao". Người đã dùng app từ trước (chưa chọn mục đích) vẫn thấy màn cũ y nguyên, kèm một thẻ mời chọn mục đích.
+- **Bước 3** `ready_check_screen.dart`: chỉ khi đã chọn mục đích; bấm Quay mà thiếu micro / hiển thị trên ứng dụng khác thì hiện "Sẵn sàng quay chưa?" liệt kê quyền, mỗi dòng nút Bật (micro hỏi lần đầu, sau đó mở cài đặt app; quyền hiển thị mở trang hệ thống; tự kiểm lại khi quay về app). Nút "Sẵn sàng quay" chỉ mở khi đủ. Thông báo chỉ là gợi ý.
+- **Bước 4** `result_screen.dart`: khi đã chọn mục đích, quay xong hiện "Quay xong rồi" (video xem trước + Xuất ngay / Sửa thêm / Quay lại) thay cho thanh báo. "Xuất ngay" đợi bản dựng tự động của lần quay (`RecorderController.draftReady`) rồi xuất chất lượng gốc. "Sửa thêm" mở trình chỉnh sửa đầy đủ như cũ. Màn mở lại danh sách video vài lần nếu file mới chưa có trong danh sách (trước đó nút Xem cũng có thể im lặng).
+- Sửa kèm: hai nút Tạm dừng / Dừng ở màn đang quay co lại được trên máy hẹp (trước đó tràn 8 px ở 360 dp).
+- Đường cũ không đổi: chưa chọn mục đích thì màn Quay, thanh báo "Đã lưu ... Xem", báo thiếu quyền đều như trước. 6 hiệu ứng chữ và phụ đề tự động không bị đụng.
+- Test: Flutter 368; Maestro `ux_simple_flow` (qua `scripts/qa/ux_flow.ps1`), `clean_auto_touches`, `settings_layout` đạt trên S25 Ultra.
+
+## [2026-10-31] Bỏ lần bấm "Dừng quay" khỏi các bước tự dựng
+- `RecorderController.stopTapWindowMs = 1200`: các lần bấm trong 1,2 giây cuối video là bấm nút dừng nên không đưa vào dựng tự động. Test: Flutter 349. S25 Ultra: quay sạch bấm 7/5/9 rồi Dừng cho đúng 3 dấu (trước đó 4).
+
+## [2026-10-31] Dựng tự động dùng đúng dấu người dùng chọn
+- Trước đây dựng tự động chỉ gắn dấu số (hoặc gợn sóng) và bỏ qua dấu, màu, độ dày, thời gian hiện đã chọn. Nay: Cài đặt → Dấu → nhóm 4 có hàng chọn "Dấu tự động gắn vào mỗi lần bấm" (ngón tay, gợn sóng, mũi tên, vòng tròn, khung, nét vẽ, số; mặc định số, khoá mới `marker.autoType`). Màu, độ dày, thời gian hiện lấy từ nhóm 1 và 2.
+- `AutoDirector.tapSpec` dựng hình quanh chỗ bấm: vòng tròn tròn thật trên màn hình, khung chữ nhật, mũi tên chỉ từ góc dưới phải, nét gạch chân. `DirectorOptions` thêm `markerType/markerColor/markerThickness/markerHoldMs`; không đặt thì giữ luật cũ.
+- Test: Flutter 347, Maestro `clean_auto_touches` (chọn vòng tròn) PASS trên S25: 4 vòng tròn quanh phím 7/5/9, 4 lần phóng to.
+
+## [2026-10-31] Quay sạch tự nhận lần bấm (không lắc, không vùng ẩn) + Cài đặt chia nhóm rõ
+- **Nghe mọi lần bấm khi quay sạch** (`overlay/TouchWatcher.kt`): cửa sổ ẩn 1x1 px dùng `FLAG_WATCH_OUTSIDE_TOUCH`, Android báo `ACTION_OUTSIDE` cho mỗi lần chạm ở bất kỳ đâu. Không vẽ gì (video vẫn sạch), không cần lắc máy, không cần chạm vùng ẩn, không quyền mới. Chỉ ghi THỜI ĐIỂM (Android giấu vị trí chạm của app khác); không ghi nội dung màn hình hay phím gõ.
+- **Tìm chỗ bấm từ hình ảnh** (`TouchScan.locate` + `reaction`): so khung ngay trước lần chạm với các khung sau (mỗi 40 ms, tới 680 ms), ngưỡng thấp (vệt sáng của phím vừa bấm rất mờ), vùng thay đổi liên thông lớn nhất, khung phản ứng đầu tiên quyết định; thay đổi gần cả màn hình (đổi trang) thì không có vị trí. Đo trên S25 Ultra bằng máy tính Samsung: phím 7 / 5 / 9 cho (0,17-0,18 ; 0,55-0,58) / (0,40 ; 0,68) / (0,62-0,66 ; 0,58).
+- **Tự dựng ngay khi quay xong** (`recorder_controller._saveDraft`): dấu số tại chỗ bấm, phóng to, dừng hình, chú thích "Bước N" cho lần bấm không biết chỗ. Nguồn phát hiện mới `TouchSource.auto` (mặc định; lưu khoá mới `marker.touchSourceV2`, lựa chọn "Thủ công" cũ không còn che mất nó). Các nguồn cũ (chấm trắng, thủ công, tắt) giữ nguyên.
+- Hạn chế đã biết: màn hình hệ thống chặn cửa sổ phủ (Cài đặt, hộp xin quyền) nên không nghe được ở đó (quy tắc Android); lần bấm vào nút "Dừng quay" của chính app cũng được tính thành một bước cuối.
+- **Cài đặt chia nhóm** (`settings/section_header.dart`): "Ứng dụng / Quay màn hình / Trợ giúp và thông tin", mỗi nhóm có một dòng mục đích và biểu tượng. Màn "Dấu đánh dấu" thành 4 nhóm đánh số: 1 Kiểu dấu, 2 Dấu hiện bao lâu, 3 Cách đánh dấu khi quay, 4 Tự động dựng sau khi quay (tách khỏi phần cách đánh dấu; khi đang ở chế độ chấm nhỏ thì nói rõ vì sao chưa dùng được và có nút bật Quay sạch). Mô tả các mục viết lại cho người mới. Có ghi chú: vài màn hình hệ thống chặn vùng ẩn.
+- Test: Flutter 345, Android 92, Maestro `clean_auto_touches`, `settings_layout` PASS trên S25 Ultra.
+
 ## [2026-10-29] Dựng từ lần chạm: phân loại chạm/bàn phím, dừng hình tại chỗ chạm, chấm trắng "Hiển thị lần chạm"
 - **Quyết định về Trợ năng: vẫn KHÔNG dùng** (Google Play chỉ chấp nhận cho app hỗ trợ người khuyết tật, và dịch vụ này đọc được cả ô mật khẩu). Vì vậy mục "Cơ bản" bị bỏ; còn **Tắt / Chấm trắng / Thủ công** (Cài đặt → Dấu → chế độ sạch → "Phát hiện lần chạm"). Hệ quả: app **không đọc nội dung gõ** và không có công tắc "đọc nội dung ô nhập" (không có nguồn dữ liệu để đọc); video chỉ hiện "Đang nhập…" / "Đã nhập".
 - **Dữ liệu mỗi lần chạm** (`RecMark`): thêm `kind` (tap/input/swipe/noise), `group`, `app`, `sensitive`, `pauseMs`, `zoom`, tùy chọn; dữ liệu cũ đọc thành `tap`. Dấu đặt tay ghi `kind=tap`.

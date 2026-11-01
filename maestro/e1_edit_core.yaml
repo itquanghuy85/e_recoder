@@ -54,6 +54,7 @@ tags:
 - tapOn:
     id: "cut_freeze"
 - takeScreenshot: artifacts/e1_freeze
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_transition"
 - tapOn:

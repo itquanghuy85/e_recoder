@@ -30,9 +30,14 @@ tags:
     id: "seek_back"
 - tapOn:
     id: "tool_speed"
+- runFlow:
+    file: helpers/panel_find.yaml
+    env:
+      ID: "speed_ramp"
 - tapOn:
     id: "speed_ramp"
 - takeScreenshot: artifacts/e3_ramp
+- runFlow: helpers/editor_advanced.yaml
 - tapOn:
     id: "tool_transition"
 - tapOn:

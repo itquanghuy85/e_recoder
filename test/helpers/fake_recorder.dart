@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:e_screen_recorder/app/settings_store.dart';
 import 'package:e_screen_recorder/core/native_recorder.dart';
+import 'package:e_screen_recorder/features/editor/project_store.dart';
 import 'package:e_screen_recorder/features/editor/touch_log.dart';
 import 'package:e_screen_recorder/core/permissions_gateway.dart';
 import 'package:e_screen_recorder/features/marker/marker_spec.dart';
@@ -58,6 +59,18 @@ class FakeRecorder implements NativeRecorder {
   List<RawTouch> touches = [];
   ({bool developer, bool showTaps}) setup = (developer: false, showTaps: false);
   final opened = <String>[];
+
+  /// Places [locateTouches] hands back, by time; a time not in it has no place.
+  final Map<int, ({double x, double y})> touchPlaces = {};
+
+  @override
+  Future<List<RawTouch>> locateTouches(String uri, List<int> timesMs) async {
+    calls.add('locateTouches:${timesMs.length}');
+    return [
+      for (final t in timesMs)
+        RawTouch(tMs: t, x: touchPlaces[t]?.x, y: touchPlaces[t]?.y),
+    ];
+  }
 
   @override
   Future<List<RawTouch>> scanTouches(
@@ -115,6 +128,21 @@ class FakeRecorder implements NativeRecorder {
     calls.add('renderText');
     return (png: _png, w: 80, h: 30);
   }
+
+  @override
+  Future<({Uint8List png, int w, int h})> renderCue(
+    Map<String, Object> cue,
+    Map<String, Object?>? style,
+    int frameW, {
+    int? timeMs,
+  }) async {
+    calls.add('renderCue');
+    cueTimes.add(timeMs);
+    return (png: _png, w: 80, h: 30);
+  }
+
+  /// `timeMs` of every renderCue call, in order.
+  final List<int?> cueTimes = [];
 
   List<({int startMs, int endMs})> idleRanges = [];
 
@@ -366,8 +394,10 @@ Future<({Widget app, FakeRecorder fake})> buildTestApp({
   bool onboarded = true,
   FakePermissions? permissions,
   Locale locale = const Locale('vi'),
+  Map<String, Object> prefs = const {},
+  ProjectStore? projects,
 }) async {
-  SharedPreferences.setMockInitialValues({'onboarded': onboarded});
+  SharedPreferences.setMockInitialValues({'onboarded': onboarded, ...prefs});
   final store = await SettingsStore.load();
   final fake = FakeRecorder(media: media);
   return (
@@ -380,6 +410,7 @@ Future<({Widget app, FakeRecorder fake})> buildTestApp({
         permissionsGatewayProvider.overrideWithValue(
           permissions ?? FakePermissions(),
         ),
+        if (projects != null) projectStoreProvider.overrideWithValue(projects),
       ],
       child: const EScreenRecorderApp(),
     ),
