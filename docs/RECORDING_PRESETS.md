@@ -304,6 +304,8 @@ Quay menu Liên Quân Mobile 13:34–13:35, file gốc `ESR_20261101_133558.mp4`
 
 Ảnh màn hình kết quả cho thấy lỗi giao diện: dòng vàng **"BOTTOM OVERFLOWED BY 34 PIXELS"**, và không có `result_preview`; nút "Xuất ngay" vẫn bấm được. Đây là lỗi cần sửa ở màn kết quả khi quay ngang.
 
+Chưa test chấm nổi: flow chỉ chạm vào game, không chạm vào chấm; cần chạy lại khi có máy.
+
 Bằng chứng: `test-results/preset_record/game_menu_small.png`, `game_result_small.png`.
 
 ### 4.3. Quay thường – Chuẩn (1080p) — CHƯA CHẠY
