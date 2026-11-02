@@ -92,7 +92,7 @@ rồi kẹp trong **1,5–25 Mbps** (`rec_settings.dart:75-78`). Với S25 1440�
 
 | Thông số | Giá trị | Mã |
 |---|---|---|
-| fps khi xuất | **30 cố định** | `Exporter.kt:250` |
+| fps khi xuất | **Giữ nguyên nhịp khung nguồn (VFR)**; chỉ ảnh đứng mới đặt 30 fps | `Exporter.kt:250` (chỉ still), clip test |
 | Bitrate mặc định | `w × h × 30 × 0,07`, kẹp 1,5–25 Mbps | `export_presets.dart:91-92` |
 | Audio | 128 kbps | `export_presets.dart:70` |
 | Mẫu YouTube | 1080p | `export_presets.dart:33` |
@@ -123,7 +123,7 @@ rồi kẹp trong **1,5–25 Mbps** (`rec_settings.dart:75-78`). Với S25 1440�
 ### 2.1. Hướng dẫn
 
 - **1080p, 30 fps, Nét**: chữ trong app (Settings, Chrome, Zalo) sắc nét khi phóng to 180%; 30 fps đủ cho thao tác chậm, file nhỏ hơn 60 fps.
-- **Thời gian hiện dấu 1,5 s**: đủ để người xem thấy chỗ bấm, không che bước kế. Dấu tự dựng còn bị cắt ngắn nếu màn hình đổi hoặc dấu kế xuất hiện (`auto_director.dart:503-520`), nên 1,5 s là mức trần an toàn.
+- **Thời gian hiện dấu 1,5 s**: đủ để người xem thấy chỗ bấm, không che bước kế. Dấu tự dựng còn bị cắt ngắn nếu màn hình đổi hoặc dấu kế xuất hiện (`auto_director.dart:503-520`), nên 1,5 s là mức trần an toàn. **Lưu ý đã test:** tap làm đổi màn hình bị cắt về **0 ms** vì `tapHoldMs = 0`; chỉ tap không đổi màn (ví dụ gạt công tắc) mới giữ đủ 1,5 s. Muốn thấy dấu lâu, hãy bấm vào phần tử không điều hướng.
 - **Mức phóng 180%**: đủ đọc chữ mà không làm mất ngữ cảnh. 300% chỉ nên dùng khi quay màn hình nhỏ hoặc bấm vào chi tiết rất nhỏ.
 - **Phóng vào 300 ms**: nhanh, không gây say; 350 ms mặc định hơi chậm với clip 30–45 s.
 - **Giữ thêm 0 ms**: dấu đã giữ 1,5 s, giữ zoom thêm sẽ làm clip dài.
@@ -263,7 +263,52 @@ Dùng cho: clip rất ngắn, gửi qua ứng dụng giới hạn dung lượng.
 
 ## 4. Kết quả test trên S25
 
-Chưa chạy trong lượt này. Phần này sẽ ghi: tên clip, thời lượng, kích thước, fps thực, 5–6 ảnh khung hình, và kết luận ĐẠT / CHƯA ĐẠT cho từng chế độ.
+### 4.1. Hướng dẫn – Chuẩn (1080p) — ĐẠT, có điều kiện
+
+Quay Settings 57 s, 5 lần bấm, xuất ngay không mở trình sửa.
+
+| Mục | Bản quay gốc | Bản xuất |
+|---|---|---|
+| Tên file | `ESR_20261101_132530.mp4` | `ESR_edit_20261101_132612.mp4` |
+| Dung lượng | 36.197.169 B | 30.163.372 B |
+| Khung | 1080×2340 | 1080×2340 |
+| Thời lượng | 57,29 s | 58,79 s |
+| fps trung bình | 20,14 | 20,39 |
+| Bitrate trung bình | 4,92 Mbps | 3,92 Mbps |
+| Audio | AAC 48 kHz, 2 kênh, 128 kbps | AAC 48 kHz, 2 kênh |
+
+Bitrate 4,92 Mbps là **trung bình VBR**; mức đặt cho 1080p30 Nét là ≈8,34 Mbps. Màn Settings tĩnh nên encoder phát ít bit hơn, không phải preset sai.
+
+Dấu trong project (`projects.db`, id `media/597`): **5 dấu, 5 zoom, 11 đoạn**, tất cả `type=number`, màu đỏ, zoom 1,8×, ramp 300 ms:
+
+| Dấu | Cue | Hold | Zoom | Ghi chú |
+|---|---|---|---|---|
+| 1 | 11.016 ms | 0 | 1.000 ms | Tap "Kết nối" → đổi màn, hold bị cắt |
+| 2 | 20.294 ms | 0 | 1.000 ms | Tap "Âm thanh và rung" → đổi màn |
+| 3 | 23.263 ms | **1.500 ms** | **2.500 ms** | Gạt công tắc, không đổi màn → giữ đủ |
+| 4 | 31.859 ms | 0 | 1.000 ms | Tap "Thông báo" → đổi màn |
+| 5 | 42.710 ms | 0 | 1.000 ms | Tap "Tìm kiếm" → đổi màn |
+
+Kết luận: preset đúng như bảng 3.1 — dấu số đỏ, zoom 180%, video xuất 1080×2340, không có dấu trong bản gốc. **Điều kiện:** tap điều hướng chỉ hiện dấu ~1 s (hold 0), không đủ 1,5 s như tên preset. Đây là hành vi của auto director, không phải lỗi preset.
+
+Bằng chứng:
+
+- `test-results/preset_record/t2_4.png`: dấu số **3** + zoom 1,8×.
+- `test-results/preset_record/cmp_raw_24.7.png`: bản gốc cùng thời điểm, **không có dấu**, công tắc đã bật.
+- `test-results/preset_record/cmp_exp_24.7.png`: bản xuất, có dấu.
+- `test-results/preset_record/maestro_tut5_20261101_132400/.../takeScreenshot/`: ảnh từng bước và màn kết quả/xuất.
+
+### 4.2. Game – Chuẩn (Gốc 60 fps) — CHƯA ĐẠT (thiếu bản xuất)
+
+Quay menu Liên Quân Mobile 13:34–13:35, file gốc `ESR_20261101_133558.mp4` **127.353.638 B**. Logcat của phiên quay ghi khung **3120×1440**, luồng **60,4 fps / 12,1 Mbps** (menu tĩnh nên VBR thấp hơn mức kẹp 25 Mbps). Chưa lấy được bản xuất: thiết bị mất kết nối Wi-Fi ngay sau khi bấm dừng, trước bước "Xuất ngay".
+
+Ảnh màn hình kết quả cho thấy lỗi giao diện: dòng vàng **"BOTTOM OVERFLOWED BY 34 PIXELS"**, và không có `result_preview`; nút "Xuất ngay" vẫn bấm được. Đây là lỗi cần sửa ở màn kết quả khi quay ngang.
+
+Bằng chứng: `test-results/preset_record/game_menu_small.png`, `game_result_small.png`.
+
+### 4.3. Quay thường – Chuẩn (1080p) — CHƯA CHẠY
+
+Chưa có clip. Sẽ chạy sau khi kết nối lại S25.
 
 ## 5. Những gì CHƯA hoạt động
 
@@ -279,8 +324,12 @@ Chưa chạy trong lượt này. Phần này sẽ ghi: tên clip, thời lượn
 8. **Không có nguồn chạm "dots"/"manual" trên UI.** Chỉ còn Tự động / Bấm tay / Không dấu.
 9. **Zoom vào và ra dùng chung một thời gian** (`zoomRamp`), không chỉnh riêng thời gian thu lại.
 10. **Tua nhanh đoạn đứng yên không áp dụng ở bản dựng sau quay** (`idle: false`); chỉ có trong trình sửa.
-11. **60 fps không được bảo đảm khi màn hình tĩnh.** Bộ ghi phát lại khung cuối mỗi 500 ms.
-12. **Xuất cố định 30 fps**, không chọn fps/bitrate tay; GIF 10 fps.
-13. **Quay thường bật "Dấu đánh dấu khi quay" sẽ ghi chấm góc vào video.** Muốn video sạch phải tắt, nhưng tắt thì mất khả năng nghe chạm.
+11. **30/60 fps chỉ là mục tiêu, không phải fps trung bình.** Bộ ghi dùng VFR: màn hình tĩnh phát lại khung cuối mỗi 500 ms, nên clip 30 fps có thể chỉ ~20 fps trung bình (đã đo 20,14 fps ở mục 4.1). Khi có chuyển động, fps lên gần mức đặt.
+12. **Xuất giữ nguyên nhịp khung nguồn (VFR), không ép 30 fps.** Chỉ ảnh đứng mới đặt 30 fps (`Exporter.kt:250`); clip test 4.1 xuất ra 20,39 fps, không phải 30. GIF 10 fps.
+13. **Quay thường bật "Dấu đánh dấu khi quay" có thể ghi chấm góc vào video.** Chưa verify trên máy thật ở lượt này; nếu chấm nổi bị bỏ khỏi bản ghi thì video vẫn sạch. Muốn chắc chắn sạch, tắt nút này, nhưng tắt thì mất khả năng nghe chạm.
 14. **Nhãn "Bước N" cố định** ở y 10%, cỡ 20U; không chỉnh được vị trí/cỡ.
 15. **"Dấu đánh dấu khi quay" là điều kiện bắt buộc của dấu tự động.** Tắt nút này ở chế độ Hướng dẫn thì không có dấu nào, dù vẫn chọn "Tự động sau khi quay".
+16. **Bản quay gốc không có dấu/zoom.** Chế độ Hướng dẫn là "quay sạch": lúc quay không vẽ gì; dấu số và zoom chỉ được render khi xuất (`Exporter.kt:399`). Đừng mong thấy dấu trong file gốc.
+17. **Tap điều hướng bị cắt hold về 0.** `tapHoldMs` = 0 khi màn hình đổi, nên dấu chỉ hiện ~1 s (300 ms dừng hình + 300 ms fade + zoom 1 s), không đủ 1,5 s. Chỉ tap không đổi màn mới giữ đủ hold (đã đo dấu 3: hold 1.500 ms, zoom 2.500 ms).
+18. **Màn kết quả khi quay ngang bị tràn 34 px.** Ảnh 4.2 có dòng "BOTTOM OVERFLOWED BY 34 PIXELS" và không có `result_preview`; nút "Xuất ngay" vẫn dùng được. Cần sửa layout ngang.
+19. **Chưa test xong Game export và Quay thường.** Game mới có bản quay gốc; bản xuất và Quay thường chưa chạy vì S25 mất kết nối Wi-Fi lúc 13:36. Không ghi ĐẠT cho hai mục này.

@@ -1,5 +1,11 @@
 # Changelog
 
+## [2026-11-01] Bảng thông số quay chuẩn và test thật chế độ Hướng dẫn trên S25
+- Thêm `docs/RECORDING_PRESETS.md`: thông số cụ thể cho 3 chế độ (Hướng dẫn / Game / Quay thường), 6 bộ preset, nơi chỉnh trên UI, mã nguồn từng số, và mục giới hạn.
+- Test Hướng dẫn 1080p trên S25: quay Settings 57 s, 5 dấu số, xuất ngay không mở trình sửa. Bản gốc 1080×2340 / 57,29 s / 4,92 Mbps; bản xuất 1080×2340 / 58,79 s / 3,92 Mbps. Dấu 3 (gạt công tắc) giữ đủ hold 1,5 s + zoom 2,5 s; các tap đổi màn bị cắt hold về 0.
+- Phát hiện: bản quay gốc không có dấu (chỉ render khi xuất); export giữ VFR nguồn chứ không ép 30 fps; màn kết quả khi quay ngang tràn 34 px và không có `result_preview`.
+- Game mới có bản quay gốc 3120×1440 / ~60,4 fps / ~12,1 Mbps (menu tĩnh); bản xuất và Quay thường chưa chạy vì S25 mất kết nối Wi-Fi. Không ghi ĐẠT cho hai mục này.
+
 ## [2026-11-01] Vuốt mở rộng vùng làm việc, hướng dẫn thiết lập, báo "chỉ có trên Android"
 - Dấu: lần bấm làm đổi màn gần như ngay thì dấu (và ảnh dừng hình) được lấy sớm hơn lần chạm tối đa 0,45 s để dấu mờ hết trước khi màn mới hiện. Kiểm trên S25.
 - Màn sửa: vuốt xuống trên khung xem trước / thanh phát / timeline: gập công cụ, vuốt nữa: toàn màn hình; vuốt lên thu lại từng bước. Không đè lên kéo timeline, kéo dấu, chụm phóng. Có dòng nhắc 3 lần đầu. Sửa lỗi dòng nhắc làm khung xem trước co về 0 khi ẩn.

@@ -39,6 +39,8 @@ Phase 1, H1-3, 2a, 2b+fix: ✅. Phase 2 (2c-2g): ✅ (Phần 9). Phase 3 chữ h
 Phase 5 (12 mẫu): ✅. Phase 6 nhập SRT: ✅ (kiểm trên máy thật); xuất SRT: ⬜. Phase 7 (xuất video có phụ đề + tạo phụ đề tự động thành CaptionCue): ✅ — dùng Android STT trên máy (không Whisper), chất lượng ở mục "STT quality thực tế" (Phần 12), pipeline ở Phần 13.
 Phase 8 timeline riêng cho phụ đề: ⬜. Phase 10 E2E: ✅ một phần (Phần 13). Whisper: không dùng (không cần).
 
+Ghi chú preset quay (01/11/2026): thông số 3 chế độ nằm ở `docs/RECORDING_PRESETS.md`. Phụ đề vẫn **không tự sinh lúc quay**; "quay xong dùng ngay" chỉ đúng khi clip không cần phụ đề. Muốn có phụ đề phải mở trình sửa và chạy "Phụ đề tự động" (mẫu TikTok) hoặc đặt tay (mẫu Chuẩn).
+
 ## PHẦN 8 — KHÔNG LÀM
 Không CustomPainter Flutter, không đổi typedef SubtitleCue, không tự thêm dep, không iOS export đợt này, không đổi tên cũ, không gộp phase, không tải Whisper không rõ nguồn, không sửa production để test pass.
 

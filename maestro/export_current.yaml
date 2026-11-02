@@ -1,0 +1,8 @@
+appId: com.huluca.escreenrecorder
+name: Export current result
+---
+- tapOn: "Xuất ngay"
+- extendedWaitUntil:
+    visible: "Đã xuất: .*"
+    timeout: 180000
+- takeScreenshot: export_current_done

@@ -1,0 +1,88 @@
+﻿appId: com.huluca.escreenrecorder
+name: Preset - tutorial 1080p, record Settings, export without editing
+tags:
+  - preset
+---
+- launchApp:
+    stopApp: true
+- runFlow:
+    when:
+      visible: "Bỏ qua"
+    commands:
+      - tapOn: "Bỏ qua"
+- runFlow: helpers/start_recording.yaml
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_PRESET"
+    timeout: 4000
+    optional: true
+- launchApp:
+    appId: com.android.settings
+    stopApp: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: preset_tut_1_settings
+- tapOn: "Kết nối"
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: preset_tut_2_connections
+- launchApp:
+    appId: com.android.settings
+    stopApp: true
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn: "Âm thanh và rung"
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: preset_tut_3_sound
+- tapOn:
+    point: "87%,30%"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: preset_tut_4_toggle
+- launchApp:
+    appId: com.android.settings
+    stopApp: true
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn: "Thông báo"
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: preset_tut_5_notifications
+- launchApp:
+    appId: com.android.settings
+    stopApp: true
+- waitForAnimationToEnd:
+    timeout: 1500
+- tapOn: "Tìm kiếm"
+- waitForAnimationToEnd:
+    timeout: 1000
+- inputText: "wifi"
+- waitForAnimationToEnd:
+    timeout: 1500
+- takeScreenshot: preset_tut_6_search
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Dừng quay"
+    timeout: 15000
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Quay xong rồi"
+    timeout: 40000
+- extendedWaitUntil:
+    notVisible: "Đang dựng tự động.*"
+    timeout: 120000
+- takeScreenshot: preset_tut_7_result
+- tapOn:
+    id: "result_preview"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_PRESET"
+    timeout: 3000
+    optional: true
+- takeScreenshot: preset_tut_8_playing
+- tapOn: "Xuất ngay"
+- extendedWaitUntil:
+    visible: "Đã xuất: .*"
+    timeout: 120000
+- takeScreenshot: preset_tut_9_exported
