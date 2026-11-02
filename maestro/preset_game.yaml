@@ -20,23 +20,23 @@ tags:
     stopApp: false
 - waitForAnimationToEnd:
     timeout: 3000
-- extendedWaitUntil:
-    visible: "NEVER_ON_SCREEN_PRESET"
-    timeout: 12000
-    optional: true
+- tapOn:
+    point: "92%,4%"
+- waitForAnimationToEnd:
+    timeout: 3000
 - takeScreenshot: preset_game_1_menu
 - tapOn:
-    point: "50%,50%"
-- extendedWaitUntil:
-    visible: "NEVER_ON_SCREEN_PRESET"
-    timeout: 3000
-    optional: true
+    point: "2%,60%"
+- waitForAnimationToEnd:
+    timeout: 2000
 - tapOn:
-    point: "50%,55%"
-- extendedWaitUntil:
-    visible: "NEVER_ON_SCREEN_PRESET"
-    timeout: 3000
-    optional: true
+    point: "50%,50%"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "2%,60%"
+- waitForAnimationToEnd:
+    timeout: 2000
 - takeScreenshot: preset_game_2_menu
 - launchApp:
     appId: com.huluca.escreenrecorder
@@ -52,15 +52,8 @@ tags:
     notVisible: "Đang dựng tự động.*"
     timeout: 120000
 - takeScreenshot: preset_game_3_result
-- tapOn:
-    id: "result_preview"
-- extendedWaitUntil:
-    visible: "NEVER_ON_SCREEN_PRESET"
-    timeout: 3000
-    optional: true
-- takeScreenshot: preset_game_4_playing
 - tapOn: "Xuất ngay"
 - extendedWaitUntil:
     visible: "Đã xuất: .*"
     timeout: 180000
-- takeScreenshot: preset_game_5_exported
+- takeScreenshot: preset_game_4_exported

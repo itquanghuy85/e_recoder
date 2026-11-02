@@ -1,5 +1,13 @@
 # Changelog
 
+## [2026-11-02] Test thật Game 60 fps và Quay thường 1080p trên S25
+- Game: flow `preset_game_landscape.yaml` PASS, quay menu Liên Quân 45,21 s ở 3120×1440, 60 fps, âm thanh máy, xuất ngay. Bản gốc 138.006.274 B / 24,29 Mbps; bản xuất 54.242.430 B / 9,40 Mbps, giữ 60 fps và 2.873 khung. Bản xuất tính bitrate theo 30 fps nên thấp hơn bản gốc ~2,6 lần.
+- Phát hiện điều kiện Game: phải mở game ở chế độ ngang trước khi bắt đầu quay. Quay từ màn dọc rồi mở game ngang cho ra video 1440×3120 gần như đen (`game2_raw.mp4`).
+- Game dấu: project 0 marker/0 zoom; chấm nổi ở góc trên trái tự ẩn, flow chạm 2%,60% trượt nên chưa verify được dấu. Màn kết quả ngang vẫn tràn 34 px, không có `result_preview`; "Xuất ngay" vẫn thành công.
+- Quay thường: preset 1080p / 30 fps / Cân bằng / không âm thanh / tắt thanh nổi, quay Settings 34,09 s, xuất ngay. Bản gốc 14.354.287 B / 3,37 Mbps / không track audio; bản xuất 15.874.763 B / 3,50 Mbps + AAC 44,1 kHz im lặng. Project 0 marker/0 text/0 zoom; khung 2/10/20/30 s khớp nhau, không dấu.
+- Cập nhật `docs/RECORDING_PRESETS.md` mục 2.2, 2.3, 4.2, 4.3 và mục 5 (items 18–23); thêm flow `maestro/preset_plain.yaml`.
+- Chỉ sửa tài liệu và flow test, không sửa code ứng dụng.
+
 ## [2026-11-01] Bảng thông số quay chuẩn và test thật chế độ Hướng dẫn trên S25
 - Thêm `docs/RECORDING_PRESETS.md`: thông số cụ thể cho 3 chế độ (Hướng dẫn / Game / Quay thường), 6 bộ preset, nơi chỉnh trên UI, mã nguồn từng số, và mục giới hạn.
 - Test Hướng dẫn 1080p trên S25: quay Settings 57 s, 5 dấu số, xuất ngay không mở trình sửa. Bản gốc 1080×2340 / 57,29 s / 4,92 Mbps; bản xuất 1080×2340 / 58,79 s / 3,92 Mbps. Dấu 3 (gạt công tắc) giữ đủ hold 1,5 s + zoom 2,5 s; các tap đổi màn bị cắt hold về 0.

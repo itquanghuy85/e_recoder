@@ -1,6 +1,6 @@
 # Thông số quay chuẩn cho từng chế độ
 
-Cập nhật: 01/11/2026. Máy nghiệm thu: **Galaxy S25 Ultra (SM-S938B)**, màn hình 1440×3120, tiếng Việt.
+Cập nhật: 02/11/2026. Máy nghiệm thu: **Galaxy S25 Ultra (SM-S938B)**, màn hình 1440×3120, tiếng Việt.
 Bản app: debug 1.2.0 (Flutter 3.47.4).
 
 Quy ước:
@@ -134,16 +134,18 @@ rồi kẹp trong **1,5–25 Mbps** (`rec_settings.dart:75-78`). Với S25 1440�
 
 ### 2.2. Game
 
+- **Bắt đầu quay khi game đã ở chế độ ngang.** Nếu bắt đầu quay ở màn dọc rồi mới mở game ngang, VirtualDisplay giữ khung dọc 1440×3120 và video gần như đen (đã gặp ở lần 2). Mở game → xoay ngang → mới bấm quay.
 - **Gốc 1440×3120, 60 fps**: giữ chi tiết HUD và chuyển động. Chất lượng Nét cho bitrate ≈25 Mbps (bị kẹp), đủ cho cảnh động.
 - **Âm thanh máy**: nghe tiếng game. Chọn "Cả hai" nếu muốn bình luận.
-- **Dấu bấm tay, thời gian hiện dấu 1,5 s**: chấm nổi chỉ để đánh dấu khoảnh khắc, không phóng to.
-- **Không bật phóng to / đánh số**: chế độ chấm nổi không sinh dấu tự dựng, nên các nút này vô tác dụng.
+- **Chấm nổi ở góc (dot mode)**: chạm chấm để bật lớp đánh dấu, rồi chạm điểm cần chỉ; dấu được vẽ trực tiếp vào video, **không lưu thành marker trong project**. Vì vậy không có zoom/đánh số sau quay. Chấm mặc định ở góc **dưới trái** (`marker.corner=2`, cách mép trái 6 dp, cách đáy 132 dp); flow test cũ chạm 2%,60% nên trượt.
+- **Không bật phóng to / đánh số**: chấm nổi không sinh dấu tự dựng, nên các nút này vô tác dụng.
 - **60 fps không được bảo đảm trên màn hình tĩnh**: bộ ghi chỉ phát lại khung cuối mỗi 500 ms khi không có gì đổi (`RecordingSession.kt`), nên clip cảnh đứng yên có thể thấp hơn 60 fps. Đây là giới hạn của Android, không phải cài đặt sai.
 
 ### 2.3. Quay thường
 
 - **1080p, 30 fps, Cân bằng**: file nhỏ, dùng ngay để gửi hoặc đăng.
 - **Dấu đánh dấu khi quay TẮT**: video sạch, không có chấm góc. Đổi lại, app không nghe chạm và không tự dựng dấu.
+- **Bật "Dấu đánh dấu khi quay"** có thể để chấm góc lọt vào video; chưa verify trên máy thật. Muốn chắc chắn sạch, tắt nút này.
 - **Không dấu, không phóng to, không đánh số**: đúng mục đích quay thường.
 - **Micro hoặc Không có**: tuỳ nhu cầu; quay màn hình im lặng nên chọn "Không có".
 
@@ -298,19 +300,54 @@ Bằng chứng:
 - `test-results/preset_record/cmp_exp_24.7.png`: bản xuất, có dấu.
 - `test-results/preset_record/maestro_tut5_20261101_132400/.../takeScreenshot/`: ảnh từng bước và màn kết quả/xuất.
 
-### 4.2. Game – Chuẩn (Gốc 60 fps) — CHƯA ĐẠT (thiếu bản xuất)
+### 4.2. Game – Chuẩn (Gốc 60 fps) — ĐẠT phần quay/xuất; dấu CHƯA VERIFY
 
-Quay menu Liên Quân Mobile 13:34–13:35, file gốc `ESR_20261101_133558.mp4` **127.353.638 B**. Logcat của phiên quay ghi khung **3120×1440**, luồng **60,4 fps / 12,1 Mbps** (menu tĩnh nên VBR thấp hơn mức kẹp 25 Mbps). Chưa lấy được bản xuất: thiết bị mất kết nối Wi-Fi ngay sau khi bấm dừng, trước bước "Xuất ngay".
+**Điều kiện bắt buộc: mở game ở chế độ ngang trước, rồi mới bắt đầu quay.** Lần 2 quay từ màn dọc rồi mở game ngang cho ra `game2_raw.mp4` 1440×3120, 37,1 s, 46,3 fps, nội dung gần như đen. Lần 3 làm đúng thứ tự, flow `maestro/preset_game_landscape.yaml` PASS toàn bộ, gồm "Xuất ngay".
 
-Ảnh màn hình kết quả cho thấy lỗi giao diện: dòng vàng **"BOTTOM OVERFLOWED BY 34 PIXELS"**, và không có `result_preview`; nút "Xuất ngay" vẫn bấm được. Đây là lỗi cần sửa ở màn kết quả khi quay ngang.
+Quay menu Liên Quân Mobile 45,21 s, 3120×1440, 60 fps, âm thanh máy, xuất ngay không mở trình sửa:
 
-Chưa test chấm nổi: flow chỉ chạm vào game, không chạm vào chấm; cần chạy lại khi có máy.
+| Mục | Bản quay gốc | Bản xuất |
+|---|---|---|
+| Tên file | `ESR_20261102_154210.mp4` | `ESR_edit_20261102_154225.mp4` |
+| Dung lượng | 138.006.274 B | 54.242.430 B |
+| Khung | 3120×1440 | 3120×1440 |
+| Thời lượng | 45,21 s | 45,21 s |
+| fps trung bình | 63,55 (timebase 60) | 63,55 (timebase 60) |
+| Bitrate trung bình | 24,29 Mbps | 9,40 Mbps |
+| Audio | AAC 48 kHz, 2 kênh, 128 kbps | AAC 48 kHz, 2 kênh, 128 kbps |
 
-Bằng chứng: `test-results/preset_record/game_menu_small.png`, `game_result_small.png`.
+Bản xuất giữ đúng 60 fps và đủ 2.873 khung, nhưng bitrate chỉ **9,40 Mbps** vì công thức xuất tính `w × h × 30 × 0,07` (theo 30 fps), thấp hơn bản gốc 24,29 Mbps khoảng 2,6 lần. Cảnh chuyển động nhanh có thể mềm hơn bản gốc.
 
-### 4.3. Quay thường – Chuẩn (1080p) — CHƯA CHẠY
+Dấu: project `media/610` có **0 marker, 0 zoom, 1 đoạn**. Chấm nổi mặc định ở góc dưới trái; flow chạm 2%,60% không trúng chấm nên không đặt được dấu. Badge đỏ ở góc trên trái trong clip là chỉ báo ghi màn hình, không phải chấm. **Chưa xác nhận** chấm nổi vẽ dấu vào video — cần flow chạm đúng chấm rồi kiểm khung gốc.
 
-Chưa có clip. Sẽ chạy sau khi kết nối lại S25.
+Màn kết quả khi quay ngang vẫn lỗi giao diện: dòng vàng **"BOTTOM OVERFLOWED BY 34 PIXELS"**, không có `result_preview`, chữ "Đã xuất…" đè lên vùng xem trước. Nút "Xuất ngay" vẫn hoạt động và file xuất hợp lệ.
+
+Bằng chứng:
+
+- `test-results/preset_record/game3_raw.mp4`, `game3_export.mp4`.
+- `test-results/preset_record/g3_contact.png`: 32 khung từ 3–19 s, thấy badge đỏ góc trên trái (chỉ báo ghi màn hình), không thấy dấu ngón tay; chấm nổi ở góc dưới trái không được chạm đúng.
+- `test-results/preset_record/g3e_*.png`: khung trích từ bản xuất.
+- `test-results/preset_record/maestro_game3_20261102_154058/.../takeScreenshot/game_land_3_result.png`, `game_land_4_exported.png`: màn kết quả tràn 34 px và màn đã xuất.
+
+### 4.3. Quay thường – Chuẩn (1080p) — ĐẠT phần quay/xuất, video sạch
+
+Preset: 1080p, 30 fps, Cân bằng, âm thanh **Không có**, "Dấu đánh dấu khi quay" **Tắt**, không đánh số/không phóng to. Quay Settings 34,09 s (8 s đầu ở màn hình chính rồi mới sang Settings), xuất ngay không mở trình sửa.
+
+| Mục | Bản quay gốc | Bản xuất |
+|---|---|---|
+| Tên file | `ESR_20261102_155234.mp4` | `ESR_edit_20261102_155242.mp4` |
+| Dung lượng | 14.354.287 B | 15.874.763 B |
+| Khung | 1080×2340 | 1080×2340 |
+| Thời lượng | 34,09 s | 34,12 s |
+| fps trung bình | 22,88 (timebase 46) | 22,88 (timebase 46) |
+| Bitrate trung bình | 3,37 Mbps | 3,50 Mbps (video) |
+| Audio | **Không có track audio** | AAC 44,1 kHz, 2 kênh, 128 kbps, **im lặng −91 dB** |
+
+Project `media/614`: **0 marker, 0 text, 0 zoom, 1 đoạn**, khung 1080×2340, dài 34.088 ms. Các khung lấy ở 2 s, 10 s, 20 s, 30 s của bản gốc và bản xuất giống nhau (khác nhau chỉ do mã hoá lại), không có dấu/zoom.
+
+Lưu ý: file gốc không có track audio, nhưng bản xuất luôn thêm một track AAC im lặng. Nếu cần file không audio, phải bỏ track sau khi xuất. Trong clip còn biểu tượng ghi màn hình ở thanh trạng thái (ô đỏ có số), lọt vào cả bản gốc lẫn bản xuất; đây là chỉ báo hệ thống/ứng dụng, không phải dấu.
+
+Bằng chứng: `test-results/preset_record/plain2_raw.mp4`, `plain2_export.mp4`, `p2_raw_2/5/10/20/30.png`, `p2_exp_2/10/20/30.png`, `test-results/maestro_plain_clean_20261102/.../screenshots/`.
 
 ## 5. Những gì CHƯA hoạt động
 
@@ -333,5 +370,9 @@ Chưa có clip. Sẽ chạy sau khi kết nối lại S25.
 15. **"Dấu đánh dấu khi quay" là điều kiện bắt buộc của dấu tự động.** Tắt nút này ở chế độ Hướng dẫn thì không có dấu nào, dù vẫn chọn "Tự động sau khi quay".
 16. **Bản quay gốc không có dấu/zoom.** Chế độ Hướng dẫn là "quay sạch": lúc quay không vẽ gì; dấu số và zoom chỉ được render khi xuất (`Exporter.kt:399`). Đừng mong thấy dấu trong file gốc.
 17. **Tap điều hướng bị cắt hold về 0.** `tapHoldMs` = 0 khi màn hình đổi, nên dấu chỉ hiện ~1 s (300 ms dừng hình + 300 ms fade + zoom 1 s), không đủ 1,5 s. Chỉ tap không đổi màn mới giữ đủ hold (đã đo dấu 3: hold 1.500 ms, zoom 2.500 ms).
-18. **Màn kết quả khi quay ngang bị tràn 34 px.** Ảnh 4.2 có dòng "BOTTOM OVERFLOWED BY 34 PIXELS" và không có `result_preview`; nút "Xuất ngay" vẫn dùng được. Cần sửa layout ngang.
-19. **Chưa test xong Game export và Quay thường.** Game mới có bản quay gốc; bản xuất và Quay thường chưa chạy vì S25 mất kết nối Wi-Fi lúc 13:36. Không ghi ĐẠT cho hai mục này.
+18. **Màn kết quả khi quay ngang bị tràn 34 px.** Đã thấy lại ở lần Game 3: dòng "BOTTOM OVERFLOWED BY 34 PIXELS", không có `result_preview`, chữ "Đã xuất…" đè vùng xem trước; nút "Xuất ngay" vẫn dùng được. Cần sửa layout ngang.
+19. **Game: chưa verify dấu chấm nổi.** Flow lần 3 chạm 2%,60% nhưng chấm mặc định ở góc dưới trái, nên không đặt được dấu; project 0 marker/0 zoom. Cần flow chạm đúng chấm rồi kiểm khung gốc.
+20. **Game bắt đầu ở màn dọc → video dọc/đen.** Quay từ portrait rồi mở game landscape cho ra 1440×3120, nội dung gần như đen. Phải mở game ngang trước khi bấm quay.
+21. **Xuất clip 60 fps bị tính bitrate theo 30 fps.** Công thức `w × h × 30 × 0,07` cho 3120×1440 ra 9,40 Mbps, trong khi bản gốc 60 fps là 24,29 Mbps. Bản xuất vẫn 60 fps nhưng ít bit hơn, cảnh động nhanh dễ mềm.
+22. **Quay thường "Không có" âm thanh: file gốc không có track audio, file xuất có track AAC im lặng.** Muốn file không audio phải bỏ track sau khi xuất.
+23. **Biểu tượng ghi màn hình ở thanh trạng thái lọt vào video.** Ô đỏ có số vẫn xuất hiện ở góc trên trái trong clip Quay thường dù đã tắt thanh nổi; đây là chỉ báo hệ thống/ứng dụng, không phải dấu, và không tắt được từ preset.

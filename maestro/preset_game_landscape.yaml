@@ -1,0 +1,54 @@
+appId: com.huluca.escreenrecorder
+name: Preset - game landscape native 60fps, record, export without editing
+tags:
+  - preset
+---
+- launchApp:
+    stopApp: false
+- runFlow: helpers/start_recording.yaml
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN_PRESET"
+    timeout: 3000
+    optional: true
+- launchApp:
+    appId: com.garena.game.kgvn
+    stopApp: false
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    point: "92%,4%"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: game_land_1
+- tapOn:
+    point: "2%,60%"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,50%"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "2%,60%"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: game_land_2
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- extendedWaitUntil:
+    visible: "Dừng quay"
+    timeout: 15000
+- tapOn: "Dừng quay"
+- extendedWaitUntil:
+    visible: "Quay xong rồi"
+    timeout: 40000
+- extendedWaitUntil:
+    notVisible: "Đang dựng tự động.*"
+    timeout: 120000
+- takeScreenshot: game_land_3_result
+- tapOn: "Xuất ngay"
+- extendedWaitUntil:
+    visible: "Đã xuất: .*"
+    timeout: 180000
+- takeScreenshot: game_land_4_exported

@@ -1,0 +1,9 @@
+appId: com.huluca.escreenrecorder
+name: Back to record screen in landscape
+---
+- launchApp:
+    stopApp: false
+- tapOn: "Quay lại"
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: record_landscape
