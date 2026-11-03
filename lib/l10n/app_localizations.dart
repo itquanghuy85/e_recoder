@@ -3625,6 +3625,30 @@ abstract class AppL10n {
   /// **'Không phát được video này.'**
   String get resultPreviewError;
 
+  /// No description provided for @gameOrientationTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hãy xoay ngang trước khi quay'**
+  String get gameOrientationTitle;
+
+  /// No description provided for @gameOrientationBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Game thường chạy ở chế độ ngang. Mở game, xoay ngang máy rồi quay lại. Nếu quay khi máy đang dọc, video game có thể gần như đen.'**
+  String get gameOrientationBody;
+
+  /// No description provided for @gameOrientationCancel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Huỷ'**
+  String get gameOrientationCancel;
+
+  /// No description provided for @gameOrientationContinue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hiểu, quay tiếp'**
+  String get gameOrientationContinue;
+
   /// No description provided for @quickTitle.
   ///
   /// In vi, this message translates to:

@@ -1916,6 +1916,19 @@ class AppL10nEn extends AppL10n {
   String get resultPreviewError => 'This video cannot be played.';
 
   @override
+  String get gameOrientationTitle => 'Turn the phone sideways first';
+
+  @override
+  String get gameOrientationBody =>
+      'Games usually run in landscape. Open the game, turn the phone sideways, then start recording. Recording in portrait can give a nearly black game clip.';
+
+  @override
+  String get gameOrientationCancel => 'Cancel';
+
+  @override
+  String get gameOrientationContinue => 'Understood, record anyway';
+
+  @override
   String get quickTitle => 'Quick options';
 
   @override

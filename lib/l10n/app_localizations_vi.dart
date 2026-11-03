@@ -1911,6 +1911,19 @@ class AppL10nVi extends AppL10n {
   String get resultPreviewError => 'Không phát được video này.';
 
   @override
+  String get gameOrientationTitle => 'Hãy xoay ngang trước khi quay';
+
+  @override
+  String get gameOrientationBody =>
+      'Game thường chạy ở chế độ ngang. Mở game, xoay ngang máy rồi quay lại. Nếu quay khi máy đang dọc, video game có thể gần như đen.';
+
+  @override
+  String get gameOrientationCancel => 'Huỷ';
+
+  @override
+  String get gameOrientationContinue => 'Đã hiểu, quay tiếp';
+
+  @override
   String get quickTitle => 'Chọn nhanh';
 
   @override

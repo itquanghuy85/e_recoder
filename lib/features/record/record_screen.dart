@@ -32,6 +32,32 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   Future<void> _start() async {
     final t = AppL10n.of(context);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    // A game recorded from a portrait phone comes out nearly black: say so before the recording starts
+    // instead of letting the person find out when the clip is already made.
+    if (ref.read(purposeProvider) == Purpose.game &&
+        MediaQuery.orientationOf(context) == Orientation.portrait) {
+      final go = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          key: const ValueKey('game_orientation_dialog'),
+          title: Text(t.gameOrientationTitle),
+          content: Text(t.gameOrientationBody),
+          actions: [
+            TextButton(
+              key: const ValueKey('game_orientation_cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(t.gameOrientationCancel),
+            ),
+            FilledButton(
+              key: const ValueKey('game_orientation_continue'),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(t.gameOrientationContinue),
+            ),
+          ],
+        ),
+      );
+      if (go != true || !mounted) return;
+    }
     // A missing permission is explained on its own screen before recording starts, instead of failing
     // after the tap.
     final rec = ref.read(recSettingsProvider);
