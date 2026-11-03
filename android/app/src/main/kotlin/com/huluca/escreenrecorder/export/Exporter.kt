@@ -2,6 +2,8 @@ package com.huluca.escreenrecorder.export
 
 import kotlin.math.abs
 import android.content.Context
+import android.media.MediaExtractor
+import android.media.MediaFormat
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -126,8 +128,12 @@ class Exporter(private val ctx: Context) {
 
     private fun run(job: ExportJob, cb: Callback, base: Float) {
         val out = File(File(ctx.cacheDir, "export").also { it.mkdirs() }, "edit_${System.currentTimeMillis()}.mp4")
+        // A recording made without sound gets no silent AAC track: the file stays video-only unless the
+        // person added music or a voice-over. Source recordings that DO have sound keep the forced track,
+        // so stills and blank gaps stay in sync.
+        val hasAudio = job.audioClips.isNotEmpty() || sourceHasAudio(job.sourceUri)
         val composition = try {
-            buildComposition(job)
+            buildComposition(job, hasAudio)
         } catch (e: Exception) {
             cb.onError("build_failed", e.javaClass.simpleName + ": " + e.message); return
         }
@@ -212,7 +218,26 @@ class Exporter(private val ctx: Context) {
 
     private fun stillDir() = File(ctx.cacheDir, "export_stills")
 
-    private fun buildComposition(job: ExportJob): Composition {
+    /** True when the source file carries an audio track (a recording made with sound). */
+    private fun sourceHasAudio(sourceUri: String): Boolean {
+        val ex = MediaExtractor()
+        return try {
+            if (sourceUri.startsWith("content:") || sourceUri.startsWith("file:")) {
+                ex.setDataSource(ctx, Uri.parse(sourceUri))
+            } else {
+                ex.setDataSource(sourceUri)
+            }
+            (0 until ex.trackCount).any { i ->
+                ex.getTrackFormat(i).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true
+            }
+        } catch (_: Exception) {
+            true // Unknown: keep the old behaviour (a track that is there but silent is safer than a lost mix).
+        } finally {
+            try { ex.release() } catch (_: Exception) {}
+        }
+    }
+
+    private fun buildComposition(job: ExportJob, hasAudio: Boolean): Composition {
         require(job.segments.isNotEmpty()) { "no segments" }
         val items = ArrayList<EditedMediaItem>()
         var outCursor = 0L
@@ -223,7 +248,7 @@ class Exporter(private val ctx: Context) {
         val sequences = ArrayList<EditedMediaItemSequence>()
         // Stills, blanks and reversed clips have no sound: silence is generated for them so the audio track stays whole.
         // (Set on the sequence: the composition-level switch trips over image clips in this Media3 version.)
-        sequences.add(EditedMediaItemSequence.Builder(items).experimentalSetForceAudioTrack(!job.gif).build())
+        sequences.add(EditedMediaItemSequence.Builder(items).experimentalSetForceAudioTrack(!job.gif && hasAudio).build())
         if (!job.gif) sequences.addAll(audioSequences(job))
         val builder = Composition.Builder(sequences)
         // A GIF is built from a small, silent render of the edit.
