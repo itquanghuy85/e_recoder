@@ -223,7 +223,7 @@ class Exporter(private val ctx: Context) {
         val ex = MediaExtractor()
         return try {
             if (sourceUri.startsWith("content:") || sourceUri.startsWith("file:")) {
-                ex.setDataSource(ctx, Uri.parse(sourceUri))
+                ex.setDataSource(ctx, Uri.parse(sourceUri), null)
             } else {
                 ex.setDataSource(sourceUri)
             }
