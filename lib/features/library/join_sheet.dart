@@ -200,6 +200,7 @@ class _JoinSheetState extends ConsumerState<_JoinSheet> {
                             size: r.size,
                             width: first.width,
                             height: first.height,
+                            fps: first.fps,
                             dateAdded: DateTime.now(),
                           );
                           Navigator.of(context).pop();

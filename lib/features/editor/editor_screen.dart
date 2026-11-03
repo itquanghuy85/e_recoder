@@ -96,6 +96,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         durationMs: v.value.duration.inMilliseconds,
         frameW: size.width.round(),
         frameH: size.height.round(),
+        sourceFps: widget.entry.fps,
       );
       final c = EditorController(
         project: project,

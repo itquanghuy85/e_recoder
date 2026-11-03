@@ -87,7 +87,8 @@ class ExportPlanner {
     return (_even((frameW * k).round()), _even((frameH * k).round()));
   }
 
-  /// A comfortable bitrate for [w] x [h] at 30 fps (about 0.07 bit per pixel).
+  /// A comfortable bitrate for [w] x [h] at [fps] (about 0.07 bit per pixel per frame).
+  /// A 60 fps source therefore asks for twice the bitrate of the same frame at 30 fps.
   static int defaultBitrate(int w, int h, {int fps = 30}) =>
       (w * h * fps * 0.07).round().clamp(1500000, maxVideoBitrate);
 
@@ -98,9 +99,10 @@ class ExportPlanner {
     required ExportQuality quality,
     int? maxBytes,
     bool hasAudio = true,
+    int sourceFps = 30,
   }) {
     final (w, h) = sizeFor(frameW, frameH, quality);
-    var bitrate = defaultBitrate(w, h);
+    var bitrate = defaultBitrate(w, h, fps: sourceFps);
     var fits = true;
     final secs = math.max(0.1, durationMs / 1000);
     if (maxBytes != null) {

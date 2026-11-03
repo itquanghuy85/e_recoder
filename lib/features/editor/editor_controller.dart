@@ -610,6 +610,7 @@ class EditorController extends ChangeNotifier {
         durationMs: p.durationMs,
         frameW: p.frameW,
         frameH: p.frameH,
+        sourceFps: p.sourceFps,
       ),
     );
   }
@@ -1491,6 +1492,7 @@ class EditorController extends ChangeNotifier {
       quality: q,
       maxBytes: maxBytes,
       hasAudio: true,
+      sourceFps: _project.sourceFps,
     );
   }
 

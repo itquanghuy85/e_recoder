@@ -21,6 +21,13 @@ object MediaRepo {
     const val FOLDER = "Movies/E Screen Recorder"
     private val collection: Uri = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
 
+    /** Recording profile fps: anything 45 and over is the "smooth" 60 fps mode, 0 means unknown. */
+    fun normalizeFps(v: Double): Int = when {
+        v <= 0.5 -> 0
+        v >= 45.0 -> 60
+        else -> 30
+    }
+
     fun newDisplayName(prefix: String = "ESR", ext: String = "mp4"): String =
         prefix + "_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date()) + "." + ext
 
@@ -77,7 +84,7 @@ object MediaRepo {
         val proj = arrayOf(
             MediaStore.Video.Media._ID, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.DURATION,
             MediaStore.Video.Media.SIZE, MediaStore.Video.Media.WIDTH, MediaStore.Video.Media.HEIGHT,
-            MediaStore.Video.Media.DATE_ADDED,
+            MediaStore.Video.Media.DATE_ADDED, "frame_rate",
         )
         ctx.contentResolver.query(
             collection, proj,
@@ -96,6 +103,7 @@ object MediaRepo {
                         "width" to c.getInt(4),
                         "height" to c.getInt(5),
                         "dateAdded" to c.getLong(6),
+                        "fps" to normalizeFps(c.getDouble(7)),
                     ),
                 )
             }

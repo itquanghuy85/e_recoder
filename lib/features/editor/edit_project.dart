@@ -583,6 +583,7 @@ class EditProject {
     required this.frameW,
     required this.frameH,
     required this.segments,
+    this.sourceFps = 30,
     this.markers = const [],
     this.texts = const [],
     this.covers = const [],
@@ -601,6 +602,9 @@ class EditProject {
   final int durationMs;
   final int frameW;
   final int frameH;
+
+  /// Frame rate of the source (60 for a "smooth" recording), used to size the export bitrate.
+  final int sourceFps;
   final List<Segment> segments;
   final List<MarkerItem> markers;
   final List<TextItem> texts;
@@ -632,6 +636,7 @@ class EditProject {
     required int durationMs,
     required int frameW,
     required int frameH,
+    int sourceFps = 30,
   }) => EditProject(
     id: sourceUri,
     sourceUri: sourceUri,
@@ -639,6 +644,7 @@ class EditProject {
     durationMs: durationMs,
     frameW: frameW,
     frameH: frameH,
+    sourceFps: sourceFps <= 0 ? 30 : sourceFps,
     segments: [Segment(startMs: 0, endMs: durationMs)],
   );
 
@@ -654,6 +660,7 @@ class EditProject {
     List<PipItem>? pips,
     PictureLook? look,
     bool? muteFast,
+    int? sourceFps,
   }) => EditProject(
     id: id,
     sourceUri: sourceUri,
@@ -661,6 +668,7 @@ class EditProject {
     durationMs: durationMs,
     frameW: frameW,
     frameH: frameH,
+    sourceFps: sourceFps ?? this.sourceFps,
     segments: segments ?? this.segments,
     markers: markers ?? this.markers,
     texts: texts ?? this.texts,
@@ -1143,6 +1151,7 @@ class EditProject {
     'durationMs': durationMs,
     'frameW': frameW,
     'frameH': frameH,
+    'sourceFps': sourceFps,
     'segments': segments.map((e) => e.toJson()).toList(),
     'markers': markers.map((e) => e.toJson()).toList(),
     'texts': texts.map((e) => e.toJson()).toList(),
@@ -1169,6 +1178,7 @@ class EditProject {
       durationMs: j['durationMs'] as int,
       frameW: j['frameW'] as int,
       frameH: j['frameH'] as int,
+      sourceFps: (j['sourceFps'] as num?)?.toInt() ?? 30,
       segments: list('segments', Segment.fromJson),
       markers: list('markers', MarkerItem.fromJson),
       texts: list('texts', TextItem.fromJson),

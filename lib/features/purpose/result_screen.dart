@@ -74,6 +74,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             durationMs: v.value.duration.inMilliseconds,
             frameW: v.value.size.width.round(),
             frameH: v.value.size.height.round(),
+            sourceFps: widget.entry.fps,
           );
       if (!mounted) {
         await v.dispose();
@@ -144,6 +145,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             durationMs: e.durationMs,
             frameW: e.width,
             frameH: e.height,
+            sourceFps: e.fps,
           );
       if (!mounted) return;
       c = EditorController(
@@ -280,12 +282,134 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     );
   }
 
+  Widget _controls(
+    AppL10n t,
+    TextTheme tt,
+    ColorScheme c,
+    bool busy,
+  ) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: 28,
+          child: switch (_phase) {
+            _Phase.building => Row(
+              children: [
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: Space.sm),
+                Text(t.resultBuilding, style: tt.bodyMedium),
+              ],
+            ),
+            _Phase.exporting => Row(
+              children: [
+                Expanded(child: LinearProgressIndicator(value: _progress)),
+                const SizedBox(width: Space.sm),
+                Text(t.resultExporting, style: tt.bodyMedium),
+              ],
+            ),
+            _Phase.done => Text(
+              key: const ValueKey('result_done'),
+              t.resultExported(_exportedName ?? ''),
+              style: tt.bodyMedium?.copyWith(color: c.tertiary),
+              overflow: TextOverflow.ellipsis,
+            ),
+            _Phase.error => Text(
+              key: const ValueKey('result_error'),
+              t.resultExportFailed,
+              style: tt.bodyMedium?.copyWith(color: c.error),
+            ),
+            _Phase.idle => const SizedBox.shrink(),
+          },
+        ),
+        const SizedBox(height: Space.sm),
+        Wrap(
+          spacing: Space.sm,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(t.exportQuality, style: tt.bodyMedium),
+            for (final q in ExportQuality.values)
+              Semantics(
+                identifier: 'result_quality_${q.name}',
+                child: ChoiceChip(
+                  key: ValueKey('result_quality_${q.name}'),
+                  label: Text(_qualityLabel(t, q)),
+                  selected: _quality == q,
+                  onSelected: busy
+                      ? null
+                      : (_) => setState(() => _quality = q),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: Space.sm),
+        Semantics(
+          identifier: 'result_export',
+          child: FilledButton(
+            key: const ValueKey('result_export'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(64),
+            ),
+            onPressed: _phase == _Phase.idle || _phase == _Phase.error
+                ? _exportNow
+                : null,
+            child: Text(t.resultExport),
+          ),
+        ),
+        const SizedBox(height: Space.md),
+        Row(
+          children: [
+            Expanded(
+              child: Semantics(
+                identifier: 'result_edit',
+                child: OutlinedButton(
+                  key: const ValueKey('result_edit'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                  ),
+                  onPressed: busy ? null : _edit,
+                  child: Text(t.resultEdit),
+                ),
+              ),
+            ),
+            const SizedBox(width: Space.md),
+            Expanded(
+              child: Semantics(
+                identifier: 'result_back',
+                child: OutlinedButton(
+                  key: const ValueKey('result_back'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                  ),
+                  onPressed: busy
+                      ? null
+                      : () => Navigator.of(context).maybePop(),
+                  child: Text(t.resultBack),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppL10n.of(context);
     final tt = Theme.of(context).textTheme;
     final c = Theme.of(context).colorScheme;
     final busy = _phase == _Phase.exporting;
+    final name = Text(
+      widget.entry.name,
+      style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
+      overflow: TextOverflow.ellipsis,
+    );
     return PopScope(
       canPop: !busy,
       child: Scaffold(
@@ -294,131 +418,60 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
           title: Text(t.resultTitle),
         ),
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              Space.lg,
-              Space.sm,
-              Space.lg,
-              Space.lg,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  widget.entry.name,
-                  style: tt.bodySmall?.copyWith(color: c.onSurfaceVariant),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: Space.sm),
-                Expanded(child: _preview(t, c, busy)),
-                const SizedBox(height: Space.md),
-                SizedBox(
-                  height: 28,
-                  child: switch (_phase) {
-                    _Phase.building => Row(
-                      children: [
-                        const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                        const SizedBox(width: Space.sm),
-                        Text(t.resultBuilding, style: tt.bodyMedium),
-                      ],
-                    ),
-                    _Phase.exporting => Row(
-                      children: [
-                        Expanded(
-                          child: LinearProgressIndicator(value: _progress),
-                        ),
-                        const SizedBox(width: Space.sm),
-                        Text(t.resultExporting, style: tt.bodyMedium),
-                      ],
-                    ),
-                    _Phase.done => Text(
-                      key: const ValueKey('result_done'),
-                      t.resultExported(_exportedName ?? ''),
-                      style: tt.bodyMedium?.copyWith(color: c.tertiary),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    _Phase.error => Text(
-                      key: const ValueKey('result_error'),
-                      t.resultExportFailed,
-                      style: tt.bodyMedium?.copyWith(color: c.error),
-                    ),
-                    _Phase.idle => const SizedBox.shrink(),
-                  },
-                ),
-                const SizedBox(height: Space.sm),
-                Wrap(
-                  spacing: Space.sm,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(t.exportQuality, style: tt.bodyMedium),
-                    for (final q in ExportQuality.values)
-                      Semantics(
-                        identifier: 'result_quality_${q.name}',
-                        child: ChoiceChip(
-                          key: ValueKey('result_quality_${q.name}'),
-                          label: Text(_qualityLabel(t, q)),
-                          selected: _quality == q,
-                          onSelected: busy
-                              ? null
-                              : (_) => setState(() => _quality = q),
+          // A phone turned sideways has too little height for the column: the preview and the
+          // controls sit side by side then, and the controls scroll if they still do not fit.
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const pad = EdgeInsets.fromLTRB(
+                Space.lg,
+                Space.sm,
+                Space.lg,
+                Space.lg,
+              );
+              final controls = _controls(t, tt, c, busy);
+              if (constraints.maxWidth > constraints.maxHeight) {
+                final side = (constraints.maxWidth * 0.42).clamp(
+                  280.0,
+                  420.0,
+                );
+                return Padding(
+                  padding: pad,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: _preview(t, c, busy)),
+                      const SizedBox(width: Space.md),
+                      SizedBox(
+                        width: side,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              name,
+                              const SizedBox(height: Space.sm),
+                              controls,
+                            ],
+                          ),
                         ),
                       ),
-                  ],
-                ),
-                const SizedBox(height: Space.sm),
-                Semantics(
-                  identifier: 'result_export',
-                  child: FilledButton(
-                    key: const ValueKey('result_export'),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(64),
-                    ),
-                    onPressed: _phase == _Phase.idle || _phase == _Phase.error
-                        ? _exportNow
-                        : null,
-                    child: Text(t.resultExport),
+                    ],
                   ),
-                ),
-                const SizedBox(height: Space.md),
-                Row(
+                );
+              }
+              return Padding(
+                padding: pad,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: Semantics(
-                        identifier: 'result_edit',
-                        child: OutlinedButton(
-                          key: const ValueKey('result_edit'),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(56),
-                          ),
-                          onPressed: busy ? null : _edit,
-                          child: Text(t.resultEdit),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: Space.md),
-                    Expanded(
-                      child: Semantics(
-                        identifier: 'result_back',
-                        child: OutlinedButton(
-                          key: const ValueKey('result_back'),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(56),
-                          ),
-                          onPressed: busy
-                              ? null
-                              : () => Navigator.of(context).maybePop(),
-                          child: Text(t.resultBack),
-                        ),
-                      ),
-                    ),
+                    name,
+                    const SizedBox(height: Space.sm),
+                    Expanded(child: _preview(t, c, busy)),
+                    const SizedBox(height: Space.md),
+                    controls,
                   ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

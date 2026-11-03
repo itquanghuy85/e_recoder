@@ -28,6 +28,22 @@ void main() {
   });
 
   group('plan', () {
+    test('a 60 fps source asks for twice the bitrate of 30 fps', () {
+      const w = 1080, h = 2400;
+      expect(
+        ExportPlanner.defaultBitrate(w, h, fps: 60),
+        2 * ExportPlanner.defaultBitrate(w, h, fps: 30),
+      );
+      final p = ExportPlanner.plan(
+        frameW: w,
+        frameH: h,
+        durationMs: 20000,
+        quality: ExportQuality.original,
+        sourceFps: 60,
+      );
+      expect(p.bitrate, 2 * ExportPlanner.defaultBitrate(w, h));
+    });
+
     test('without a cap the bitrate follows the pixels', () {
       final p = ExportPlanner.plan(
         frameW: 720,

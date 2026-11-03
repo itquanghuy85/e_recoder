@@ -326,6 +326,7 @@ class _ExportSheetState extends ConsumerState<_ExportSheet> {
                                 size: r.size,
                                 width: c.project.frameW,
                                 height: c.project.frameH,
+                                fps: c.project.sourceFps,
                                 dateAdded: DateTime.now(),
                               );
                               c.dismissExport();

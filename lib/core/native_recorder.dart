@@ -137,6 +137,7 @@ class MediaEntry {
     required this.width,
     required this.height,
     required this.dateAdded,
+    this.fps = 0,
   });
 
   final String uri;
@@ -145,6 +146,9 @@ class MediaEntry {
   final int size;
   final int width;
   final int height;
+
+  /// Frames per second of the source, 0 when unknown.
+  final int fps;
   final DateTime dateAdded;
 
   factory MediaEntry.fromMap(Map<dynamic, dynamic> m) => MediaEntry(
@@ -154,6 +158,7 @@ class MediaEntry {
     size: (m['size'] as num).toInt(),
     width: (m['width'] as num).toInt(),
     height: (m['height'] as num).toInt(),
+    fps: ((m['fps'] as num?) ?? 0).toInt(),
     dateAdded: DateTime.fromMillisecondsSinceEpoch(
       (m['dateAdded'] as num).toInt() * 1000,
     ),

@@ -38,8 +38,17 @@ object EditorMedia {
         return info(ctx, out.absolutePath) + mapOf("path" to out.absolutePath, "name" to name)
     }
 
+    /** 60 for a smooth recording, 30 otherwise, 0 when the file holds no video frames. */
+    private fun fpsOf(mmr: MediaMetadataRetriever): Int {
+        val capture = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE)?.toDoubleOrNull()
+        val frames = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_FRAME_COUNT)?.toDoubleOrNull()
+        val dur = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toDoubleOrNull()
+        val v = capture ?: if (frames != null && dur != null && dur > 0) frames * 1000.0 / dur else 0.0
+        return MediaRepo.normalizeFps(v)
+    }
+
     /**
-     * A picked video where it lives: {uri, name, size, durationMs, width, height}. The size is the size the
+     * A picked video where it lives: {uri, name, size, durationMs, width, height, fps}. The size is the size the
      * picture is SHOWN at (a phone video stored landscape with a 90/270 turn flag is portrait here).
      */
     fun describeVideo(ctx: Context, uri: Uri): Map<String, Any?> {
@@ -60,7 +69,7 @@ object EditorMedia {
             }
             return mapOf(
                 "uri" to uri.toString(), "name" to displayName(ctx, uri), "size" to size,
-                "durationMs" to dur, "width" to w, "height" to h,
+                "durationMs" to dur, "width" to w, "height" to h, "fps" to fpsOf(mmr),
             )
         } finally {
             try { mmr.release() } catch (_: Exception) {}
@@ -94,13 +103,16 @@ object EditorMedia {
                 mime.startsWith("image") -> "image"
                 else -> "audio"
             }
-            mapOf("kind" to kind, "durationMs" to dur, "width" to w, "height" to h)
+            mapOf(
+                "kind" to kind, "durationMs" to dur, "width" to w, "height" to h,
+                "fps" to if (hasVideo) fpsOf(mmr) else 0,
+            )
         } catch (_: Exception) {
             // Not a media file for the retriever: a picture.
             val o = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
             android.graphics.BitmapFactory.decodeFile(path, o)
-            if (o.outWidth > 0) mapOf("kind" to "image", "durationMs" to 0L, "width" to o.outWidth, "height" to o.outHeight)
-            else mapOf("kind" to "audio", "durationMs" to 0L, "width" to 0, "height" to 0)
+            if (o.outWidth > 0) mapOf("kind" to "image", "durationMs" to 0L, "width" to o.outWidth, "height" to o.outHeight, "fps" to 0)
+            else mapOf("kind" to "audio", "durationMs" to 0L, "width" to 0, "height" to 0, "fps" to 0)
         } finally {
             try { mmr.release() } catch (_: Exception) {}
         }
