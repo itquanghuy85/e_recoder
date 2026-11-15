@@ -13,10 +13,13 @@ import '../marker/marker_spec.dart';
 import 'editor_controller.dart';
 import 'editor_pro_tools.dart';
 import 'auto_caption_sheet.dart';
+import 'auto_marks_panel.dart';
 import 'caption_panel.dart';
+import 'silence_cut_panel.dart';
 import 'srt.dart';
 import 'edit_project.dart';
 import 'touch_log.dart' show InputMode;
+import 'transition_preview.dart';
 
 /// Tools the iPhone export cannot draw at all, and tools it draws only in part (see IOSExporter).
 const _iosOff = {EditorTool.transition, EditorTool.zoom, EditorTool.auto};
@@ -567,6 +570,8 @@ class _CutPanel extends StatelessWidget {
           t.trimHint,
           style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
         ),
+        // Find the quiet stretches and cut them out, with a preview list and one undo step.
+        SilenceCutPanel(c: c),
       ],
     );
   }
@@ -759,26 +764,107 @@ class _TransitionPanel extends StatelessWidget {
               style: tt.bodyMedium?.copyWith(color: cs.error),
             ),
           ),
-        Wrap(
-          spacing: Space.sm,
-          runSpacing: Space.xs,
-          children: [
-            for (final k in TransitionKind.values)
-              Semantics(
-                identifier: 'trans_${k.name}',
-                child: ChoiceChip(
-                  label: Text(transitionLabel(t, k)),
-                  selected: (cur?.kind ?? TransitionKind.none) == k,
-                  onSelected: i == 0
-                      ? null
-                      : (_) => c.setTransition(
-                          k == TransitionKind.none
-                              ? null
-                              : Transition(k, cur?.ms ?? 600),
-                        ),
+        // Each choice plays on the two frames around this cut when they can be read; otherwise
+        // (still loading, first clip, unreadable file) the choices are plain names.
+        FutureBuilder<CutFrames?>(
+          future: i == 0
+              ? Future.value()
+              : CutFrames.load(
+                  c.native,
+                  p.sourceUri,
+                  beforeMs: (p.segments[i - 1].endMs - 80).clamp(
+                    p.segments[i - 1].startMs,
+                    p.durationMs,
+                  ),
+                  afterMs: (seg.startMs + 40).clamp(seg.startMs, seg.endMs),
                 ),
+          builder: (context, snap) {
+            void pick(TransitionKind k) => c.setTransition(
+              k == TransitionKind.none ? null : Transition(k, cur?.ms ?? 600),
+            );
+            // While the two frames load, hold the place of the tiles: names that turn into tiles under
+            // the finger would make a tap land on the wrong choice.
+            if (i > 0 && snap.connectionState != ConnectionState.done) {
+              return const SizedBox(
+                height: 96,
+                child: Center(child: LinearProgressIndicator()),
+              );
+            }
+            final frames = snap.data;
+            if (frames == null) {
+              return Wrap(
+                spacing: Space.sm,
+                runSpacing: Space.xs,
+                children: [
+                  for (final k in TransitionKind.values)
+                    Semantics(
+                      identifier: 'trans_${k.name}',
+                      child: ChoiceChip(
+                        label: Text(transitionLabel(t, k)),
+                        selected: (cur?.kind ?? TransitionKind.none) == k,
+                        onSelected: i == 0 ? null : (_) => pick(k),
+                      ),
+                    ),
+                ],
+              );
+            }
+            const th = 64.0;
+            final aspect = p.frameH <= 0 ? 1.0 : p.frameW / p.frameH;
+            final tw = (th * aspect).clamp(36.0, 114.0);
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final k in TransitionKind.values)
+                    Padding(
+                      padding: const EdgeInsets.only(right: Space.sm),
+                      child: Semantics(
+                        identifier: 'trans_${k.name}',
+                        button: true,
+                        selected: (cur?.kind ?? TransitionKind.none) == k,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => pick(k),
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                width: 2,
+                                color: (cur?.kind ?? TransitionKind.none) == k
+                                    ? cs.primary
+                                    : Colors.transparent,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TransitionPreview(
+                                  kind: k,
+                                  frames: frames,
+                                  width: tw,
+                                  height: th,
+                                ),
+                                const SizedBox(height: 2),
+                                SizedBox(
+                                  width: math.max(tw, 64),
+                                  child: Text(
+                                    transitionLabel(t, k),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    style: tt.labelSmall,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-          ],
+            );
+          },
         ),
         if (cur != null)
           editorSlider(
@@ -1717,6 +1803,21 @@ class _AutoPanel extends StatelessWidget {
               style: tt.bodySmall?.copyWith(color: cs.onSurface),
             ),
           ),
+        // The recording listened for touches but no mark came out of it: say so (never a silent
+        // empty draft); the "build from touches" button above is the way to try again.
+        if (c.autoPassWithoutMarks != null && !c.directing)
+          Semantics(
+            identifier: 'auto_pass_empty',
+            liveRegion: true,
+            child: Text(
+              c.autoPassWithoutMarks == 0
+                  ? t.autoNoTouchesHeard
+                  : t.autoHeardNoMarks(c.autoPassWithoutMarks!),
+              style: tt.bodySmall?.copyWith(color: cs.tertiary),
+            ),
+          ),
+        // Every mark the pass made, with the ones standing on a guessed place called out.
+        AutoMarksPanel(c: c),
         editorSlider(
           context: context,
           c: c,

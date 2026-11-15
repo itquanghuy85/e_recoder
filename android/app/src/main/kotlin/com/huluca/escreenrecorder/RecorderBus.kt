@@ -71,6 +71,17 @@ object RecorderBus {
     @Volatile var sink: ((Map<String, Any?>) -> Unit)? = null
     @Volatile var pendingConfig: RecConfig? = null
 
+    /**
+     * The last finished recording, kept for a while after it is announced. A save can happen while the
+     * Flutter side is detached (the activity was destroyed, or the app is in the background): without
+     * this the event would be lost and the video would never show up in the app's own library.
+     */
+    @Volatile private var lastSaved: Map<String, Any?>? = null
+    @Volatile private var lastSavedAtMs: Long = 0
+
+    /** How long a saved recording is replayed to a Flutter side that listens again. */
+    const val SAVED_REPLAY_MS = 15 * 60 * 1000L
+
     private val main = Handler(Looper.getMainLooper())
 
     fun snapshot(): Map<String, Any?> =
@@ -82,7 +93,39 @@ object RecorderBus {
     }
 
     fun emit(event: Map<String, Any?>) {
-        main.post { sink?.invoke(event) }
+        if (event["type"] == "saved") {
+            lastSaved = event
+            lastSavedAtMs = System.currentTimeMillis()
+        }
+        main.post {
+            val s = sink
+            if (event["type"] == "saved") DiagLog.log("bus", "saved ${event["uri"]} indexed=${event["indexed"]} listener=${s != null}")
+            if (s != null) {
+                s(event)
+                // Delivered live: nothing left to replay (a later activity rebuild must not reopen it).
+                if (event["type"] == "saved" && lastSaved === event) lastSaved = null
+            }
+        }
+    }
+
+    /** The saved recording still worth announcing, or null. Does not consume it. */
+    fun recentSaved(): Map<String, Any?>? {
+        val e = lastSaved ?: return null
+        if (System.currentTimeMillis() - lastSavedAtMs > SAVED_REPLAY_MS) {
+            lastSaved = null
+            return null
+        }
+        return e
+    }
+
+    /**
+     * Hands the saved recording to Flutter exactly once, so a replay on listen and an explicit call
+     * cannot both open the result screen for the same video.
+     */
+    fun takeLastSaved(): Map<String, Any?>? {
+        val e = recentSaved() ?: return null
+        lastSaved = null
+        return e
     }
 
     fun error(code: String, message: String) =

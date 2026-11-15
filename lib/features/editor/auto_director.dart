@@ -284,8 +284,9 @@ abstract final class AutoDirector {
   }
 
   /// A project drawn from the touches found in a recording: a mark and (if wanted) a freeze at each
-  /// meaningful touch, and one "typing" step for each typing burst instead of a mark per key. Touches
-  /// without a known position get a caption instead of a mark, and are never zoomed to.
+  /// meaningful touch, and one "typing" step for each typing burst instead of a mark per key. A touch
+  /// whose place could not be found still gets a mark at the nearest known spot (or the middle of the
+  /// frame), because a heard tap must never silently disappear from the edit.
   static EditProject fromTouches(
     EditProject base,
     List<TouchEvent> events,
@@ -311,45 +312,35 @@ abstract final class AutoDirector {
     for (var i = 0; i < taps.length; i++) {
       final e = taps[i];
       step++;
-      if (e.hasPosition) {
-        final cue = (at[i] - MarkerTiming.cueMs)
-            .clamp(0, math.max(0, dur - 300))
-            .toInt();
-        out = out.upsertMarker(
-          MarkerItem(
-            id: 'tp_${i}_${e.tMs}',
-            cueStartMs: cue,
-            holdMs: tapHoldMs(
-              taps,
-              at,
-              i,
-              cue + MarkerTiming.cueMs,
-              o.markerHoldMs,
-            ),
-            spec: tapSpec(
-              _tapKind(o),
-              e.x!.clamp(0.0, 1.0),
-              e.y!.clamp(0.0, 1.0),
-              step,
-              frameW: base.frameW,
-              frameH: base.frameH,
-              color: o.markerColor,
-              thickness: o.markerThickness,
-            ),
+      // Where the finger was is often hidden from an overlay window. Fall back to the last place
+      // seen shortly before, and to the middle of the frame: the step stays countable either way.
+      final fallback = _nearestPlace(taps, i);
+      final x = (e.x ?? fallback.dx).clamp(0.0, 1.0);
+      final y = (e.y ?? fallback.dy).clamp(0.0, 1.0);
+      final cue = (at[i] - MarkerTiming.cueMs)
+          .clamp(0, math.max(0, dur - 300))
+          .toInt();
+      out = out.upsertMarker(
+        MarkerItem(
+          id: 'tp_${i}_${e.tMs}',
+          cueStartMs: cue,
+          holdMs: tapHoldMs(taps, at, i, cue + MarkerTiming.cueMs, o.markerHoldMs),
+          source: MarkerItem.autoSource,
+          // A guessed place is marked as such, so the review panel can offer to look again.
+          estimated: !e.hasPosition,
+          touchMs: e.tMs,
+          spec: tapSpec(
+            _tapKind(o),
+            x,
+            y,
+            step,
+            frameW: base.frameW,
+            frameH: base.frameH,
+            color: o.markerColor,
+            thickness: o.markerThickness,
           ),
-        );
-      } else if (o.number) {
-        // A touch whose place is unknown only gets a step caption, and only when steps are numbered.
-        out = out.upsertText(
-          _caption(
-            'tpt_${i}_${e.tMs}',
-            '$stepPrefix$step',
-            e.tMs - 100,
-            e.tMs + 1500,
-            dur,
-          ),
-        );
-      }
+        ),
+      );
     }
     // The picture is frozen where the mark is taken (see [markTimes]).
     freezes.addAll(
@@ -454,6 +445,18 @@ abstract final class AutoDirector {
     changeMs: e.changeMs,
   );
 
+  /// The place to use for a tap whose own place is hidden: the last one seen within a few seconds,
+  /// else the middle of the frame. Keeps every heard tap countable.
+  static Offset _nearestPlace(List<TouchEvent> taps, int i) {
+    for (var j = i - 1; j >= 0; j--) {
+      final t = taps[j];
+      if (!t.hasPosition) continue;
+      if (taps[i].tMs - t.tMs > 4000) break;
+      return Offset(t.x!, t.y!);
+    }
+    return const Offset(0.5, 0.5);
+  }
+
   /// The mark put at each tap. Step numbers only appear when steps are numbered: without it a "number"
   /// mark (the default kind) is drawn as the plain ripple instead.
   static MarkerType _tapKind(DirectorOptions o) {
@@ -510,11 +513,9 @@ abstract final class AutoDirector {
     var fadeAt = takeMs + holdMs;
     final change = taps[i].changeMs;
     if (change != null) fadeAt = math.min(fadeAt, change - screenLeadMs);
-    for (var j = i + 1; j < taps.length; j++) {
-      if (!taps[j].hasPosition) continue;
-      final nextCue = math.max(0, at[j] - MarkerTiming.cueMs);
+    if (i + 1 < taps.length) {
+      final nextCue = math.max(0, at[i + 1] - MarkerTiming.cueMs);
       fadeAt = math.min(fadeAt, nextCue - MarkerTiming.fadeMs);
-      break;
     }
     return math.max(0, fadeAt - takeMs);
   }
@@ -749,6 +750,32 @@ abstract final class AutoDirector {
           out = out.setSpeed(i, idleSpeed);
         }
       }
+    }
+    return out;
+  }
+
+  /// Cuts the given source ranges out of the video (ripple), keeping [padMs] at each end so a word
+  /// or a gesture that starts right where the silence ends is not clipped. Pure, so it is unit tested;
+  /// the caller checks the result is still a usable video.
+  static EditProject cutRanges(
+    EditProject p,
+    List<TimeRange> ranges, {
+    int padMs = 200,
+  }) {
+    var out = p;
+    final sorted = [...ranges]..sort((a, b) => a.startMs.compareTo(b.startMs));
+    for (final r in sorted) {
+      final start = r.startMs + padMs;
+      final end = r.endMs - padMs;
+      if (end - start < EditProject.minSegmentMs) continue;
+      out = out.splitAt(start).splitAt(end);
+      final gone = <int>{};
+      for (var i = 0; i < out.segments.length; i++) {
+        final s = out.segments[i];
+        if (s.isStill || s.blank) continue;
+        if (s.startMs >= start && s.endMs <= end) gone.add(i);
+      }
+      out = out.deleteSegments(gone);
     }
     return out;
   }

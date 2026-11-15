@@ -1,0 +1,79 @@
+appId: com.huluca.escreenrecorder
+name: E19 new editor tools - text to speech, transition previews, my export presets
+tags:
+  - module-editor
+---
+# Precondition: at least one recording (ESR_...) in the library.
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_[0-9].*"
+- runFlow: helpers/ensure_tools_open.yaml
+- runFlow:
+    when:
+      notVisible:
+        id: "tool_transition"
+    commands:
+      - tapOn:
+          id: "editor_mode_advanced"
+# 1. Text to speech: a voice-over from text, at the playhead.
+- tapOn:
+    id: "tool_audio"
+- repeat:
+    times: 15
+    while:
+      notVisible:
+        id: "audio_tts"
+    commands:
+      - swipe:
+          start: 50%, 92%
+          end: 50%, 84%
+          duration: 500
+- tapOn:
+    id: "audio_tts"
+- extendedWaitUntil:
+    visible: "Đọc chữ thành giọng nói"
+    timeout: 5000
+- tapOn:
+    id: "tts_text"
+- inputText: "Bam vao nut cai dat"
+- hideKeyboard
+- tapOn:
+    id: "tts_make"
+- extendedWaitUntil:
+    visible: 'Đã thêm giọng đọc vào dòng thời gian\.|.*chưa có giọng.*|.*chưa có bộ đọc.*|Không tạo được giọng đọc.*'
+    timeout: 30000
+- takeScreenshot: artifacts/e19_tts
+- assertVisible: 'Đã thêm giọng đọc vào dòng thời gian\.'
+# 2. Transition previews: cut the clip, then the transition tab shows moving pictures.
+- tapOn:
+    id: "tool_cut"
+- tapOn:
+    id: "cut_split"
+- tapOn:
+    id: "tool_transition"
+# A clip after the first (the first has no cut before it): pick one on the timeline.
+- tapOn:
+    point: 74%, 39%
+- extendedWaitUntil:
+    visible:
+      id: "trans_slideLeft"
+    timeout: 10000
+- takeScreenshot: artifacts/e19_transitions
+- tapOn:
+    id: "trans_slideLeft"
+# 3. My export presets: save the current settings under a name.
+- tapOn:
+    id: "editor_export"
+- extendedWaitUntil:
+    visible:
+      id: "my_preset_save"
+    timeout: 8000
+- tapOn:
+    id: "my_preset_save"
+- inputText: "Thu E19"
+- tapOn: "Lưu"
+- extendedWaitUntil:
+    visible: "Thu E19"
+    timeout: 5000
+- takeScreenshot: artifacts/e19_my_preset

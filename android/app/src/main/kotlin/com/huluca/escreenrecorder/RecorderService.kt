@@ -190,10 +190,14 @@ class RecorderService : Service(), ControlBar.Listener {
     /** A touch somewhere on screen: its video time is "now" minus how long ago the event happened. */
     private fun addTouch(eventUptimeMs: Long) {
         // A touch while our own app is in front is Pause / Stop on its live view, not part of what is shown.
-        if (paused || appInFront) return
         val ago = (android.os.SystemClock.uptimeMillis() - eventUptimeMs).coerceIn(0L, 1000L)
         val t = (elapsedMs() - ago).coerceAtLeast(0L)
+        if (paused || appInFront) {
+            DiagLog.log("touch", "t=$t dropped paused=$paused appInFront=$appInFront")
+            return
+        }
         touches.add(mapOf("tMs" to t, "x" to -1.0, "y" to -1.0, "durMs" to 0L, "dist" to 0.0))
+        DiagLog.log("touch", "t=$t n=${touches.size}")
     }
 
     /**
@@ -304,6 +308,7 @@ class RecorderService : Service(), ControlBar.Listener {
                 errorCode = "empty_recording"
             }
             file?.delete()
+            DiagLog.log("svc", "stop ok=$ok saved=${saved?.get("uri")} error=$errorCode touches=${savedTouches.size} marks=${savedMarks.size}")
             main.post {
                 // Go idle first, then announce the result: a new recording started right after
                 // the notice must not be refused as "busy".
@@ -411,6 +416,7 @@ class RecorderService : Service(), ControlBar.Listener {
 
     override fun onCreate() {
         super.onCreate()
+        DiagLog.init(this)
         MarkerRenderer.typeface = timecodeTypeface()
     }
 
@@ -441,6 +447,7 @@ class RecorderService : Service(), ControlBar.Listener {
         @Volatile private var running: RecorderService? = null
 
         fun appFront(front: Boolean) {
+            if (front != appInFront) DiagLog.log("touch", "appInFront=$front running=${running != null}")
             appInFront = front
             if (front) running?.dropTrailingTouches()
         }

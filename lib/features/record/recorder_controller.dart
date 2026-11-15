@@ -5,6 +5,7 @@ import 'dart:ui' show Color, PlatformDispatcher;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/settings_store.dart';
+import '../../core/diag.dart';
 import '../../core/native_recorder.dart';
 import '../../core/permissions_gateway.dart';
 import '../editor/auto_director.dart';
@@ -69,11 +70,31 @@ class RecorderController extends Notifier<RecorderState> {
 
   @override
   RecorderState build() {
-    _sub = _native.events.listen(_onEvent);
+    // An event that cannot be read must not end the subscription silently (that would lose every
+    // later "saved"): log it and keep listening.
+    _sub = _native.events.listen(
+      _onEvent,
+      onError: (Object e) => diag('event error: $e'),
+    );
     ref.onDispose(() => _sub?.cancel());
-    // A build cut short by the app being killed is finished now, in the background.
-    draftReady = Future<void>.microtask(resumeDraft);
+    // A build cut short by the app being killed is finished now, in the background. A recording
+    // saved while Flutter was not listening is picked up too, so the library can never stay stale.
+    draftReady = Future<void>.microtask(() async {
+      await resumeDraft();
+      await syncSaved();
+    });
     return const RecorderState();
+  }
+
+  /// The last recording saved while this side was not listening (background stop, activity rebuilt).
+  /// Announced exactly like a live one; asking twice cannot open the same video twice.
+  Future<void> syncSaved() async {
+    try {
+      final e = await _native.takeLastSaved();
+      if (e != null) _onSaved(e);
+    } catch (_) {
+      // A missing replay only means the library waits for the next refresh.
+    }
   }
 
   void _onEvent(RecEvent e) {
@@ -81,15 +102,45 @@ class RecorderController extends Notifier<RecorderState> {
       case RecStateEvent():
         state = state.copyWith(phase: e.phase, elapsedMs: e.elapsedMs);
       case RecSavedEvent():
-        state = state.copyWith(notice: SavedNotice(e.name, e.uri));
-        ref.invalidate(mediaListProvider);
-        if (e.marks.isNotEmpty || e.touches.isNotEmpty) {
-          draftReady = _saveDraft(e);
-        }
+        _onSaved(e);
       case RecErrorEvent():
         state = state.copyWith(notice: ErrorNotice(e.code));
       case ExportProgressEvent() || ExportDoneEvent() || ExportErrorEvent():
         break; // handled by the editor
+    }
+  }
+
+  /// The last video already announced: a replay coming from both the event stream and
+  /// [takeLastSaved] must not open the result screen or build the same draft twice.
+  String? _lastSavedUri;
+
+  void _onSaved(RecSavedEvent e) {
+    diag(
+      'saved uri=${e.uri} indexed=${e.indexed} marks=${e.marks.length} '
+      'touches=${e.touches.length} dup=${e.uri == _lastSavedUri}',
+    );
+    if (e.uri == _lastSavedUri) return;
+    _lastSavedUri = e.uri;
+    state = state.copyWith(notice: SavedNotice(e.name, e.uri));
+    ref.invalidate(mediaListProvider);
+    final mk = ref.read(markerSettingsProvider);
+    final autoClean =
+        mk.mode == MarkMode.clean && mk.touchSource == TouchSource.auto;
+    if (e.marks.isNotEmpty || e.touches.isNotEmpty || autoClean) {
+      draftReady = _track(e.uri, _saveDraft(e));
+    }
+  }
+
+  /// The video whose automatic edit is being built right now (null when none). The editor waits for
+  /// it instead of opening an empty draft that the build would then overwrite.
+  String? draftBuildingFor;
+
+  Future<void> _track(String uri, Future<void> job) async {
+    draftBuildingFor = uri;
+    try {
+      await job;
+    } finally {
+      if (draftBuildingFor == uri) draftBuildingFor = null;
     }
   }
 
@@ -105,6 +156,13 @@ class RecorderController extends Notifier<RecorderState> {
   Future<void> _saveDraft(RecSavedEvent e) async {
     try {
       final mk = ref.read(markerSettingsProvider);
+      final autoClean =
+          mk.mode == MarkMode.clean && mk.touchSource == TouchSource.auto;
+      // The press on the app's own stop button is heard too: it is not a step of what was recorded.
+      final heard = [
+        for (final t in e.touches)
+          if (t.tMs <= e.durationMs - stopTapWindowMs) t.tMs,
+      ];
       final base = EditProject.fresh(
         sourceUri: e.uri,
         name: e.name,
@@ -112,7 +170,7 @@ class RecorderController extends Notifier<RecorderState> {
         frameW: e.width,
         frameH: e.height,
       );
-      final draft = AutoDirector.direct(
+      var draft = AutoDirector.direct(
         AutoDirector.draft(base, e.marks),
         DirectorOptions(
           zoom: mk.autoZoom,
@@ -123,15 +181,12 @@ class RecorderController extends Notifier<RecorderState> {
           zoomHoldMs: mk.zoomHoldMs,
         ),
       );
+      // The editor tells "no touches heard" apart from a project that never listened.
+      if (autoClean) draft = draft.copyWith(autoHeard: heard.length);
       await ref.read(projectStoreProvider).save(draft);
       // Touches heard while recording: find where they were and build the rest of the edit from
       // them (captions + freezes, and marks + zoom where the place is known), right now, so the
       // video opens in the editor already edited. A failure leaves the draft as it is.
-      // The press on the app's own stop button is heard too: it is not a step of what was recorded.
-      final heard = [
-        for (final t in e.touches)
-          if (t.tMs <= e.durationMs - stopTapWindowMs) t.tMs,
-      ];
       await _buildFromTouches(draft, e.uri, heard);
     } catch (_) {
       // A failed draft only means the user places the markers by hand in the editor.
@@ -160,6 +215,10 @@ class RecorderController extends Notifier<RecorderState> {
       {
         final placed = await _native.locateTouches(uri, heard);
         final events = TouchClassifier.classify(placed);
+        diag(
+      'autoMarks heard=${heard.length} placed='
+          '${placed.where((p) => p.x != null).length} events=${events.length}',
+        );
         if (events.isNotEmpty) {
           final vi = PlatformDispatcher.instance.locale.languageCode == 'vi';
           final options = DirectorOptions(
@@ -238,7 +297,13 @@ class RecorderController extends Notifier<RecorderState> {
 
     var floatingBar = s.floatingBar;
     var countdown = s.countdown;
-    if ((floatingBar || countdown > 0) && !await _native.canOverlay()) {
+    final mk = ref.read(markerSettingsProvider);
+    // A clean recording that listens to every touch needs the overlay window too. Without the
+    // permission the watcher cannot be added and the recording would end with no marks at all.
+    final watchesTouches =
+        mk.mode == MarkMode.clean && mk.touchSource == TouchSource.auto;
+    if ((floatingBar || countdown > 0 || watchesTouches) &&
+        !await _native.canOverlay()) {
       await _native.requestOverlay();
       return StartResult.needsOverlay;
     }
@@ -246,7 +311,6 @@ class RecorderController extends Notifier<RecorderState> {
     final d = await _native.displayInfo();
     final plan = s.plan(d.width, d.height);
     final aligned = await _native.alignedSize(plan.width, plan.height);
-    final mk = ref.read(markerSettingsProvider);
     final ok = await _native.start(
       StartRequest(
         width: aligned.width,

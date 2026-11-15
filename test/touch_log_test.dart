@@ -204,7 +204,7 @@ void main() {
       expect(longBurst.markers, isEmpty);
     });
 
-    test('without positions: captions only, no marks and no zoom', () {
+    test('without positions: a mark at the fallback place, no zoom', () {
       final p = AutoDirector.fromTouches(
         _base(),
         TouchClassifier.classify([
@@ -213,9 +213,11 @@ void main() {
         ]),
         opts.copyWith(pauseZoom: 1.4),
       );
-      expect(p.markers, isEmpty);
+      // A heard tap must never disappear: its place falls back to the middle of the frame.
+      expect(p.markers.length, 2);
+      expect(p.markers.every((m) => m.spec.x0 == 0.5), isTrue);
       expect(p.zooms, isEmpty);
-      expect(p.texts.map((t) => t.text), ['Step 1', 'Step 2']);
+      expect(p.texts.where((t) => t.text.startsWith('Step')), isEmpty);
     });
 
     test('the zoom is gentle and only when asked for', () {
@@ -391,7 +393,7 @@ void main() {
           ev,
           off.copyWith(markerType: kind),
         );
-        expect(p.markers.length, 2);
+        expect(p.markers.length, 3);
         expect(p.markers.any((m) => m.spec.type == MarkerType.number), isFalse);
         expect(p.texts.where((t) => t.text.startsWith('Step')), isEmpty);
       }
@@ -405,14 +407,15 @@ void main() {
         arrow.markers.every((m) => m.spec.type == MarkerType.arrow),
         isTrue,
       );
-      // numbered: numbers and a caption for the touch without a place
+      // numbered: numbers everywhere, including the touch without a place
       final on = AutoDirector.fromTouches(
         _base(),
         ev,
         const DirectorOptions(pauseMs: 0, markerType: MarkerType.number),
       );
+      expect(on.markers.length, 3);
       expect(on.markers.every((m) => m.spec.type == MarkerType.number), isTrue);
-      expect(on.texts.where((t) => t.text.startsWith('Step')).length, 1);
+      expect(on.texts.where((t) => t.text.startsWith('Step')), isEmpty);
     });
 
     test('changeMs is read from the scan, -1 means none', () {

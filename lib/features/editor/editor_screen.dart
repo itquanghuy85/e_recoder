@@ -13,6 +13,7 @@ import '../../core/video_source.dart';
 import '../../core/native_recorder.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../../core/diag.dart';
 import '../../theme/app_tokens.dart';
 import '../../app/settings_store.dart';
 import '../marker/marker_settings.dart';
@@ -21,6 +22,7 @@ import 'auto_director.dart' show DirectorOptions;
 import 'edit_project.dart';
 import 'editor_controller.dart';
 import 'editor_extra_players.dart';
+import 'edit_history_sheet.dart';
 import 'editor_fullscreen.dart';
 import 'swipe_hint.dart';
 import 'swipe_zone.dart';
@@ -50,6 +52,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   ExtraPlayers? _extras;
   bool _wasPlaying = false;
   bool _failed = false;
+
+  /// True while the automatic marks of this recording are still being built.
+  bool _waitingDraft = false;
   EditorTool _tool = EditorTool.cut;
   bool _toolsHidden = false;
 
@@ -86,6 +91,19 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       if (!mounted) {
         await v.dispose();
         return;
+      }
+      // The automatic marks of this video are still being made (finding where each touch was takes
+      // a while on a long recording): wait for them, or the editor would open an empty draft and the
+      // finished build would later replace whatever was edited meanwhile.
+      final rec = ref.read(recorderProvider.notifier);
+      if (rec.draftBuildingFor == widget.entry.uri) {
+        diag('editor waits for the automatic marks');
+        if (mounted) setState(() => _waitingDraft = true);
+        await rec.draftReady;
+        if (!mounted) {
+          await v.dispose();
+          return;
+        }
       }
       final store = ref.read(projectStoreProvider);
       var project = await store.load(widget.entry.uri);
@@ -133,6 +151,33 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
           _timelineKey.currentState?.zoomToFit(
             MediaQuery.sizeOf(context).width,
             share: 0.46,
+          );
+        });
+      }
+      // A clean recording that listened for touches but came out without a single mark: say it
+      // right away, with the way to look for the touches in the video again.
+      final empty = c.autoPassWithoutMarks;
+      if (empty != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final t = AppL10n.of(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 8),
+              content: Text(
+                empty == 0 ? t.autoNoTouchesHeard : t.autoHeardNoMarks(empty),
+              ),
+              action: SnackBarAction(
+                label: t.autoFindAgain,
+                onPressed: () => c.directFromTouches(
+                  options: c.directorOptions.copyWith(
+                    typingLabel: t.typingLabel,
+                    typedLabel: t.typedLabel,
+                  ),
+                  stepPrefix: t.stepLabelPrefix,
+                ),
+              ),
+            ),
           );
         });
       }
@@ -343,6 +388,22 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   Future<void> _pause() async => _driver?.pause();
 
+  /// Playback was running when the finger came down on the timeline: it goes on from the new place.
+  bool _resumeAfterScrub = false;
+
+  Future<void> _scrubStart() async {
+    final c = _c;
+    if (c == null || !c.playing) return;
+    _resumeAfterScrub = true;
+    await _driver?.pause();
+  }
+
+  Future<void> _scrubEnd() async {
+    if (!_resumeAfterScrub) return;
+    _resumeAfterScrub = false;
+    await _driver?.play();
+  }
+
   void _setToolsHidden(bool hidden) {
     if (hidden == _toolsHidden) return;
     setState(() => _toolsHidden = hidden);
@@ -446,7 +507,22 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
     if (c == null || v == null) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.entry.name)),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              if (_waitingDraft) ...[
+                const SizedBox(height: Space.md),
+                Semantics(
+                  identifier: 'editor_waiting_marks',
+                  liveRegion: true,
+                  child: Text(t.editorWaitingMarks, textAlign: TextAlign.center),
+                ),
+              ],
+            ],
+          ),
+        ),
       );
     }
     final mk = ref.watch(markerSettingsProvider);
@@ -477,6 +553,16 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
                       tooltip: t.redo,
                       onPressed: c.canRedo ? c.redo : null,
                       icon: const Icon(Icons.redo),
+                    ),
+                  ),
+                  Semantics(
+                    identifier: 'editor_history',
+                    child: IconButton(
+                      tooltip: t.historyTitle,
+                      onPressed: c.canUndo || c.canRedo
+                          ? () => showEditHistorySheet(context, c)
+                          : null,
+                      icon: const Icon(Icons.history),
                     ),
                   ),
                 ],
@@ -576,7 +662,12 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               _SelectBar(c: c),
               SwipeZone(
                 onSwipe: _swipe,
-                child: EditorTimeline(key: _timelineKey, controller: c),
+                child: EditorTimeline(
+                  key: _timelineKey,
+                  controller: c,
+                  onScrubStart: _scrubStart,
+                  onScrubEnd: _scrubEnd,
+                ),
               ),
               const Divider(),
               EditorTools(

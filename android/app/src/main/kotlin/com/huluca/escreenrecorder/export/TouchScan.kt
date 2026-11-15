@@ -160,7 +160,69 @@ object TouchScan {
      * touch must be gone by then, or it would sit on the new screen.
      * Returns one map per time, in the same order, shaped like a scan result.
      */
+    /**
+     * Where each touch was, from the frames just after it (a pressed key, a ripple), and when the
+     * screen really changed after it. Decodes each touch's window once ([LumaDecoder]); falls back to
+     * the frame-by-frame reader when the phone's decoder cannot hand out its pictures.
+     */
     fun locate(ctx: Context, uri: Uri, timesMs: List<Long>): List<Map<String, Any?>> {
+        if (timesMs.isEmpty()) return emptyList()
+        return try {
+            LumaDecoder(ctx, uri).use { dec -> locateWith(dec, timesMs) }
+        } catch (e: Exception) {
+            android.util.Log.w("TouchScan", "fast locate failed, frame by frame", e)
+            locateFrameByFrame(ctx, uri, timesMs)
+        }
+    }
+
+    /** The decoding-free part of [locate], on frames already decoded per window (unit tested). */
+    internal fun locateWith(dec: WindowSource, timesMs: List<Long>): List<Map<String, Any?>> {
+        val sorted = timesMs.sorted()
+        return timesMs.map { t ->
+            val next = sorted.firstOrNull { it > t } ?: Long.MAX_VALUE
+            val until = minOf(t + CHANGE_SCAN_MS, next)
+            val reactUntil = t + LOCATE_OFFSETS.last()
+            val frames = dec.window((t - 90 - 400).coerceAtLeast(0), maxOf(until, reactUntil))
+            if (frames.isEmpty()) throw IllegalStateException("no frames")
+            val before = frames.lastOrNull { it.ms <= t - 90 } ?: frames.first()
+            var spot: DoubleArray? = null
+            var changeMs = -1L
+            for (f in frames) {
+                if (f.ms <= t || f.w != before.w || f.h != before.h) continue
+                if (spot == null && f.ms <= reactUntil) spot = reaction(before.luma, f.luma, f.w, f.h)
+                if (changeMs < 0 && f.ms < until &&
+                    changedBlocks(before.luma, f.luma, f.w, f.h) >= SCREEN_CHANGE
+                ) {
+                    changeMs = f.ms
+                }
+                if (spot != null && changeMs >= 0) break
+            }
+            com.huluca.escreenrecorder.DiagLog.log(
+                "locate",
+                "t=$t frames=${frames.size} ${frames.first().ms}..${frames.last().ms} " +
+                    "before=${before.ms} spot=${spot?.joinToString { "%.2f".format(it) }} change=$changeMs " +
+                    "mean=${before.luma.average().toInt()} size=${before.w}x${before.h} " +
+                    "maxDiff=${frames.maxOf { f -> if (f.luma.size != before.luma.size) 0 else f.luma.indices.count { abs(f.luma[it] - before.luma[it]) > REACT_DIFF } }}",
+            )
+            mapOf(
+                "tMs" to t, "x" to (spot?.get(0) ?: -1.0), "y" to (spot?.get(1) ?: -1.0),
+                "durMs" to 0L, "dist" to 0.0, "changeMs" to changeMs,
+            )
+        }
+    }
+
+    /** Frames of a time window; [LumaDecoder] in the app, a list in tests. */
+    fun interface WindowSource {
+        fun window(fromMs: Long, toMs: Long): List<LumaDecoder.Frame>
+    }
+
+    private fun LumaDecoder.use(block: (WindowSource) -> List<Map<String, Any?>>) = try {
+        block(WindowSource { a, b -> window(a, b) })
+    } finally {
+        close()
+    }
+
+    private fun locateFrameByFrame(ctx: Context, uri: Uri, timesMs: List<Long>): List<Map<String, Any?>> {
         val out = ArrayList<Map<String, Any?>>()
         val sorted = timesMs.sorted()
         val mmr = MediaMetadataRetriever()

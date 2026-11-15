@@ -1,0 +1,29 @@
+appId: com.huluca.escreenrecorder
+name: E20 drag the timeline while the video plays - it moves, then keeps playing
+tags:
+  - module-editor
+---
+- runFlow:
+    file: helpers/open_edit.yaml
+    env:
+      PATTERN: ".*ESR_[0-9].*"
+- tapOn:
+    id: "editor_play"
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN"
+    timeout: 1500
+    optional: true
+- takeScreenshot: artifacts/e20_before
+# A drag on the ruler, left to right = earlier in the video, while it plays (dragging to the very end
+# would stop playback there, which is right but not what this checks).
+- swipe:
+    start: 25%, 52%
+    end: 75%, 52%
+    duration: 900
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN"
+    timeout: 1500
+    optional: true
+- takeScreenshot: artifacts/e20_after
+# Still playing after the finger is lifted.
+- assertVisible: "Dừng phát"

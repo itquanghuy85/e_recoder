@@ -78,6 +78,7 @@ class RecSavedEvent extends RecEvent {
     this.size, {
     this.width = 0,
     this.height = 0,
+    this.indexed = true,
     this.marks = const [],
     this.touches = const [],
   });
@@ -87,6 +88,10 @@ class RecSavedEvent extends RecEvent {
   final int size;
   final int width;
   final int height;
+
+  /// False when MediaStore has the bytes but has not published/indexed the row yet (the library may
+  /// take a moment, or a retry/scan is needed). The video is never deleted for this.
+  final bool indexed;
   final List<RecMark> marks;
 
   /// Touches heard during a clean recording (time only; the place is found afterwards).
@@ -250,22 +255,7 @@ class NativeRecorder {
         final m = e as Map<dynamic, dynamic>;
         switch (m['type']) {
           case 'saved':
-            return RecSavedEvent(
-              m['uri'] as String,
-              m['name'] as String,
-              (m['durationMs'] as num).toInt(),
-              (m['size'] as num).toInt(),
-              width: (m['width'] as num?)?.toInt() ?? 0,
-              height: (m['height'] as num?)?.toInt() ?? 0,
-              marks: [
-                for (final raw in (m['marks'] as List<dynamic>? ?? const []))
-                  RecMark.fromMap(raw as Map),
-              ],
-              touches: [
-                for (final raw in (m['touches'] as List<dynamic>? ?? const []))
-                  RawTouch.fromMap(raw as Map),
-              ],
-            );
+            return _savedFrom(m);
           case 'error':
             return RecErrorEvent(
               m['code'] as String,
@@ -298,6 +288,31 @@ class NativeRecorder {
   /// Shows the system consent dialog and starts the service. False if the user declined.
   Future<bool> start(StartRequest r) async =>
       (await _method.invokeMethod<bool>('start', r.toMap())) ?? false;
+
+  static RecSavedEvent _savedFrom(Map<dynamic, dynamic> m) => RecSavedEvent(
+    m['uri'] as String,
+    m['name'] as String,
+    (m['durationMs'] as num).toInt(),
+    (m['size'] as num).toInt(),
+    width: (m['width'] as num?)?.toInt() ?? 0,
+    height: (m['height'] as num?)?.toInt() ?? 0,
+    indexed: (m['indexed'] as bool?) ?? true,
+    marks: [
+      for (final raw in (m['marks'] as List<dynamic>? ?? const []))
+        RecMark.fromMap(raw as Map),
+    ],
+    touches: [
+      for (final raw in (m['touches'] as List<dynamic>? ?? const []))
+        RawTouch.fromMap(raw as Map),
+    ],
+  );
+
+  /// The last recording saved while Flutter was not listening, taken exactly once. Null when there is
+  /// none (or it was already announced). Keeps the app's library in step after a background stop.
+  Future<RecSavedEvent?> takeLastSaved() async {
+    final m = await _method.invokeMapMethod<dynamic, dynamic>('takeLastSaved');
+    return m == null ? null : _savedFrom(m);
+  }
 
   Future<void> stop() => _method.invokeMethod('stop');
   Future<void> pause() => _method.invokeMethod('pause');
@@ -372,6 +387,15 @@ class NativeRecorder {
         const [];
     return raw.map(MediaEntry.fromMap).toList();
   }
+
+  /// One frame of a video at [ms] (source time), fitted into [w] x [h]; null when it cannot be read.
+  Future<Uint8List?> frameAt(String uri, int ms, {int w = 160, int h = 160}) =>
+      _method.invokeMethod<Uint8List>('frameAt', {
+        'uri': uri,
+        'ms': ms,
+        'w': w,
+        'h': h,
+      });
 
   Future<Uint8List?> thumbnail(String uri, {int w = 256, int h = 256}) =>
       _method.invokeMethod<Uint8List>('thumbnail', {
@@ -543,6 +567,29 @@ class NativeRecorder {
   Future<({String path, int durationMs})?> stopVoice() async {
     final m = await _method.invokeMapMethod<String, Object?>('stopVoice');
     if (m == null) return null;
+    return (
+      path: m['path'] as String,
+      durationMs: (m['durationMs'] as num).toInt(),
+    );
+  }
+
+  /// Speaks [text] with the phone's own speech engine into a new audio file (a voice-over).
+  /// Throws a [PlatformException] with code `tts_unavailable`, `tts_no_lang` or `tts_failed`.
+  Future<({String path, int durationMs})> speakToFile(
+    String text, {
+    required String lang,
+    double rate = 1,
+    double pitch = 1,
+  }) async {
+    final m = await _method.invokeMapMethod<String, Object?>('speakToFile', {
+      'text': text,
+      'lang': lang,
+      'rate': rate,
+      'pitch': pitch,
+    });
+    if (m == null) {
+      throw PlatformException(code: 'tts_failed');
+    }
     return (
       path: m['path'] as String,
       durationMs: (m['durationMs'] as num).toInt(),

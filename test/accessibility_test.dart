@@ -47,7 +47,7 @@ void main() {
       await tester.tap(find.text('Cài đặt'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(fake.calls, isEmpty);
+      expect(fake.calls.where((c) => c != 'takeLastSaved'), isEmpty);
     });
   }
 

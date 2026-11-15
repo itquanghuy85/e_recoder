@@ -55,6 +55,7 @@
   "errCapture": "The recording was interrupted.",
   "errEmpty": "The video has no data. Please record again.",
   "errSave": "Could not save the video to the device.",
+  "savedIndexing": "Video saved. The library is still updating; try again in a moment.",
   "libraryTitle": "Library",
   "pickVideoFromDevice": "Choose a video from the phone",
   "pickVideoFailed": "This video could not be opened.",
@@ -288,6 +289,22 @@
   "zoomDragHint": "Drag on the video to choose the area to zoom into.",
   "undo": "Undo",
   "redo": "Redo",
+  "historyTitle": "Edit history",
+  "historyUndoSection": "Can be undone",
+  "historyRedoSection": "Already undone",
+  "historyEmpty": "No steps yet.",
+  "historyCurrent": "Current",
+  "actionEdit": "Edit",
+  "actionAutoDirect": "Automatic first cut",
+  "actionFindTouches": "Marks from your taps",
+  "actionSilenceCut": "Cut the quiet parts",
+  "actionMarkers": "On-screen marks",
+  "actionCaptions": "Captions",
+  "actionClip": "Clips and cuts",
+  "actionText": "Text and pictures",
+  "actionLook": "Colour and frame",
+  "actionAudio": "Sound",
+  "actionTemplate": "Saved style",
   "exportAction": "Export",
   "exportTitle": "Export video",
   "exportSummary": "Duration {duration}",
@@ -444,6 +461,21 @@
   "audioTracks": "Music and voice",
   "audioAddMusic": "Add music from phone",
   "audioRecordVoice": "Record voice",
+  "ttsButton": "Text to speech",
+  "ttsTitle": "Text to speech",
+  "ttsHint": "The phone's voice reads it and it goes on the timeline at the playhead, like a voice-over: volume, voice effects and music ducking all work.",
+  "ttsField": "Text to read",
+  "ttsLanguage": "Language",
+  "ttsSpeed": "Reading speed",
+  "ttsSlow": "Slow",
+  "ttsNormal": "Normal",
+  "ttsFast": "Fast",
+  "ttsCreate": "Make the voice",
+  "ttsWorking": "Making the voice…",
+  "ttsDone": "Voice added to the timeline.",
+  "ttsNoEngine": "This phone has no text-to-speech engine. Install Speech Services by Google and try again.",
+  "ttsNoLang": "The phone's speech engine has no voice for this language. Download it in Settings > Text-to-speech.",
+  "ttsFailed": "The voice could not be made. Try a shorter text.",
   "audioStopVoice": "Stop recording",
   "audioVoiceHint": "Use headphones so your voice is not mixed with the speaker sound.",
   "audioStartAt": "Starts at",
@@ -457,6 +489,32 @@
   "audioVoiceName": "Voice",
   "audioTracksNone": "No music or voice yet.",
   "exportPreset": "Export preset",
+  "myPresets": "My presets",
+  "myPresetHint": "Long-press a preset to make it the default, rename, duplicate or delete it.",
+  "myPresetSave": "Save these settings",
+  "myPresetName": "Preset name",
+  "myPresetSaved": "Saved “{name}”.",
+  "@myPresetSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "myPresetDefault": "Default",
+  "myPresetMakeDefault": "Use as the default for export",
+  "myPresetClearDefault": "Stop using as default",
+  "myPresetRename": "Rename",
+  "myPresetDuplicate": "Duplicate",
+  "myPresetDelete": "Delete preset",
+  "myPresetCopyName": "{name} (copy)",
+  "@myPresetCopyName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "presetCustom": "Custom",
   "presetYoutube": "YouTube 1080p",
   "presetVertical": "TikTok / Reels 9:16",
@@ -526,7 +584,80 @@
       }
     }
   },
-  "autoTouchesNoPlace": "Only the moments were found, not the places: step captions and freezes, no zoom.",
+  "autoTouchesNoPlace": "Only the moments were found, not the places: marks at the nearest known spot or the middle of the frame.",
+  "autoNoTouchesHeard": "No touches were heard while recording, so the video has no marks yet.",
+  "autoHeardNoMarks": "Heard {n} touches but no marks were placed yet.",
+  "@autoHeardNoMarks": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "autoFindAgain": "Find touches again",
+  "editorWaitingMarks": "Placing the automatic marks for your touches… A long video can take about a minute.",
+  "autoMarksTitle": "Automatic marks",
+  "autoMarksSummary": "Heard {heard} taps · {marks} marks · {estimated} estimated places",
+  "@autoMarksSummary": {
+    "placeholders": {
+      "heard": {
+        "type": "int"
+      },
+      "marks": {
+        "type": "int"
+      },
+      "estimated": {
+        "type": "int"
+      }
+    }
+  },
+  "autoMarksEstimated": "Estimated place",
+  "autoMarksTurnOff": "Turn this mark off",
+  "autoMarksRestoreAll": "Turn all back on",
+  "autoMarksRemoveEstimated": "Remove estimated marks",
+  "autoMarksRelocate": "Find places again",
+  "autoMarksRelocated": "Found places for {n} marks.",
+  "@autoMarksRelocated": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "autoMarksNoRelocate": "No further places could be found.",
+  "autoMarksUndo": "Undo the automatic pass",
+  "silenceCutTitle": "Cut the quiet parts",
+  "silenceCutHint": "Find the stretches where nothing changes and cut them out, leaving 0.2 s at each end so no word is lost. Review the list before cutting.",
+  "silenceFind": "Find quiet parts",
+  "silenceFinding": "Looking for quiet parts…",
+  "silenceNone": "No quiet stretch long enough was found.",
+  "silenceThreshold": "Shortest quiet stretch",
+  "silencePadOpt": "Keep 0.2 s at each end",
+  "silenceKeepSpeed": "Speed of the kept parts",
+  "silenceListTitle": "Stretches to cut",
+  "silenceSelectAll": "Select all",
+  "silenceApply": "Cut the selected stretches",
+  "silenceNoPick": "No stretch is selected.",
+  "silenceHeavy": "This would remove {pct}% of the video, leaving {left}. Cut anyway?",
+  "@silenceHeavy": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "silenceConfirm": "Cut anyway",
+  "silenceDone": "Cut {n} quiet stretches.",
+  "@silenceDone": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "autoPreviewPause": "Preview first freeze",
   "typingLabel": "Typing…",
   "typedLabel": "Typed",

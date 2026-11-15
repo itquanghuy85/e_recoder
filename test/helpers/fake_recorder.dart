@@ -9,6 +9,7 @@ import 'package:e_screen_recorder/core/permissions_gateway.dart';
 import 'package:e_screen_recorder/features/marker/marker_spec.dart';
 import 'package:e_screen_recorder/features/record/recorder_controller.dart';
 import 'package:e_screen_recorder/main.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +27,17 @@ class FakeRecorder implements NativeRecorder {
 
   @override
   Stream<RecEvent> get events => controller.stream;
+
+  /// What [takeLastSaved] hands back once; the real native side keeps one for a while.
+  RecSavedEvent? nextSaved;
+
+  @override
+  Future<RecSavedEvent?> takeLastSaved() async {
+    calls.add('takeLastSaved');
+    final e = nextSaved;
+    nextSaved = null;
+    return e;
+  }
 
   @override
   Future<bool> start(StartRequest r) async {
@@ -98,7 +110,22 @@ class FakeRecorder implements NativeRecorder {
   @override
   Future<int> freeSpace() async => 10 * 1024 * 1024 * 1024;
   @override
-  Future<List<MediaEntry>> listMedia() async => media;
+  Future<List<MediaEntry>> listMedia() async {
+    // A phone whose MediaStore rejects the query (the "Invalid column frame_rate" case).
+    if (listFails) throw PlatformException(code: 'native_error');
+    return media;
+  }
+
+  bool listFails = false;
+  /// Frames handed to the transition previews (null = none, like a file that cannot be read).
+  Uint8List? frame;
+
+  @override
+  Future<Uint8List?> frameAt(String uri, int ms, {int w = 160, int h = 160}) async {
+    calls.add('frameAt:$ms');
+    return frame;
+  }
+
   @override
   Future<Uint8List?> thumbnail(String uri, {int w = 256, int h = 256}) async =>
       null;
@@ -209,6 +236,22 @@ class FakeRecorder implements NativeRecorder {
   Future<String> startVoice() async {
     calls.add('startVoice');
     return '/voice.m4a';
+  }
+
+  /// What [speakToFile] hands back; an error code makes it throw like the real engine.
+  ({String path, int durationMs}) nextSpeech = (path: '/tts.wav', durationMs: 2400);
+  String? speechError;
+
+  @override
+  Future<({String path, int durationMs})> speakToFile(
+    String text, {
+    required String lang,
+    double rate = 1,
+    double pitch = 1,
+  }) async {
+    calls.add('speakToFile:$lang:$text');
+    if (speechError != null) throw PlatformException(code: speechError!);
+    return nextSpeech;
   }
 
   @override

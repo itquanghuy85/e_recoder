@@ -90,7 +90,7 @@ void main() {
   test('nothing pending: nothing happens at launch', () async {
     final l = await _launch({});
     await l.c.read(recorderProvider.notifier).draftReady;
-    expect(l.fake.calls, isEmpty);
+    expect(l.fake.calls.where((c) => c != 'takeLastSaved'), isEmpty);
   });
 
   test(

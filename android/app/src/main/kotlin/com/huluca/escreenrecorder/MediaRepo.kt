@@ -44,18 +44,38 @@ object MediaRepo {
         val uri = resolver.insert(collection, values) ?: return null
         try {
             resolver.openOutputStream(uri)!!.use { out -> file.inputStream().use { it.copyTo(out) } }
-            resolver.update(uri, ContentValues().apply { put(MediaStore.Video.Media.IS_PENDING, 0) }, null, null)
         } catch (e: Exception) {
             resolver.delete(uri, null, null)
             return null
         }
+        // Publishing is a second step: if it silently fails the row stays pending and every query
+        // (including our own library) hides the video even though the bytes are there. Keep the file
+        // in that case and tell Flutter it is not indexed yet, instead of deleting a good recording.
+        val published = try {
+            resolver.update(uri, ContentValues().apply { put(MediaStore.Video.Media.IS_PENDING, 0) }, null, null) > 0
+        } catch (_: Exception) {
+            false
+        }
+        val indexed = published && isIndexed(ctx, uri)
         return mapOf(
             "type" to "saved",
             "uri" to uri.toString(),
             "name" to name,
             "durationMs" to durationMs,
             "size" to file.length(),
+            "indexed" to indexed,
         )
+    }
+
+    /** Whether MediaStore will hand this row to a normal query (published, with bytes). */
+    private fun isIndexed(ctx: Context, uri: Uri): Boolean = try {
+        ctx.contentResolver.query(
+            uri,
+            arrayOf(MediaStore.Video.Media.IS_PENDING, MediaStore.Video.Media.SIZE),
+            null, null, null,
+        )?.use { c -> c.moveToFirst() && c.getInt(0) == 0 && c.getLong(1) > 0 } ?: false
+    } catch (_: Exception) {
+        false
     }
 
     /** Saves a GIF into Pictures/E Screen Recorder (it is not a video, so the library does not list it). */
@@ -79,13 +99,39 @@ object MediaRepo {
         return mapOf("type" to "saved", "uri" to uri.toString(), "name" to name, "durationMs" to durationMs, "size" to file.length(), "mime" to "image/gif")
     }
 
+    /** Columns every MediaStore has; [FPS_COLUMN] is added only where the phone knows it. */
+    private val BASE_COLUMNS = arrayOf(
+        MediaStore.Video.Media._ID, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.DURATION,
+        MediaStore.Video.Media.SIZE, MediaStore.Video.Media.WIDTH, MediaStore.Video.Media.HEIGHT,
+        MediaStore.Video.Media.DATE_ADDED,
+    )
+
+    /**
+     * Not a public MediaStore column: Samsung has it, AOSP / ColorOS (Android 13 at least) reject the
+     * whole query with "Invalid column frame_rate". Asking for it unconditionally left the library
+     * empty and the result screen never opened after a recording on those phones.
+     */
+    private const val FPS_COLUMN = "frame_rate"
+
+    /** Null until the first query tells whether this phone's MediaStore has [FPS_COLUMN]. */
+    @Volatile private var fpsColumnKnown: Boolean? = null
+
     fun list(ctx: Context): List<Map<String, Any?>> {
+        if (fpsColumnKnown != false) {
+            try {
+                return list(ctx, withFps = true).also { fpsColumnKnown = true }
+            } catch (e: IllegalArgumentException) {
+                if (fpsColumnKnown == true) throw e
+                fpsColumnKnown = false
+                DiagLog.log("lib", "no $FPS_COLUMN column: ${e.message}")
+            }
+        }
+        return list(ctx, withFps = false)
+    }
+
+    private fun list(ctx: Context, withFps: Boolean): List<Map<String, Any?>> {
         val out = ArrayList<Map<String, Any?>>()
-        val proj = arrayOf(
-            MediaStore.Video.Media._ID, MediaStore.Video.Media.DISPLAY_NAME, MediaStore.Video.Media.DURATION,
-            MediaStore.Video.Media.SIZE, MediaStore.Video.Media.WIDTH, MediaStore.Video.Media.HEIGHT,
-            MediaStore.Video.Media.DATE_ADDED, "frame_rate",
-        )
+        val proj = if (withFps) BASE_COLUMNS + FPS_COLUMN else BASE_COLUMNS
         ctx.contentResolver.query(
             collection, proj,
             "${MediaStore.Video.Media.RELATIVE_PATH} LIKE ? AND ${MediaStore.Video.Media.IS_PENDING} = 0",
@@ -103,7 +149,8 @@ object MediaRepo {
                         "width" to c.getInt(4),
                         "height" to c.getInt(5),
                         "dateAdded" to c.getLong(6),
-                        "fps" to normalizeFps(c.getDouble(7)),
+                        // 0 = unknown (no column on this phone): the editor then sizes the export for 30 fps.
+                        "fps" to if (withFps) normalizeFps(c.getDouble(7)) else 0,
                     ),
                 )
             }
@@ -124,6 +171,25 @@ object MediaRepo {
             frame?.let { f -> ByteArrayOutputStream().also { f.compress(Bitmap.CompressFormat.JPEG, 80, it) }.toByteArray() }
         } catch (_: Exception) {
             null
+        }
+    }
+
+    /**
+     * One frame of a video at [atMs], scaled to fit [w] x [h] (JPEG), for small previews such as the
+     * transition picker. Null when the frame cannot be read.
+     */
+    fun frameAt(ctx: Context, uri: Uri, atMs: Long, w: Int, h: Int): ByteArray? {
+        val r = MediaMetadataRetriever()
+        return try {
+            r.setDataSource(ctx, uri)
+            val us = atMs.coerceAtLeast(0) * 1000
+            val f = r.getScaledFrameAtTime(us, MediaMetadataRetriever.OPTION_CLOSEST, w, h)
+                ?: r.getScaledFrameAtTime(us, MediaMetadataRetriever.OPTION_CLOSEST_SYNC, w, h)
+            f?.let { b -> ByteArrayOutputStream().also { b.compress(Bitmap.CompressFormat.JPEG, 80, it) }.toByteArray() }
+        } catch (_: Exception) {
+            null
+        } finally {
+            r.release()
         }
     }
 

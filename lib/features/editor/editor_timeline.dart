@@ -39,8 +39,20 @@ class _Chip {
 /// (drag to scrub, pinch to zoom). Rows: video segments, then one row per overlay kind in use.
 /// Long-press a segment and slide to reorder; edges and overlays snap to neighbours.
 class EditorTimeline extends StatefulWidget {
-  const EditorTimeline({super.key, required this.controller});
+  const EditorTimeline({
+    super.key,
+    required this.controller,
+    this.onScrubStart,
+    this.onScrubEnd,
+  });
   final EditorController controller;
+
+  /// A finger starts moving the playhead along the timeline. Playback is paused for the drag, or
+  /// the player would keep pulling the playhead back to where it is playing.
+  final Future<void> Function()? onScrubStart;
+
+  /// The finger is lifted after a scrub.
+  final Future<void> Function()? onScrubEnd;
 
   @override
   State<EditorTimeline> createState() => EditorTimelineState();
@@ -310,6 +322,9 @@ class EditorTimelineState extends State<EditorTimeline> {
     return (chip: null, grab: _Grab.none);
   }
 
+  /// True while a one-finger drag moves the playhead (not a clip, not a pinch).
+  bool _scrubbing = false;
+
   void _onStart(ScaleStartDetails d, double w) {
     _accDx = 0;
     _basePx = pxPerMs;
@@ -322,6 +337,8 @@ class EditorTimelineState extends State<EditorTimeline> {
     final ch = h.chip;
     if (ch == null || h.grab == _Grab.none) {
       _dKind = null;
+      _scrubbing = true;
+      widget.onScrubStart?.call();
       return;
     }
     // Only the selected clip can be moved/trimmed; first touch selects it.
@@ -486,6 +503,10 @@ class EditorTimelineState extends State<EditorTimeline> {
   }
 
   void _onEnd(ScaleEndDetails d) {
+    if (_scrubbing) {
+      _scrubbing = false;
+      widget.onScrubEnd?.call();
+    }
     if (_dKind != null) c.flush();
     _dKind = null;
     if (_snapOut != null) setState(() => _snapOut = null);

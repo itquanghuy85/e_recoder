@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:e_screen_recorder/app/settings_store.dart';
 import 'package:e_screen_recorder/features/marker/marker_spec.dart';
 import 'package:e_screen_recorder/features/record/rec_settings.dart';
+import 'package:e_screen_recorder/features/record/recorder_controller.dart';
 import 'package:e_screen_recorder/core/native_recorder.dart';
 import 'package:e_screen_recorder/features/editor/project_store.dart';
 import 'package:e_screen_recorder/features/marker/marker_settings.dart';
@@ -8,6 +11,7 @@ import 'package:e_screen_recorder/features/purpose/purpose.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'helpers/fake_recorder.dart';
 
@@ -62,6 +66,46 @@ void main() {
         expect(m.holdMs, 4000);
         expect(m.autoMarker, MarkerType.arrow);
       }
+    });
+  });
+
+  group('old tutorial profile migration', () {
+    Future<ProviderContainer> open(Map<String, Object> prefs) async {
+      SharedPreferences.setMockInitialValues(prefs);
+      final container = ProviderContainer(
+        overrides: [
+          settingsStoreProvider.overrideWithValue(await SettingsStore.load()),
+          nativeRecorderProvider.overrideWithValue(FakeRecorder()),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    test('a clean profile from an old install starts listening to taps', () async {
+      final c = await open({
+        'purpose': Purpose.game.index,
+        'marker.touchSource': TouchSource.manual.index,
+        profileKey(Purpose.tutorial): jsonEncode({
+          'marker.mode': MarkMode.clean.index,
+          'marker.touchSourceV2': TouchSource.manual.index,
+        }),
+      });
+      expect(c.read(purposeProvider), Purpose.game);
+      await c.read(purposeProvider.notifier).choose(Purpose.tutorial);
+      expect(c.read(markerSettingsProvider).touchSource, TouchSource.auto);
+    });
+
+    test('a deliberate no-marks profile is left alone', () async {
+      final c = await open({
+        'purpose': Purpose.game.index,
+        profileKey(Purpose.tutorial): jsonEncode({
+          'marker.mode': MarkMode.clean.index,
+          'marker.touchSourceV2': TouchSource.off.index,
+        }),
+      });
+      await c.read(purposeProvider.notifier).choose(Purpose.tutorial);
+      expect(c.read(markerSettingsProvider).touchSource, TouchSource.off);
     });
   });
 

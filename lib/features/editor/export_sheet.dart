@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/settings_store.dart';
 import '../../core/formatters.dart';
 import '../../core/native_recorder.dart';
 import '../../l10n/app_localizations.dart';
@@ -9,6 +10,7 @@ import '../library/player_screen.dart';
 import '../record/recorder_controller.dart';
 import 'editor_controller.dart';
 import 'export_presets.dart';
+import 'picture_look.dart';
 
 /// Export options, progress and result in one sheet.
 Future<void> showExportSheet(
@@ -40,6 +42,203 @@ class _ExportSheetState extends ConsumerState<_ExportSheet> {
   ExportPreset _preset = ExportPreset.custom;
   int? _cap;
 
+  /// The person's own presets, and the one picked now (null = none of them).
+  UserPresetList _mine = const UserPresetList([]);
+  String? _myId;
+
+  @override
+  void initState() {
+    super.initState();
+    try {
+      _mine = UserPresetList.decode(
+        ref.read(settingsStoreProvider).getString(UserPresetList.key),
+      );
+    } catch (_) {}
+    // The default preset is picked when the sheet opens (shape included, so the preview matches).
+    final d = _mine.defaultPreset;
+    if (d != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _applyMine(d);
+      });
+    }
+  }
+
+  Future<void> _storeMine(UserPresetList next) async {
+    setState(() => _mine = next);
+    try {
+      await ref
+          .read(settingsStoreProvider)
+          .setString(UserPresetList.key, next.encode());
+    } catch (_) {}
+  }
+
+  void _applyMine(UserExportPreset p) {
+    setState(() {
+      _myId = p.id;
+      _preset = ExportPreset.custom;
+      _q = p.quality;
+      _gif = p.gif;
+      _cap = p.maxBytes;
+    });
+    if (p.aspect != null) widget.c.setAspect(p.aspect!);
+  }
+
+  Future<String?> _askName(String initial) {
+    final t = AppL10n.of(context);
+    final ctl = TextEditingController(text: initial);
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.myPresetName),
+        content: TextField(
+          key: const ValueKey('my_preset_name'),
+          controller: ctl,
+          autofocus: true,
+          maxLength: 40,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(t.cancel),
+          ),
+          FilledButton(
+            key: const ValueKey('my_preset_name_ok'),
+            onPressed: () => Navigator.pop(ctx, ctl.text.trim()),
+            child: Text(t.save),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _newId() => 'u${DateTime.now().microsecondsSinceEpoch}';
+
+  Future<void> _saveMine() async {
+    final t = AppL10n.of(context);
+    final m = ScaffoldMessenger.maybeOf(context);
+    final name = await _askName('');
+    if (name == null || name.isEmpty || !mounted) return;
+    final aspect = widget.c.project.look.aspect;
+    final p = UserExportPreset(
+      id: _newId(),
+      name: name,
+      quality: _q,
+      gif: _gif,
+      maxBytes: _gif ? null : _cap,
+      aspect: aspect == OutAspect.auto ? null : aspect,
+    );
+    await _storeMine(_mine.upsert(p));
+    setState(() => _myId = p.id);
+    m?.showSnackBar(SnackBar(content: Text(t.myPresetSaved(name))));
+  }
+
+  Future<void> _mineMenu(UserExportPreset p) async {
+    final t = AppL10n.of(context);
+    final isDefault = _mine.defaultId == p.id;
+    final pick = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const ValueKey('my_preset_default'),
+              leading: Icon(isDefault ? Icons.star : Icons.star_outline),
+              title: Text(
+                isDefault ? t.myPresetClearDefault : t.myPresetMakeDefault,
+              ),
+              onTap: () => Navigator.pop(ctx, 'default'),
+            ),
+            ListTile(
+              key: const ValueKey('my_preset_rename'),
+              leading: const Icon(Icons.edit_outlined),
+              title: Text(t.myPresetRename),
+              onTap: () => Navigator.pop(ctx, 'rename'),
+            ),
+            ListTile(
+              key: const ValueKey('my_preset_duplicate'),
+              leading: const Icon(Icons.copy_outlined),
+              title: Text(t.myPresetDuplicate),
+              onTap: () => Navigator.pop(ctx, 'duplicate'),
+            ),
+            ListTile(
+              key: const ValueKey('my_preset_delete'),
+              leading: const Icon(Icons.delete_outline),
+              title: Text(t.myPresetDelete),
+              onTap: () => Navigator.pop(ctx, 'delete'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || pick == null) return;
+    switch (pick) {
+      case 'default':
+        await _storeMine(_mine.withDefault(p.id));
+      case 'rename':
+        final name = await _askName(p.name);
+        if (name == null || name.isEmpty || !mounted) return;
+        await _storeMine(_mine.upsert(p.copyWith(name: name)));
+      case 'duplicate':
+        await _storeMine(
+          _mine.duplicate(p.id, _newId(), t.myPresetCopyName(p.name)),
+        );
+      case 'delete':
+        if (_myId == p.id) setState(() => _myId = null);
+        await _storeMine(_mine.remove(p.id));
+    }
+  }
+
+  List<Widget> _mineSection(AppL10n t, TextTheme tt, ColorScheme cs) => [
+    const SizedBox(height: Space.md),
+    Text(t.myPresets, style: tt.titleSmall),
+    const SizedBox(height: Space.sm),
+    Wrap(
+      spacing: Space.sm,
+      runSpacing: Space.xs,
+      children: [
+        for (final p in _mine.items)
+          Semantics(
+            identifier: 'my_preset_${p.id}',
+            child: GestureDetector(
+              onLongPress: () => _mineMenu(p),
+              child: ChoiceChip(
+                avatar: _mine.defaultId == p.id
+                    ? Icon(Icons.star, size: 18, color: cs.primary)
+                    : null,
+                // No tooltip: its long-press would take the gesture that opens the menu.
+                label: Text(
+                  p.name,
+                  semanticsLabel: _mine.defaultId == p.id
+                      ? '${p.name}, ${t.myPresetDefault}'
+                      : null,
+                ),
+                selected: _myId == p.id,
+                onSelected: (_) => _applyMine(p),
+              ),
+            ),
+          ),
+        Semantics(
+          identifier: 'my_preset_save',
+          child: ActionChip(
+            avatar: const Icon(Icons.bookmark_add_outlined, size: 18),
+            label: Text(t.myPresetSave),
+            onPressed: _saveMine,
+          ),
+        ),
+      ],
+    ),
+    if (_mine.items.isNotEmpty)
+      Padding(
+        padding: const EdgeInsets.only(top: Space.xs),
+        child: Text(
+          t.myPresetHint,
+          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+        ),
+      ),
+  ];
+
   String _presetLabel(AppL10n t, ExportPreset p) => switch (p) {
     ExportPreset.custom => t.presetCustom,
     ExportPreset.youtube => t.presetYoutube,
@@ -52,6 +251,7 @@ class _ExportSheetState extends ConsumerState<_ExportSheet> {
     final spec = PresetSpec.of(p);
     setState(() {
       _preset = p;
+      _myId = null;
       if (p != ExportPreset.custom) {
         _q = spec.quality;
         _gif = spec.gif;
@@ -150,6 +350,7 @@ class _ExportSheetState extends ConsumerState<_ExportSheet> {
                         ),
                     ],
                   ),
+                  ..._mineSection(t, tt, cs),
                   const SizedBox(height: Space.lg),
                   Text(t.exportFormat, style: tt.titleSmall),
                   const SizedBox(height: Space.sm),
@@ -164,6 +365,7 @@ class _ExportSheetState extends ConsumerState<_ExportSheet> {
                           onSelected: (_) => setState(() {
                             _gif = false;
                             _preset = ExportPreset.custom;
+                            _myId = null;
                             _cap = null;
                           }),
                         ),
@@ -176,6 +378,7 @@ class _ExportSheetState extends ConsumerState<_ExportSheet> {
                           onSelected: (_) => setState(() {
                             _gif = true;
                             _preset = ExportPreset.custom;
+                            _myId = null;
                             _cap = null;
                           }),
                         ),
@@ -197,6 +400,7 @@ class _ExportSheetState extends ConsumerState<_ExportSheet> {
                               selected: _q == q,
                               onSelected: (_) => setState(() {
                                 _q = q;
+                                _myId = null;
                                 if (_preset != ExportPreset.share) {
                                   _preset = ExportPreset.custom;
                                 }

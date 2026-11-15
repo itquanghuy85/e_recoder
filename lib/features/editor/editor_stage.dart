@@ -865,7 +865,7 @@ class _EditorStageState extends State<EditorStage> {
         child: framed,
       );
     }
-    framed = _transitioned(look, g.w, g.h, framed);
+    framed = transitionedPicture(look, g.w, g.h, framed);
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -1132,36 +1132,6 @@ class _EditorStageState extends State<EditorStage> {
               : const ColoredBox(color: Colors.black54))
         : Image.file(File(pip.path), fit: BoxFit.fill, gaplessPlayback: true);
     return _placed(child, cw, ch, st, 0, g);
-  }
-
-  /// The picture as a transition shows it: same maths as TransitionEffect.kt (colour mul/add, shift, scale)
-  /// over black, so what slides out of the frame leaves black behind it, as in the export.
-  Widget _transitioned(TransitionLook look, double w, double h, Widget child) {
-    if (look.isNone) return child;
-    Widget r = child;
-    if (look.mul != 1 || look.add != 0) {
-      final m = look.mul;
-      final a = look.add * 255;
-      r = ColorFiltered(
-        colorFilter: ColorFilter.matrix([
-          m, 0, 0, 0, a, //
-          0, m, 0, 0, a,
-          0, 0, m, 0, a,
-          0, 0, 0, 1, 0,
-        ]),
-        child: r,
-      );
-    }
-    if (look.dx != 0 || look.dy != 0 || look.scale != 1) {
-      r = Transform(
-        alignment: Alignment.center,
-        transform: Matrix4.identity()
-          ..translateByDouble(look.dx * w / 2, -look.dy * h / 2, 0, 1)
-          ..scaleByDouble(look.scale, look.scale, 1, 1),
-        child: r,
-      );
-    }
-    return ColoredBox(color: Colors.black, child: r);
   }
 
   List<Widget> _marker(MarkerItem m, int t, double w, double h, double k) {
@@ -1454,4 +1424,34 @@ class _ZoomBadge extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The picture as a transition shows it: same maths as TransitionEffect.kt (colour mul/add, shift, scale)
+/// over black, so what slides out of the frame leaves black behind it, as in the export.
+Widget transitionedPicture(TransitionLook look, double w, double h, Widget child) {
+  if (look.isNone) return child;
+  Widget r = child;
+  if (look.mul != 1 || look.add != 0) {
+    final m = look.mul;
+    final a = look.add * 255;
+    r = ColorFiltered(
+      colorFilter: ColorFilter.matrix([
+        m, 0, 0, 0, a, //
+        0, m, 0, 0, a,
+        0, 0, m, 0, a,
+        0, 0, 0, 1, 0,
+      ]),
+      child: r,
+    );
+  }
+  if (look.dx != 0 || look.dy != 0 || look.scale != 1) {
+    r = Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.identity()
+        ..translateByDouble(look.dx * w / 2, -look.dy * h / 2, 0, 1)
+        ..scaleByDouble(look.scale, look.scale, 1, 1),
+      child: r,
+    );
+  }
+  return ColoredBox(color: Colors.black, child: r);
 }

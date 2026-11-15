@@ -26,40 +26,73 @@ export 'segment.dart';
 
 /// A marker on the timeline. [cueStartMs] is when the cue ring begins; the "take" (the moment the
 /// viewer should see the press) is cueStartMs + [MarkerTiming.cueMs].
+///
+/// [source] says who made it (`'auto'` for the find-touches pass, null for a hand-made mark) and
+/// [estimated] means its place was guessed, not seen. [touchMs] keeps the moment of the touch so
+/// the place can be looked for again. All three are optional, so projects saved before they
+/// existed still load (a mark without them is a hand-made, exact mark).
 class MarkerItem {
   const MarkerItem({
     required this.id,
     required this.spec,
     required this.cueStartMs,
     this.holdMs = 2000,
+    this.source,
+    this.estimated = false,
+    this.touchMs,
   });
+
+  /// Id of the find-touches pass; used to list its marks for review.
+  static const autoSource = 'auto';
+
   final String id;
   final MarkerSpec spec;
   final int cueStartMs;
   final int holdMs;
+  final String? source;
+  final bool estimated;
+  final int? touchMs;
+
+  bool get isAuto => source == autoSource;
 
   int get takeMs => cueStartMs + MarkerTiming.cueMs;
   int get endMs => takeMs + holdMs + MarkerTiming.fadeMs;
 
-  MarkerItem copyWith({MarkerSpec? spec, int? cueStartMs, int? holdMs}) =>
-      MarkerItem(
-        id: id,
-        spec: spec ?? this.spec,
-        cueStartMs: cueStartMs ?? this.cueStartMs,
-        holdMs: holdMs ?? this.holdMs,
-      );
+  MarkerItem copyWith({
+    MarkerSpec? spec,
+    int? cueStartMs,
+    int? holdMs,
+    String? source,
+    bool? estimated,
+    int? touchMs,
+  }) => MarkerItem(
+    id: id,
+    spec: spec ?? this.spec,
+    cueStartMs: cueStartMs ?? this.cueStartMs,
+    holdMs: holdMs ?? this.holdMs,
+    source: source ?? this.source,
+    estimated: estimated ?? this.estimated,
+    touchMs: touchMs ?? this.touchMs,
+  );
 
+  /// Old projects have none of the new keys: written only when set, so they stay small.
   Map<String, Object> toJson() => {
     'id': id,
     'spec': spec.toMap(),
     'cueStartMs': cueStartMs,
     'holdMs': holdMs,
+    'source': ?source,
+    if (estimated) 'estimated': true,
+    'touchMs': ?touchMs,
   };
   factory MarkerItem.fromJson(Map<String, dynamic> j) => MarkerItem(
     id: j['id'] as String,
     spec: MarkerSpec.fromMap(j['spec'] as Map<String, dynamic>),
     cueStartMs: j['cueStartMs'] as int,
     holdMs: j['holdMs'] as int,
+    source: j['source'] as String?,
+    estimated: j['estimated'] as bool? ?? false,
+    touchMs: (j['touchMs'] as num?)?.toInt(),
   );
 }
 
@@ -594,6 +627,7 @@ class EditProject {
     this.pips = const [],
     this.look = PictureLook.identity,
     this.muteFast = true,
+    this.autoHeard,
   });
 
   final String id;
@@ -620,6 +654,11 @@ class EditProject {
 
   /// Sound is dropped while a clip plays faster than 2x (sped-up speech is only noise).
   final bool muteFast;
+
+  /// Touches heard while this video was recorded clean with automatic marks (after dropping the press
+  /// on Stop). Null when no such pass ran (older projects, dot mode, manual marks): the editor uses it
+  /// to say "no touches were heard" instead of opening a silently empty draft. UI only, not exported.
+  final int? autoHeard;
 
   /// The volume a segment really has, with [muteFast] applied.
   double effectiveVolume(Segment s) =>
@@ -661,6 +700,7 @@ class EditProject {
     PictureLook? look,
     bool? muteFast,
     int? sourceFps,
+    int? autoHeard,
   }) => EditProject(
     id: id,
     sourceUri: sourceUri,
@@ -680,6 +720,7 @@ class EditProject {
     pips: pips ?? this.pips,
     look: look ?? this.look,
     muteFast: muteFast ?? this.muteFast,
+    autoHeard: autoHeard ?? this.autoHeard,
   );
 
   // ---- timeline mapping -----------------------------------------------------------------------
@@ -1163,6 +1204,7 @@ class EditProject {
     'pips': pips.map((e) => e.toJson()).toList(),
     'look': look.toJson(),
     'muteFast': muteFast,
+    if (autoHeard != null) 'autoHeard': autoHeard,
   });
 
   factory EditProject.decode(String s) {
@@ -1190,6 +1232,7 @@ class EditProject {
       pips: list('pips', PipItem.fromJson),
       look: PictureLook.fromJson(j['look'] as Map<String, dynamic>?),
       muteFast: j['muteFast'] as bool? ?? true,
+      autoHeard: (j['autoHeard'] as num?)?.toInt(),
     );
   }
 

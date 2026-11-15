@@ -114,3 +114,49 @@ Không làm (có lý do trong HANDOVER): làm nét, chuyển cảnh "nước", t
 - `e2_overlays` không còn bước chọn ảnh/PiP từ trình chọn (trình chọn Oppo nhớ thư mục, toạ độ thay đổi); ảnh được chọn xác nhận ở `e2_pick_probe`, PiP video đã kiểm trên S25 bằng `e2_pip_s25` (trình chọn Samsung riêng).
 - Hướng xoay (cùng/ngược chiều kim đồng hồ) đã khớp trong ảnh xuất của `e2b_crop_rotate`; chưa thử mọi góc trên thiết bị khác.
 - Samsung S25 Ultra: e1, e2, e2b, e3, e4 (kịch bản riêng), e7, PiP video đều PASS (27/10/2026).
+
+## 8. Bổ sung 13/11/2026 — duyệt dấu tự động (P1, một phần)
+
+Kèm việc sửa lỗi quay sạch không có dấu, editor có thêm panel **"Dấu tự động"** trong tab Tự động, dùng chung `EditProject` nên xem trước và xuất không đổi.
+
+| Việc | Trạng thái | Kiểm chứng |
+|---|---|---|
+| `MarkerItem` thêm `source` / `estimated` / `touchMs` | Xong, tương thích JSON cũ (không có khoá = dấu tay, vị trí chính xác) | `test/auto_marks_test.dart` (đọc/ghi lại) |
+| `AutoDirector.fromTouches` đánh dấu `source: 'auto'`, `estimated` khi phải đoán chỗ, giữ `touchMs` | Xong | `auto_marks_test` + `touch_log_test` |
+| Panel: đếm "nghe N chạm · M dấu · K vị trí ước lượng", danh sách dấu, công tắc bật/tắt từng dấu | Xong, mỗi thao tác là một bước hoàn tác; dấu tắt vẫn trong danh sách để bật lại | widget test trong `auto_marks_test` |
+| "Tìm lại vị trí" cho dấu ước lượng | Xong: `EditorController.relocateEstimatedMarks` gọi `locateTouches`, dựng lại spec qua `AutoDirector.tapSpec` | test đơn vị (vị trí mới 0,72/0,31) |
+| "Xoá dấu ước lượng", "Bật lại tất cả", "Hoàn tác lần tự dựng" | Xong, một bước hoàn tác | test đơn vị |
+
+Chưa làm trong đợt này: ảnh thu nhỏ khung hình ở mỗi dòng (cần đọc khung theo thời điểm), đổi loại/màu hàng loạt ngay trong panel (đã có `_MarkerBatch` ở tab Dấu), preset xuất tự đặt, xem trước chuyển cảnh động.
+
+Kiểm tra: `flutter analyze` sạch, `flutter test` 447/447, `:app:testDebugUnitTest` BUILD SUCCESSFUL, `flutter build apk --debug` thành công. Chưa chạy Maestro trên máy thật.
+
+## 9. Bổ sung 13/11/2026 — cắt khoảng lặng và lịch sử chỉnh sửa (P1/P2)
+
+| Việc | Trạng thái | Kiểm chứng |
+|---|---|---|
+| `AutoDirector.cutRanges` cắt các quãng theo thời gian nguồn, giữ `padMs` mỗi đầu, bỏ qua quãng quá ngắn | Xong, thuần | `test/silence_cut_test.dart` (4 test) |
+| `EditorController.findSilence` / `silencePlan` / `applySilenceCut`; ngưỡng, pad, tốc độ phần giữ, chọn/bỏ từng quãng | Xong: một bước hoàn tác; chỉ tính phần còn trong bản dựng; không đổi tốc độ đã có | `silence_cut_test` (6 test đơn vị) |
+| Panel "Cắt khoảng lặng" trong tab Cắt: danh sách, nút chọn tất cả, nút cắt, dòng xác nhận; hỏi lại khi còn dưới 1 s hoặc bỏ trên 80% | Xong | widget test trong `silence_cut_test` |
+| `EditAction` + danh sách nhãn song song với `_undo` / `_redo`; `undoHistory`, `redoHistory`, `jumpBack` | Xong, mọi thao tác chính đã gắn nhãn | `test/edit_history_test.dart` (2 test đơn vị) |
+| Nút "Lịch sử" cạnh Hoàn tác/Làm lại: danh sách mới nhất trước, chạm để quay lại bước đó, mục "Đã hoàn tác" cho làm lại | Xong, nhãn vi/en | widget test trong `edit_history_test` |
+
+Ghi chú: nhãn lịch sử chỉ là loại thao tác (không lưu câu chữ đã dịch trong model), nên đổi ngôn ngữ không làm hỏng lịch sử. Dự án cũ mở lên có lịch sử rỗng (chỉ ghi từ lúc mở), đúng như mong đợi.
+
+Kiểm tra: `flutter analyze` sạch, `flutter test` 462/462, `:app:testDebugUnitTest` BUILD SUCCESSFUL, `flutter build apk --release` thành công. Chưa chạy Maestro trên máy thật.
+
+## 10. Bổ sung 14/11/2026 — học từ CapCut + P2 còn lại
+
+Đối chiếu với CapCut (keyframe, phụ đề tự động, mẫu, đóng băng khung, cắt khoảng lặng, lồng tiếng, giảm ồn đã có). Chọn những mục hợp ràng buộc "không thêm thư viện, xem trước = xuất":
+
+| Việc | Trạng thái | Kiểm chứng |
+|---|---|---|
+| Kéo dòng thời gian khi đang phát (tạm dừng khi kéo, phát tiếp khi nhả) | Xong | `timeline_scrub_test` |
+| Đọc chữ thành giọng (TextToSpeech của máy → WAV → đoạn lồng tiếng) | Xong; ĐẠT trên Oppo CPH2203 (giọng tiếng Việt có sẵn) | `speech_test` (5), `e19_new_tools.yaml` |
+| Thiết lập xuất của tôi (lưu/áp dụng/mặc định/đổi tên/nhân bản/xoá) | Xong; lưu được trên CPH2203 | `my_presets_test` (7), `e19_new_tools.yaml` |
+| Xem trước chuyển cảnh bằng khung hình của video | Xong; ĐẠT trên CPH2203 (ô hình động từ khung thật); sửa thêm: giữ chỗ khi đang đọc khung để chạm không trúng nhầm | `transition_preview_test` (4), `e19_new_tools.yaml` |
+| Xoá từ đệm theo phụ đề | Không làm: thời gian từng từ là ước lượng | — |
+| Tự đổi khung 9:16 bám theo dấu (auto reframe) | Để sau: cần vùng cắt chạy theo thời gian ở cả hai phía | — |
+
+Kiểm tra: `flutter analyze` sạch, `flutter test` 485/485, `:app:testDebugUnitTest` BUILD SUCCESSFUL. Maestro trên Oppo CPH2325/CPH2203 (Android 13): `e19_new_tools`, `clean_auto_marks`, `clean_auto_long`, `g1_record`, `g3_editor` ĐẠT. Kéo dòng thời gian khi đang phát: test widget đạt; trên máy đã thấy đầu phát di chuyển khi đang phát nhưng flow `e20_scrub_playing` cần chạy lại (bản đầu kéo tới cuối video nên dừng — đúng hành vi). Galaxy S25 không có mặt.
+

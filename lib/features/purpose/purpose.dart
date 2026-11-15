@@ -109,6 +109,7 @@ class PurposeNotifier extends Notifier<Purpose> {
       return;
     }
     final m = jsonDecode(copy) as Map<String, dynamic>;
+    _upgradeCleanAuto(store, p, m);
     for (final k in profileKeys) {
       await store.setRaw(k, m[k]);
     }
@@ -138,6 +139,24 @@ class PurposeNotifier extends Notifier<Purpose> {
     await store.setString(profileKey(p), jsonEncode({
       for (final k in profileKeys) k: ?store.getRaw(k),
     }));
+  }
+
+  /// A "Hướng dẫn" profile saved by an older version may record clean but never listen to touches:
+  /// the old key marked almost everyone as "manual". Upgrade that one case to the automatic source,
+  /// while a deliberate "no marks" (clean + off) or the dots stay as the person chose them. The old
+  /// key only exists on installs upgraded from that version, which is what makes this safe.
+  static void _upgradeCleanAuto(
+    SettingsStore store,
+    Purpose p,
+    Map<String, dynamic> profile,
+  ) {
+    if (p != Purpose.tutorial) return;
+    if (store.getRaw('marker.touchSource') == null) return;
+    if (profile['marker.mode'] != MarkMode.clean.index) return;
+    final source = profile['marker.touchSourceV2'];
+    if (source == null || source == TouchSource.manual.index) {
+      profile['marker.touchSourceV2'] = TouchSource.auto.index;
+    }
   }
 }
 

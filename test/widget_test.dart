@@ -34,7 +34,7 @@ void main() {
     await tester.tap(find.text('Cài đặt'));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('theme_selector')), findsOneWidget);
-    expect(fake.calls, isEmpty);
+    expect(fake.calls.where((c) => c != 'takeLastSaved'), isEmpty);
   });
 
   testWidgets('theme selector switches to dark', (tester) async {

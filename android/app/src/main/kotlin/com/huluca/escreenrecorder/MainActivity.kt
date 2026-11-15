@@ -42,15 +42,29 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        DiagLog.init(this)
+        DiagLog.log("act", "engine configured")
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         MethodChannel(messenger, "escreenrecorder/recorder").setMethodCallHandler(::onCall)
         EventChannel(messenger, "escreenrecorder/recorder/events").setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(args: Any?, events: EventChannel.EventSink) {
-                RecorderBus.sink = { events.success(it) }
+                RecorderBus.sink = { e ->
+                    try {
+                        events.success(e)
+                    } catch (x: Exception) {
+                        DiagLog.log("chan", "send ${e["type"]} failed: ${x.message}")
+                    }
+                }
                 events.success(RecorderBus.snapshot())
+                // A recording saved while nobody was listening (activity destroyed, app in the
+                // background) is announced now, so the app can refresh and open its result screen.
+                val replay = RecorderBus.takeLastSaved()
+                DiagLog.log("chan", "listen phase=${RecorderBus.phase} replay=${replay?.get("uri")}")
+                replay?.let { events.success(it) }
             }
 
             override fun onCancel(args: Any?) {
+                DiagLog.log("chan", "cancel")
                 RecorderBus.sink = null
             }
         })
@@ -58,19 +72,25 @@ class MainActivity : FlutterActivity() {
 
     private fun onCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
+            "diag" -> {
+                DiagLog.log("dart", call.argument<String>("msg") ?: "")
+                result.success(null)
+            }
             "start" -> start(call, result)
             "stop" -> { sendToService(RecorderService.ACTION_STOP); result.success(null) }
             "pause" -> { sendToService(RecorderService.ACTION_PAUSE); result.success(null) }
             "resume" -> { sendToService(RecorderService.ACTION_RESUME); result.success(null) }
             "snapshot" -> result.success(RecorderBus.snapshot())
+            "takeLastSaved" -> result.success(RecorderBus.takeLastSaved())
+
             "canOverlay" -> result.success(Settings.canDrawOverlays(this))
-            "scanTouches" -> async(result) {
+            "scanTouches" -> async(result, call.method) {
                 TouchScan.scan(
                     this, Uri.parse(call.argument<String>("uri")!!),
                     (call.argument<Number>("durationMs")!!).toLong(), call.argument<String>("mode") ?: "changes",
                 )
             }
-            "locateTouches" -> async(result) {
+            "locateTouches" -> async(result, call.method) {
                 TouchScan.locate(
                     this, Uri.parse(call.argument<String>("uri")!!),
                     (call.argument<List<Number>>("times") ?: emptyList()).map { it.toLong() },
@@ -111,14 +131,14 @@ class MainActivity : FlutterActivity() {
                 try { StatFs(Environment.getExternalStorageDirectory().path).availableBytes } catch (_: Exception) { -1L },
             )
             "alignedSize" -> result.success(alignedSize(call))
-            "renderMarker" -> async(result) { renderMarker(call) }
-            "renderText" -> async(result) { renderText(call) }
-            "renderCue" -> async(result) { renderCue(call) }
-            "renderCover" -> async(result) { renderCover(call) }
-            "renderShape" -> async(result) { renderShape(call) }
+            "renderMarker" -> async(result, call.method) { renderMarker(call) }
+            "renderText" -> async(result, call.method) { renderText(call) }
+            "renderCue" -> async(result, call.method) { renderCue(call) }
+            "renderCover" -> async(result, call.method) { renderCover(call) }
+            "renderShape" -> async(result, call.method) { renderShape(call) }
             "pickMedia" -> pickMedia(call, result)
             "pickVideoToEdit" -> pickVideoToEdit(result)
-            "mediaInfo" -> async(result) { EditorMedia.info(this, call.argument<String>("path")!!) }
+            "mediaInfo" -> async(result, call.method) { EditorMedia.info(this, call.argument<String>("path")!!) }
             "startVoice" -> {
                 try {
                     voice = (voice ?: VoiceRecorder(this)).also { result.success(it.start()) }
@@ -127,13 +147,22 @@ class MainActivity : FlutterActivity() {
                 }
             }
             "stopVoice" -> result.success(voice?.stop())
-            "loudness" -> async(result) {
+            "speakToFile" -> SpeechSynth.toFile(
+                this,
+                call.argument<String>("text") ?: "",
+                call.argument<String>("lang") ?: "vi",
+                (call.argument<Number>("rate") ?: 1).toFloat(),
+                (call.argument<Number>("pitch") ?: 1).toFloat(),
+            ) { m, err ->
+                runOnUiThread { if (err != null) result.error(err, err, null) else result.success(m) }
+            }
+            "loudness" -> async(result, call.method) {
                 EditorMedia.loudness(
                     this, call.argument<String>("uri")!!,
                     (call.argument<Number>("startMs")!!).toLong(), (call.argument<Number>("endMs")!!).toLong(),
                 )
             }
-            "processVoice" -> async(result) {
+            "processVoice" -> async(result, call.method) {
                 val src = call.argument<String>("path")!!
                 val fx = call.argument<String>("fx") ?: "none"
                 val dn = call.argument<String>("denoise") ?: "off"
@@ -190,16 +219,16 @@ class MainActivity : FlutterActivity() {
                     stt.support(langs) { map -> result.success(mapOf("available" to ok, "languages" to map)) }
                 }
             }
-            "waveform" -> async(result) {
+            "waveform" -> async(result, call.method) {
                 EditorMedia.waveform(
                     this, call.argument<String>("uri")!!,
                     (call.argument<Number>("durationMs")!!).toLong(), (call.argument<Number>("bucketMs")!!).toLong(),
                 )
             }
-            "saveImage" -> async(result) {
+            "saveImage" -> async(result, call.method) {
                 EditorMedia.saveImage(this, call.argument<ByteArray>("png")!!, call.argument<String>("prefix") ?: "ESR_frame")
             }
-            "analyzeIdle" -> async(result) {
+            "analyzeIdle" -> async(result, call.method) {
                 IdleAnalyzer.analyze(
                     this, Uri.parse(call.argument<String>("uri")!!),
                     (call.argument<Number>("durationMs")!!).toLong(),
@@ -210,14 +239,30 @@ class MainActivity : FlutterActivity() {
                 startService(Intent(this, ExportService::class.java).setAction(ExportService.ACTION_CANCEL))
                 result.success(null)
             }
-            "listMedia" -> async(result) { MediaRepo.list(this) }
-            "thumbnail" -> async(result) {
+            "listMedia" -> {
+                val asked = System.currentTimeMillis()
+                async(result, call.method) {
+                    val waited = System.currentTimeMillis() - asked
+                    val t0 = System.currentTimeMillis()
+                    val l = MediaRepo.list(this)
+                    DiagLog.log("lib", "listMedia n=${l.size} queued=${waited}ms took=${System.currentTimeMillis() - t0}ms")
+                    l
+                }
+            }
+            "thumbnail" -> async(result, call.method) {
                 MediaRepo.thumbnail(this, Uri.parse(call.argument<String>("uri")!!), call.argument<Int>("w")!!, call.argument<Int>("h")!!)
             }
-            "rename" -> async(result) {
+            "frameAt" -> async(result, call.method) {
+                MediaRepo.frameAt(
+                    this, Uri.parse(call.argument<String>("uri")!!),
+                    (call.argument<Number>("ms") ?: 0).toLong(),
+                    call.argument<Int>("w") ?: 160, call.argument<Int>("h") ?: 160,
+                )
+            }
+            "rename" -> async(result, call.method) {
                 MediaRepo.rename(this, Uri.parse(call.argument<String>("uri")!!), call.argument<String>("name")!!)
             }
-            "delete" -> async(result) { MediaRepo.delete(this, Uri.parse(call.argument<String>("uri")!!)) }
+            "delete" -> async(result, call.method) { MediaRepo.delete(this, Uri.parse(call.argument<String>("uri")!!)) }
             "share" -> {
                 MediaRepo.share(this, Uri.parse(call.argument<String>("uri")!!), getString(R.string.share_chooser))
                 result.success(null)
@@ -226,12 +271,21 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun <T> async(result: MethodChannel.Result, block: () -> T) {
+    private fun <T> async(result: MethodChannel.Result, name: String, block: () -> T) {
+        val asked = System.currentTimeMillis()
         io.execute {
+            val t0 = System.currentTimeMillis()
             try {
                 val v = block()
+                val took = System.currentTimeMillis() - t0
+                // Slow or long-queued work is what makes a screen wait: worth a line in the trail.
+                if (took > 3000 || t0 - asked > 1000) {
+                    DiagLog.log("call", "$name queued=${t0 - asked}ms took=${took}ms")
+                }
                 main.post { result.success(v) }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
+                // Any failure (also an Error) must answer, or the Dart side waits for ever.
+                DiagLog.log("call", "$name native_error ${e.javaClass.simpleName}: ${e.message}")
                 main.post { result.error("native_error", e.message, null) }
             }
         }

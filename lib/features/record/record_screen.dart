@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/shell_provider.dart';
 import '../../core/formatters.dart';
+import '../../core/diag.dart';
 import '../../core/native_recorder.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
@@ -61,9 +62,12 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     // A missing permission is explained on its own screen before recording starts, instead of failing
     // after the tap.
     final rec = ref.read(recSettingsProvider);
+    final mk = ref.read(markerSettingsProvider);
+    final watchesTouches =
+        mk.mode == MarkMode.clean && mk.touchSource == TouchSource.auto;
     final needs = ReadyNeeds(
       mic: rec.mic || rec.system,
-      overlay: rec.floatingBar || rec.countdown > 0,
+      overlay: rec.floatingBar || rec.countdown > 0 || watchesTouches,
     );
     if (await ReadyCheckScreen.missingAnything(ref, needs)) {
       if (!mounted) return;
@@ -100,17 +104,30 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   /// [result]: the three-choice screen shown after a recording; otherwise the plain player.
   Future<void> _openSaved(String uri, {bool result = false}) async {
     // The list may still be the one from before the recording (or the phone's media index may not have
-    // the new file yet): look again a few times instead of silently showing nothing.
+    // the new file yet): look again with a growing wait instead of silently showing nothing. A long
+    // recording on a slow card can take several seconds to be indexed.
+    const waits = [0, 300, 600, 1200, 2400, 4800, 4800];
     MediaEntry? entry;
-    for (var i = 0; i < 8 && entry == null && mounted; i++) {
-      if (i > 0) {
-        await Future<void>.delayed(const Duration(milliseconds: 400));
+    for (var i = 0; i < waits.length && entry == null && mounted; i++) {
+      if (waits[i] > 0) {
+        await Future<void>.delayed(Duration(milliseconds: waits[i]));
+        if (!mounted) return;
         ref.invalidate(mediaListProvider);
       }
-      final list = await ref.read(mediaListProvider.future);
-      entry = list.where((e) => e.uri == uri).firstOrNull;
+      try {
+        final list = await ref.read(mediaListProvider.future);
+        entry = list.where((e) => e.uri == uri).firstOrNull;
+        diag('openSaved try=$i list=${list.length} found=${entry != null}');
+      } catch (e) {
+        // The library could not be read (this try): never end here silently, try again and, at
+        // the end, tell the person the video is saved.
+        diag('openSaved try=$i failed: $e');
+      }
     }
-    if (entry != null && mounted) {
+    diag(
+      'openSaved uri=$uri found=${entry != null} mounted=$mounted');
+    if (!mounted) return;
+    if (entry != null) {
       Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (_) => result
@@ -118,32 +135,62 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
               : PlayerScreen(entry: entry!),
         ),
       );
+      return;
     }
+    // The video was saved but the library cannot see it yet: say so instead of doing nothing.
+    _snack(
+      AppL10n.of(context).savedIndexing,
+      action: SnackBarAction(
+        label: AppL10n.of(context).libraryTitle,
+        onPressed: () {
+          ref.invalidate(mediaListProvider);
+          ref.read(shellIndexProvider.notifier).go(1);
+        },
+      ),
+    );
+  }
+
+  void _handleNotice(RecNotice n) {
+    diag(
+      'notice ${n.runtimeType}');
+    final t = AppL10n.of(context);
+    switch (n) {
+      case SavedNotice():
+        // Show what came out, with Export now / Edit more / Record again.
+        _openSaved(n.uri, result: true);
+      case ErrorNotice():
+        _snack(switch (n.code) {
+          'low_storage' => t.errLowStorage,
+          'empty_recording' => t.errEmpty,
+          'save_failed' => t.errSave,
+          'capture_failed' => t.errCapture,
+          _ => t.errStart,
+        });
+    }
+    ref.read(recorderProvider.notifier).clearNotice();
   }
 
   @override
   Widget build(BuildContext context) {
-    final t = AppL10n.of(context);
     final state = ref.watch(recorderProvider);
 
     ref.listen<RecorderState>(recorderProvider, (prev, next) {
       final n = next.notice;
       if (n == null) return;
-      switch (n) {
-        case SavedNotice():
-          // Show what came out, with Export now / Edit more / Record again.
-          _openSaved(n.uri, result: true);
-        case ErrorNotice():
-          _snack(switch (n.code) {
-            'low_storage' => t.errLowStorage,
-            'empty_recording' => t.errEmpty,
-            'save_failed' => t.errSave,
-            'capture_failed' => t.errCapture,
-            _ => t.errStart,
-          });
-      }
-      ref.read(recorderProvider.notifier).clearNotice();
+      diag('notice heard ${n.runtimeType} mounted=$mounted');
+      _handleNotice(n);
     });
+
+    // A saved recording replayed when the app comes back (or at launch) sets the notice before this
+    // screen listens: handle it now too, or the video would be saved but never announced.
+    final pending = state.notice;
+    if (pending != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (!identical(ref.read(recorderProvider).notice, pending)) return;
+        _handleNotice(pending);
+      });
+    }
 
     final live =
         state.phase == RecPhase.recording || state.phase == RecPhase.paused;

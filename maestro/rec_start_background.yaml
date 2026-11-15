@@ -1,0 +1,17 @@
+appId: com.huluca.escreenrecorder
+name: Start a recording and leave the app (the stop comes from the notification, see scripts/qa/notif_stop.sh)
+tags:
+  - module-record
+---
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: ${OTHER_APP || 'com.coloros.calculator'}
+    stopApp: false
+- extendedWaitUntil:
+    visible: "NEVER_ON_SCREEN"
+    timeout: 6000
+    optional: true
+- pressKey: Home

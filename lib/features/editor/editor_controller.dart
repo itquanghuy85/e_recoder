@@ -4,6 +4,7 @@ import 'dart:ui' show Offset, Rect, Size;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart' show Color;
+import 'package:flutter/services.dart' show PlatformException;
 
 import '../../core/native_recorder.dart';
 import '../marker/marker_spec.dart';
@@ -37,6 +38,22 @@ class ExportState {
 
   /// What the exporter said went wrong (shown small under the error, for support).
   final String? errorMessage;
+}
+
+/// What one undo step did, so the history list can say it in words. The controller stores only the
+/// kind (no translated text), keeping the model free of UI language.
+enum EditAction {
+  edit,
+  autoDirect,
+  findTouches,
+  silenceCut,
+  markers,
+  captions,
+  clip,
+  text,
+  look,
+  audio,
+  template,
 }
 
 class RenderedImage {
@@ -80,8 +97,25 @@ class EditorController extends ChangeNotifier {
 
   final List<EditProject> _undo = [];
   final List<EditProject> _redo = [];
+
+  /// Kind of each step, parallel to [_undo] / [_redo].
+  final List<EditAction> _undoActions = [];
+  final List<EditAction> _redoActions = [];
   bool get canUndo => _undo.isNotEmpty;
   bool get canRedo => _redo.isNotEmpty;
+
+  /// Steps that can be undone, newest first, for the history sheet.
+  List<EditAction> get undoHistory => _undoActions.reversed.toList();
+
+  /// Steps already undone, newest first (what [redo] would bring back).
+  List<EditAction> get redoHistory => _redoActions.reversed.toList();
+
+  /// Goes back [steps] undo steps at once (the history sheet's "jump to here").
+  void jumpBack(int steps) {
+    for (var i = 0; i < steps && canUndo; i++) {
+      undo();
+    }
+  }
 
   ExportState exportState = const ExportState();
 
@@ -148,7 +182,7 @@ class EditorController extends ChangeNotifier {
             .length,
         idle: next.segments.where((s) => s.speed > 1).length,
       );
-      _apply(next);
+      _apply(next, action: EditAction.autoDirect);
     } finally {
       directing = false;
       if (!_disposed) notifyListeners();
@@ -162,7 +196,8 @@ class EditorController extends ChangeNotifier {
   ({int taps, int typing, bool placed})? lastTouches;
 
   /// Finds the touches in the video, sorts out typing, and draws marks, captions and freezes from them as
-  /// one undoable step. Without a place for the touches only captions and freezes are made.
+  /// one undoable step. A touch whose place cannot be found still gets a mark at the nearest known spot
+  /// (or the middle of the frame), so a heard tap never disappears from the edit.
   Future<void> directFromTouches({
     required DirectorOptions options,
     required String stepPrefix,
@@ -202,8 +237,11 @@ class EditorController extends ChangeNotifier {
         if (_disposed) return;
         base = AutoDirector.speedUpIdle(base, ranges);
       }
+      // A new pass replaces the old marks, so marks parked by the review panel are obsolete.
+      _parkedAutoMarks.clear();
       _apply(
         AutoDirector.fromTouches(base, events, options, stepPrefix: stepPrefix),
+        action: EditAction.findTouches,
       );
     } finally {
       directing = false;
@@ -220,6 +258,270 @@ class EditorController extends ChangeNotifier {
         return;
       }
     }
+  }
+
+  // ---- reviewing the automatic marks ----------------------------------------------------------
+
+  /// Marks made by a find-touches pass, in timeline order, for the review panel.
+  List<MarkerItem> get autoMarks =>
+      [
+        for (final m in _project.markers)
+          if (m.isAuto) m,
+      ]..sort((a, b) => a.cueStartMs.compareTo(b.cueStartMs));
+
+  /// Puts the playhead on a mark and picks it, for the review panel's rows.
+  void focusMark(String id) {
+    final m = _project.markers.where((e) => e.id == id).firstOrNull;
+    if (m == null) return;
+    selectedId = id;
+    multiMarkerIds.remove(id);
+    seekOut(_project.sourceToOut(m.takeMs));
+  }
+
+  /// How many marks stand on a guessed place instead of one seen in the video.
+  int get estimatedMarkCount =>
+      _project.markers.where((m) => m.estimated).length;
+
+  /// Marks turned off in the review panel: kept here so the switch can turn them back on.
+  final List<MarkerItem> _parkedAutoMarks = [];
+
+  /// Every automatic mark still worth reviewing: the ones in the video, then the ones turned off.
+  List<MarkerItem> get reviewMarks =>
+      [
+        for (final m in _project.markers)
+          if (m.isAuto) m,
+        ..._parkedAutoMarks,
+      ]..sort((a, b) => a.cueStartMs.compareTo(b.cueStartMs));
+
+  int get parkedAutoMarkCount => _parkedAutoMarks.length;
+
+  /// Touches heard while recording when that automatic pass left no mark at all (null otherwise,
+  /// also once a "find touches" pass ran here). The editor says so instead of a silent empty draft.
+  int? get autoPassWithoutMarks {
+    final heard = _project.autoHeard;
+    if (heard == null || lastTouches != null) return null;
+    return reviewMarks.isEmpty ? heard : null;
+  }
+
+  /// Turns one automatic mark off (gone from the video) or back on, as one undoable step.
+  void toggleAutoMark(String id) {
+    final m = _project.markers.where((e) => e.id == id).firstOrNull;
+    if (m != null) {
+      _parkedAutoMarks.add(m);
+      if (selectedId == id) selectedId = null;
+      multiMarkerIds.remove(id);
+      _apply(_project.removeOverlay(id), action: EditAction.markers);
+      return;
+    }
+    final i = _parkedAutoMarks.indexWhere((e) => e.id == id);
+    if (i < 0) return;
+    _apply(
+      _project.upsertMarker(_parkedAutoMarks.removeAt(i)),
+      action: EditAction.markers,
+    );
+  }
+
+  /// Brings back every mark turned off in the review panel, as one undoable step.
+  void restoreParkedMarks() {
+    if (_parkedAutoMarks.isEmpty) return;
+    var p = _project;
+    for (final m in _parkedAutoMarks) {
+      p = p.upsertMarker(m);
+    }
+    _parkedAutoMarks.clear();
+    _apply(p, action: EditAction.markers);
+  }
+
+  /// Drops the marks whose place was guessed, as one undoable step. Returns how many went.
+  int removeEstimatedMarks() {
+    final gone = _project.markers.where((m) => m.estimated).toList();
+    if (gone.isEmpty) return 0;
+    final ids = {for (final m in gone) m.id};
+    if (selectedId != null && ids.contains(selectedId)) selectedId = null;
+    multiMarkerIds.removeAll(ids);
+    _apply(
+      _project.copyWith(
+        markers: _project.markers.where((m) => !ids.contains(m.id)).toList(),
+      ),
+      action: EditAction.markers,
+    );
+    return gone.length;
+  }
+
+  /// Looks for the real place of the guessed marks again. A mark whose place is found stops being
+  /// "estimated"; one undoable step. Returns how many places were found.
+  Future<int> relocateEstimatedMarks() async {
+    final low = _project.markers
+        .where((m) => m.estimated && m.touchMs != null)
+        .toList();
+    if (low.isEmpty) return 0;
+    final places = await native.locateTouches(_project.sourceUri, [
+      for (final m in low) m.touchMs!,
+    ]);
+    if (_disposed) return 0;
+    var p = _project;
+    var found = 0;
+    for (final m in low) {
+      final place = places
+          .where((r) => r.tMs == m.touchMs && r.hasPosition)
+          .firstOrNull;
+      if (place == null) continue;
+      final spec = AutoDirector.tapSpec(
+        m.spec.type,
+        place.x!.clamp(0.0, 1.0),
+        place.y!.clamp(0.0, 1.0),
+        m.spec.number,
+        frameW: p.frameW,
+        frameH: p.frameH,
+        color: m.spec.color,
+        thickness: m.spec.thickness,
+      ).copyWith(
+        scale: m.spec.scale,
+        opacity: m.spec.opacity,
+        rotation: m.spec.rotation,
+      );
+      p = p.upsertMarker(m.copyWith(spec: spec, estimated: false));
+      found++;
+    }
+    if (found > 0) _apply(p, action: EditAction.markers);
+    return found;
+  }
+
+  // ---- cutting silence ------------------------------------------------------------------------
+
+  /// Ranges found by the last "find silence" pass, in source time.
+  List<TimeRange>? idleCandidates;
+
+  /// Which of those the person wants cut (indices into [idleCandidates]).
+  final Set<int> idlePicked = {};
+
+  /// A silence shorter than this is not offered (it is a breath, not a pause).
+  int silenceMinMs = 1500;
+
+  /// Kept at each end of a cut so a word starting at the edge is not clipped; 0 cuts the whole gap.
+  int silencePadMs = 200;
+
+  /// Speed of the parts that stay (1 = normal).
+  double silenceKeepSpeed = 1;
+
+  bool findingSilence = false;
+
+  /// What the last applied cut did, for the panel's confirmation line.
+  ({int ranges, int removedMs, int resultMs})? lastSilenceCut;
+
+  Future<void> findSilence() async {
+    if (findingSilence) return;
+    findingSilence = true;
+    notifyListeners();
+    try {
+      final raw = await native.analyzeIdle(
+        _project.sourceUri,
+        _project.durationMs,
+      );
+      if (_disposed) return;
+      idleCandidates = [...raw]..sort((a, b) => a.startMs.compareTo(b.startMs));
+      idlePicked
+        ..clear()
+        ..addAll([
+          for (var i = 0; i < idleCandidates!.length; i++)
+            if (idleCandidates![i].endMs - idleCandidates![i].startMs >=
+                silenceMinMs)
+              i,
+        ]);
+    } finally {
+      findingSilence = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
+  void setSilenceMin(int ms) {
+    silenceMinMs = ms.clamp(500, 3000);
+    notifyListeners();
+  }
+
+  void setSilencePad(int ms) {
+    silencePadMs = ms.clamp(0, 500);
+    notifyListeners();
+  }
+
+  void setSilenceKeepSpeed(double x) {
+    silenceKeepSpeed = x.clamp(1.0, 8.0);
+    notifyListeners();
+  }
+
+  void toggleSilenceRange(int i) {
+    if (!idlePicked.remove(i)) idlePicked.add(i);
+    notifyListeners();
+  }
+
+  void pickAllSilence() {
+    idlePicked
+      ..clear()
+      ..addAll([
+        for (var i = 0; i < (idleCandidates?.length ?? 0); i++)
+          if (idleCandidates![i].endMs - idleCandidates![i].startMs >=
+              silenceMinMs)
+            i,
+      ]);
+    notifyListeners();
+  }
+
+  /// The picked ranges long enough to cut at the current threshold.
+  List<TimeRange> get pickedSilence => [
+    for (var i = 0; i < (idleCandidates?.length ?? 0); i++)
+      if (idlePicked.contains(i) &&
+          idleCandidates![i].endMs - idleCandidates![i].startMs >=
+              silenceMinMs)
+        idleCandidates![i],
+  ];
+
+  /// How much the picked ranges would remove, without changing anything. Only the part still in the
+  /// edit counts, and a still or blank stretch is never cut.
+  ({int ranges, int removedMs, int resultMs}) silencePlan() {
+    var removed = 0;
+    var n = 0;
+    for (final r in pickedSilence) {
+      final start = r.startMs + silencePadMs;
+      final end = r.endMs - silencePadMs;
+      if (end - start < EditProject.minSegmentMs) continue;
+      n++;
+      for (final s in _project.segments) {
+        if (s.isStill || s.blank) continue;
+        final a = math.max(start, s.startMs);
+        final b = math.min(end, s.endMs);
+        if (b > a) removed += ((b - a) / s.speed).round();
+      }
+    }
+    return (
+      ranges: n,
+      removedMs: removed,
+      resultMs: math.max(0, _project.outDurationMs - removed),
+    );
+  }
+
+  /// Cuts the picked silence in one undoable step; the kept parts can be sped up too. Returns what
+  /// was done, or null when nothing could be cut.
+  ({int ranges, int removedMs, int resultMs})? applySilenceCut() {
+    final plan = silencePlan();
+    if (plan.ranges == 0) return null;
+    var p = AutoDirector.cutRanges(
+      _project,
+      pickedSilence,
+      padMs: silencePadMs,
+    );
+    if (silenceKeepSpeed > 1.001) {
+      for (var i = 0; i < p.segments.length; i++) {
+        final s = p.segments[i];
+        // Existing speed work is left alone: this pass only changes normal-speed parts.
+        if (s.isStill || s.blank || (s.speed - 1).abs() > 1e-9) continue;
+        p = p.setSpeed(i, silenceKeepSpeed);
+      }
+    }
+    idleCandidates = null;
+    idlePicked.clear();
+    lastSilenceCut = plan;
+    _apply(p, action: EditAction.silenceCut);
+    return plan;
   }
 
   Timer? _saveTimer;
@@ -341,6 +643,7 @@ class EditorController extends ChangeNotifier {
         thickness: thickness,
         ids: ids,
       ),
+      action: EditAction.markers,
     );
     notifyListeners();
   }
@@ -365,12 +668,21 @@ class EditorController extends ChangeNotifier {
 
   // ---- history --------------------------------------------------------------------------------
 
-  void _apply(EditProject next, {bool record = true}) {
+  void _apply(
+    EditProject next, {
+    bool record = true,
+    EditAction action = EditAction.edit,
+  }) {
     if (identical(next, _project)) return;
     if (record) {
       _undo.add(_project);
-      if (_undo.length > 60) _undo.removeAt(0);
+      _undoActions.add(action);
+      if (_undo.length > 60) {
+        _undo.removeAt(0);
+        _undoActions.removeAt(0);
+      }
       _redo.clear();
+      _redoActions.clear();
     }
     _project = next;
     _outMs = _outMs.clamp(0, _project.outDurationMs);
@@ -384,6 +696,7 @@ class EditorController extends ChangeNotifier {
   void undo() {
     if (_undo.isEmpty) return;
     _redo.add(_project);
+    _redoActions.add(_undoActions.removeLast());
     _project = _undo.removeLast();
     _outMs = _outMs.clamp(0, _project.outDurationMs);
     selectedSegment = selectedSegment.clamp(0, _project.segments.length - 1);
@@ -395,6 +708,7 @@ class EditorController extends ChangeNotifier {
   void redo() {
     if (_redo.isEmpty) return;
     _undo.add(_project);
+    _undoActions.add(_redoActions.removeLast());
     _project = _redo.removeLast();
     _outMs = _outMs.clamp(0, _project.outDurationMs);
     selectedSegment = selectedSegment.clamp(0, _project.segments.length - 1);
@@ -430,7 +744,7 @@ class EditorController extends ChangeNotifier {
   void split() {
     final next = _project.splitAtOut(_outMs);
     if (!identical(next, _project)) {
-      _apply(next);
+      _apply(next, action: EditAction.clip);
       selectedSegment = _project
           .segmentAtOut(_outMs)
           .clamp(0, _project.segments.length - 1);
@@ -445,6 +759,7 @@ class EditorController extends ChangeNotifier {
       idx.length > 1
           ? _project.deleteSegments(idx)
           : _project.deleteSegment(idx.first),
+      action: EditAction.clip,
     );
     multiSelected.clear();
     if (multiSelect) multiSelected.add(selectedSegment);
@@ -456,7 +771,7 @@ class EditorController extends ChangeNotifier {
     for (final i in activeSegments) {
       next = next.blankSegment(i);
     }
-    _apply(next);
+    _apply(next, action: EditAction.clip);
   }
 
   void duplicateSelectedSegment() {
@@ -466,7 +781,7 @@ class EditorController extends ChangeNotifier {
     for (final i in idx.reversed) {
       next = next.duplicateSegment(i);
     }
-    _apply(next);
+    _apply(next, action: EditAction.clip);
     selectedSegment = idx.last + idx.length;
   }
 
@@ -486,17 +801,18 @@ class EditorController extends ChangeNotifier {
     } else if (s.outLengthMs - local >= EditProject.minSegmentMs) {
       proj = proj.splitAtOut(_outMs); // in the middle: cut there first
     }
-    _apply(proj.insertFreezeAt(pos, t, ms: ms));
+    _apply(proj.insertFreezeAt(pos, t, ms: ms), action: EditAction.clip);
     selectedSegment = pos;
   }
 
-  void setFreezeMs(int ms) => _apply(_project.setFreezeMs(selectedSegment, ms));
+  void setFreezeMs(int ms) =>
+      _apply(_project.setFreezeMs(selectedSegment, ms), action: EditAction.clip);
 
   /// Drag-reorder.
   void moveSegmentTo(int from, int to) {
     final next = _project.moveSegmentTo(from, to);
     if (!identical(next, _project)) {
-      _apply(next);
+      _apply(next, action: EditAction.clip);
       selectedSegment = to;
       multiSelected.clear();
       if (multiSelect) multiSelected.add(to);
@@ -504,12 +820,15 @@ class EditorController extends ChangeNotifier {
   }
 
   /// Applies [op] to each selected segment as ONE undo step.
-  void _eachActive(EditProject Function(EditProject p, int i) op) {
+  void _eachActive(
+    EditProject Function(EditProject p, int i) op, {
+    EditAction action = EditAction.clip,
+  }) {
     var next = _project;
     for (final i in activeSegments) {
       next = op(next, i);
     }
-    _apply(next);
+    _apply(next, action: action);
   }
 
   /// Same as [_eachActive] but without an undo step (a slider drag is one step, see [beginGesture]).
@@ -550,7 +869,8 @@ class EditorController extends ChangeNotifier {
 
   void setSpeed(double speed) => _eachActive((p, i) => p.setSpeed(i, speed));
 
-  void setMuteFast(bool on) => _apply(_project.copyWith(muteFast: on));
+  void setMuteFast(bool on) =>
+      _apply(_project.copyWith(muteFast: on), action: EditAction.audio);
 
   void setSpeedRamp(double from, double to) =>
       _eachActive((p, i) => p.setSpeedRamp(i, from, to));
@@ -567,6 +887,7 @@ class EditorController extends ChangeNotifier {
           fadeInMs: fadeInMs,
           fadeOutMs: fadeOutMs,
         ),
+        action: EditAction.audio,
       );
 
   /// Transition INTO the selected segment(s).
@@ -574,10 +895,11 @@ class EditorController extends ChangeNotifier {
       _eachActive((p, i) => p.setTransition(i, t));
 
   void setAllTransitions(Transition? t) =>
-      _apply(_project.setAllTransitions(t));
+      _apply(_project.setAllTransitions(t), action: EditAction.clip);
 
   void trimSelected({int? startMs, int? endMs}) => _apply(
     _project.trimSegment(selectedSegment, startMs: startMs, endMs: endMs),
+    action: EditAction.clip,
   );
 
   /// Trim while a handle is being dragged: one undo step per drag (see [beginGesture]).
@@ -592,7 +914,7 @@ class EditorController extends ChangeNotifier {
   void moveSelectedSegment(int delta) {
     final next = _project.moveSegment(selectedSegment, delta);
     if (!identical(next, _project)) {
-      _apply(next);
+      _apply(next, action: EditAction.clip);
       selectedSegment += delta;
     }
   }
@@ -612,6 +934,7 @@ class EditorController extends ChangeNotifier {
         frameH: p.frameH,
         sourceFps: p.sourceFps,
       ),
+      action: EditAction.edit,
     );
   }
 
@@ -656,7 +979,7 @@ class EditorController extends ChangeNotifier {
       thickness,
     ).copyWith(number: type == MarkerType.number ? _project.nextStepNumber : 1);
     final item = MarkerItem(id: _newId('m'), spec: spec, cueStartMs: cue);
-    _apply(_project.upsertMarker(item));
+    _apply(_project.upsertMarker(item), action: EditAction.markers);
     selectedId = item.id;
     notifyListeners();
   }
@@ -727,7 +1050,7 @@ class EditorController extends ChangeNotifier {
   }
 
   void updateMarker(MarkerItem m, {bool record = true}) =>
-      _apply(_project.upsertMarker(m), record: record);
+      _apply(_project.upsertMarker(m), record: record, action: EditAction.markers);
 
   void addText() {
     final s = sourceMs;
@@ -737,7 +1060,7 @@ class EditorController extends ChangeNotifier {
       startMs: s,
       endMs: (s + 3000).clamp(0, _project.durationMs),
     );
-    _apply(_project.upsertText(item));
+    _apply(_project.upsertText(item), action: EditAction.text);
     selectedId = item.id;
     notifyListeners();
   }
@@ -774,7 +1097,7 @@ class EditorController extends ChangeNotifier {
       );
     }
     if (n > 0) {
-      _apply(p);
+      _apply(p, action: EditAction.captions);
       notifyListeners();
     }
     return n;
@@ -900,7 +1223,10 @@ class EditorController extends ChangeNotifier {
       final kept = _project.texts
           .where((t) => !t.id.startsWith('${autoCaptionPrefix}_'))
           .toList();
-      _apply(_project.copyWith(texts: kept).upsertText(item));
+      _apply(
+        _project.copyWith(texts: kept).upsertText(item),
+        action: EditAction.captions,
+      );
       selectedId = item.id;
       return cues.length;
     } catch (e) {
@@ -915,7 +1241,7 @@ class EditorController extends ChangeNotifier {
   Future<void> cancelCaptions() => native.sttCancel();
 
   void updateText(TextItem t, {bool record = true}) =>
-      _apply(_project.upsertText(t), record: record);
+      _apply(_project.upsertText(t), record: record, action: EditAction.text);
 
   // ---- captions (progressive subtitles) -------------------------------------------------------
 
@@ -1025,7 +1351,7 @@ class EditorController extends ChangeNotifier {
     if (item == null) return;
     if (item.text.isEmpty) {
       if (selectedId == item.id) selectedId = null;
-      _apply(_project.removeOverlay(item.id));
+      _apply(_project.removeOverlay(item.id), action: EditAction.captions);
     } else {
       setCues(null, on: item);
     }
@@ -1060,13 +1386,13 @@ class EditorController extends ChangeNotifier {
       startMs: s,
       endMs: (s + 3000).clamp(0, _project.durationMs),
     );
-    _apply(_project.upsertCover(item));
+    _apply(_project.upsertCover(item), action: EditAction.text);
     selectedId = item.id;
     notifyListeners();
   }
 
   void updateCover(CoverItem c, {bool record = true}) =>
-      _apply(_project.upsertCover(c), record: record);
+      _apply(_project.upsertCover(c), record: record, action: EditAction.text);
 
   void addZoom() {
     final s = sourceMs;
@@ -1075,31 +1401,36 @@ class EditorController extends ChangeNotifier {
       startMs: s,
       endMs: (s + 2500).clamp(0, _project.durationMs),
     );
-    _apply(_project.upsertZoom(item));
+    _apply(_project.upsertZoom(item), action: EditAction.clip);
     selectedId = item.id;
     notifyListeners();
   }
 
   void updateZoom(ZoomItem z, {bool record = true}) =>
-      _apply(_project.upsertZoom(z), record: record);
+      _apply(_project.upsertZoom(z), record: record, action: EditAction.clip);
 
   void deleteSelectedOverlay() {
     final id = selectedId;
     if (id == null) return;
     selectedId = null;
-    _apply(_project.removeOverlay(id));
+    _apply(_project.removeOverlay(id), action: EditAction.edit);
   }
 
   /// A drag/slider gesture is many updates: record one undo step at its start.
   void beginGesture() {
     _undo.add(_project);
-    if (_undo.length > 60) _undo.removeAt(0);
+    _undoActions.add(EditAction.edit);
+    if (_undo.length > 60) {
+      _undo.removeAt(0);
+      _undoActions.removeAt(0);
+    }
     _redo.clear();
+    _redoActions.clear();
   }
 
   /// Puts a saved style on this edit as one undoable step.
   void applyTemplate(ProjectTemplate t) {
-    _apply(t.applyTo(_project, newId: () => _newId('tpl')));
+    _apply(t.applyTo(_project, newId: () => _newId('tpl')), action: EditAction.template);
   }
 
   // ---- picture look (rotate, crop, output shape, colour) --------------------------------------
@@ -1113,7 +1444,7 @@ class EditorController extends ChangeNotifier {
   Size get outFrameSize => look.outputSize(_project.frameW, _project.frameH);
 
   void setLook(PictureLook l, {bool record = true}) =>
-      _apply(_project.copyWith(look: l), record: record);
+      _apply(_project.copyWith(look: l), record: record, action: EditAction.look);
 
   void rotate90() =>
       setLook(look.copyWith(rotation: (look.rotation + 90) % 360));
@@ -1159,14 +1490,14 @@ class EditorController extends ChangeNotifier {
       startMs: s,
       endMs: _life(3000) <= s + 300 ? (s + 3000) : _life(3000),
     );
-    _apply(_project.upsertImage(item));
+    _apply(_project.upsertImage(item), action: EditAction.text);
     selectedId = item.id;
     notifyListeners();
     return true;
   }
 
   void updateImage(ImageItem i, {bool record = true}) =>
-      _apply(_project.upsertImage(i), record: record);
+      _apply(_project.upsertImage(i), record: record, action: EditAction.text);
 
   /// A point in picture fractions as output-frame fractions (crop and shape included).
   Offset _pictureToOutput(Offset p) {
@@ -1213,13 +1544,13 @@ class EditorController extends ChangeNotifier {
       startMs: s,
       endMs: _life(3000) <= s + 300 ? (s + 3000) : _life(3000),
     );
-    _apply(_project.upsertShape(item));
+    _apply(_project.upsertShape(item), action: EditAction.text);
     selectedId = item.id;
     notifyListeners();
   }
 
   void updateShape(ShapeItem i, {bool record = true}) =>
-      _apply(_project.upsertShape(i), record: record);
+      _apply(_project.upsertShape(i), record: record, action: EditAction.text);
 
   Future<bool> addPipFromPhone() async {
     final m = await native.pickMedia('visual');
@@ -1235,7 +1566,7 @@ class EditorController extends ChangeNotifier {
       startOutMs: _outMs,
       durMs: m.isVideo ? m.durationMs.clamp(500, maxPipMs) : 4000,
     );
-    _apply(_project.upsertPip(item));
+    _apply(_project.upsertPip(item), action: EditAction.clip);
     selectedId = item.id;
     notifyListeners();
     return true;
@@ -1245,7 +1576,7 @@ class EditorController extends ChangeNotifier {
   static const maxPipMs = 30000;
 
   void updatePip(PipItem p, {bool record = true}) =>
-      _apply(_project.upsertPip(p), record: record);
+      _apply(_project.upsertPip(p), record: record, action: EditAction.clip);
 
   // ---- music and voice-over -------------------------------------------------------------------
 
@@ -1263,14 +1594,14 @@ class EditorController extends ChangeNotifier {
       fadeOutMs: 800,
       loop: true,
     );
-    _apply(_project.upsertAudio(t));
+    _apply(_project.upsertAudio(t), action: EditAction.audio);
     selectedId = t.id;
     notifyListeners();
     return true;
   }
 
   void updateAudio(AudioTrack a, {bool record = true}) =>
-      _apply(_project.upsertAudio(a), record: record);
+      _apply(_project.upsertAudio(a), record: record, action: EditAction.audio);
 
   /// Voice-over tracks that are being processed (the panel shows a spinner for them).
   final Set<String> voiceBusy = {};
@@ -1320,6 +1651,65 @@ class EditorController extends ChangeNotifier {
   bool recordingVoice = false;
   int _voiceStartOut = 0;
 
+  /// True while the phone's speech engine is turning text into a voice-over.
+  bool speaking = false;
+
+  /// Why the last text-to-speech failed (`tts_unavailable`, `tts_no_lang`, `tts_failed`), or null.
+  String? speechError;
+
+  /// Text to speech: [text] is read by the phone's own voice in [lang] and put on the timeline as a
+  /// voice-over at the playhead (one undo step). It is an ordinary voice track afterwards: music
+  /// ducks under it, it has volume / fades / voice effects, and preview and export play the same file.
+  Future<bool> addSpokenVoice(
+    String text, {
+    required String lang,
+    double rate = 1,
+  }) async {
+    final clean = text.trim();
+    if (clean.isEmpty || speaking) return false;
+    speaking = true;
+    speechError = null;
+    final at = _outMs;
+    notifyListeners();
+    try {
+      final r = await native.speakToFile(clean, lang: lang, rate: rate);
+      if (_disposed) return false;
+      final t = AudioTrack(
+        id: _newId('a'),
+        kind: AudioKind.voice,
+        path: r.path,
+        name: clean.length > 32 ? '${clean.substring(0, 32)}…' : clean,
+        fileMs: r.durationMs,
+        startOutMs: at,
+      );
+      _apply(_project.upsertAudio(t), action: EditAction.audio);
+      selectedId = t.id;
+      return true;
+    } on PlatformException catch (e) {
+      speechError = e.code;
+      return false;
+    } catch (_) {
+      speechError = 'tts_failed';
+      return false;
+    } finally {
+      speaking = false;
+      if (!_disposed) notifyListeners();
+    }
+  }
+
+  /// The words a voice-over could read at the playhead: the selected text, else the caption shown now.
+  String get textToSpeak {
+    final sel = _project.texts.where((e) => e.id == selectedId).firstOrNull;
+    if (sel != null) return sel.text;
+    final src = _project.outToSource(_outMs);
+    for (final t in _project.texts) {
+      final cue = t.cues?.where((c) => c.isActiveAt(src)).firstOrNull;
+      if (cue != null) return cue.text;
+      if (t.cues == null && src >= t.startMs && src < t.endMs) return t.text;
+    }
+    return '';
+  }
+
   /// Starts recording the voice-over at the playhead. The caller starts playback (the video plays
   /// while the person speaks).
   Future<void> startVoice() async {
@@ -1345,7 +1735,7 @@ class EditorController extends ChangeNotifier {
         fileMs: r.durationMs,
         startOutMs: _voiceStartOut,
       );
-      _apply(_project.upsertAudio(t));
+      _apply(_project.upsertAudio(t), action: EditAction.audio);
       selectedId = t.id;
     }
     notifyListeners();
@@ -1366,7 +1756,7 @@ class EditorController extends ChangeNotifier {
       next = next.setAudio(i, volume: gain.clamp(0.1, 2.0));
     }
     if (!any || _disposed) return false;
-    _apply(next);
+    _apply(next, action: EditAction.audio);
     return true;
   }
 

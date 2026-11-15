@@ -89,6 +89,7 @@
   "errCapture": "Quá trình quay bị gián đoạn.",
   "errEmpty": "Video không có dữ liệu. Hãy quay lại.",
   "errSave": "Không lưu được video vào bộ nhớ máy.",
+  "savedIndexing": "Đã lưu video. Thư viện đang cập nhật, thử lại sau giây lát.",
   "pickVideoFromDevice": "Chọn video từ máy",
   "pickVideoFailed": "Không mở được video này.",
   "libraryTitle": "Thư viện",
@@ -364,6 +365,22 @@
   "zoomDragHint": "Kéo trên video để chọn vùng sẽ phóng vào.",
   "undo": "Hoàn tác",
   "redo": "Làm lại",
+  "historyTitle": "Lịch sử chỉnh sửa",
+  "historyUndoSection": "Có thể hoàn tác",
+  "historyRedoSection": "Đã hoàn tác",
+  "historyEmpty": "Chưa có thao tác nào.",
+  "historyCurrent": "Hiện tại",
+  "actionEdit": "Chỉnh sửa",
+  "actionAutoDirect": "Tự dựng video",
+  "actionFindTouches": "Duyệt dấu từ thao tác",
+  "actionSilenceCut": "Cắt khoảng lặng",
+  "actionMarkers": "Dấu trên màn hình",
+  "actionCaptions": "Phụ đề",
+  "actionClip": "Cắt ghép clip",
+  "actionText": "Chữ và hình",
+  "actionLook": "Màu và khung hình",
+  "actionAudio": "Âm thanh",
+  "actionTemplate": "Mẫu dựng sẵn",
   "exportAction": "Xuất",
   "exportTitle": "Xuất video",
   "exportSummary": "Thời lượng {duration}",
@@ -587,6 +604,21 @@
   "audioTracks": "Nhạc và giọng nói",
   "audioAddMusic": "Thêm nhạc từ máy",
   "audioRecordVoice": "Thu giọng nói",
+  "ttsButton": "Đọc chữ thành giọng",
+  "ttsTitle": "Đọc chữ thành giọng nói",
+  "ttsHint": "Giọng đọc của máy được đặt tại vị trí đang phát, như một đoạn lồng tiếng: chỉnh được âm lượng, hiệu ứng giọng và nhạc tự hạ khi đọc.",
+  "ttsField": "Nội dung cần đọc",
+  "ttsLanguage": "Ngôn ngữ",
+  "ttsSpeed": "Tốc độ đọc",
+  "ttsSlow": "Chậm",
+  "ttsNormal": "Vừa",
+  "ttsFast": "Nhanh",
+  "ttsCreate": "Tạo giọng đọc",
+  "ttsWorking": "Đang tạo giọng đọc…",
+  "ttsDone": "Đã thêm giọng đọc vào dòng thời gian.",
+  "ttsNoEngine": "Máy chưa có bộ đọc văn bản. Cài “Dịch vụ giọng nói của Google” rồi thử lại.",
+  "ttsNoLang": "Bộ đọc của máy chưa có giọng cho ngôn ngữ này. Tải dữ liệu giọng trong Cài đặt máy > Chuyển văn bản thành giọng nói.",
+  "ttsFailed": "Không tạo được giọng đọc. Thử lại với đoạn ngắn hơn.",
   "audioStopVoice": "Dừng thu",
   "audioVoiceHint": "Nên dùng tai nghe để giọng nói không lẫn tiếng từ loa.",
   "audioStartAt": "Bắt đầu tại",
@@ -600,6 +632,32 @@
   "audioVoiceName": "Giọng nói",
   "audioTracksNone": "Chưa có nhạc hay giọng nói.",
   "exportPreset": "Mẫu xuất",
+  "myPresets": "Của tôi",
+  "myPresetHint": "Nhấn giữ một thiết lập để đặt mặc định, đổi tên, nhân bản hoặc xoá.",
+  "myPresetSave": "Lưu thiết lập này",
+  "myPresetName": "Tên thiết lập",
+  "myPresetSaved": "Đã lưu “{name}”.",
+  "@myPresetSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "myPresetDefault": "Mặc định",
+  "myPresetMakeDefault": "Dùng làm mặc định khi xuất",
+  "myPresetClearDefault": "Bỏ mặc định",
+  "myPresetRename": "Đổi tên",
+  "myPresetDuplicate": "Nhân bản",
+  "myPresetDelete": "Xoá thiết lập",
+  "myPresetCopyName": "{name} (bản sao)",
+  "@myPresetCopyName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "presetCustom": "Tuỳ chọn",
   "presetYoutube": "YouTube 1080p",
   "presetVertical": "TikTok / Reels 9:16",
@@ -669,7 +727,80 @@
       }
     }
   },
-  "autoTouchesNoPlace": "Chỉ tìm được thời điểm, không biết vị trí: có chú thích bước và dừng hình, không phóng to.",
+  "autoTouchesNoPlace": "Chỉ tìm được thời điểm, không biết vị trí: đánh dấu ở chỗ gần nhất hoặc giữa khung hình.",
+  "autoNoTouchesHeard": "Lúc quay không nghe được lần chạm nào, nên video chưa có dấu.",
+  "autoHeardNoMarks": "Đã nghe {n} lần chạm nhưng chưa đặt được dấu nào.",
+  "@autoHeardNoMarks": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "autoFindAgain": "Tìm thao tác lại",
+  "editorWaitingMarks": "Đang đặt dấu tự động cho các lần chạm… Video dài có thể mất khoảng một phút.",
+  "autoMarksTitle": "Dấu tự động",
+  "autoMarksSummary": "Nghe {heard} lần chạm · {marks} dấu · {estimated} vị trí ước lượng",
+  "@autoMarksSummary": {
+    "placeholders": {
+      "heard": {
+        "type": "int"
+      },
+      "marks": {
+        "type": "int"
+      },
+      "estimated": {
+        "type": "int"
+      }
+    }
+  },
+  "autoMarksEstimated": "Vị trí ước lượng",
+  "autoMarksTurnOff": "Tắt dấu này",
+  "autoMarksRestoreAll": "Bật lại tất cả",
+  "autoMarksRemoveEstimated": "Xoá dấu ước lượng",
+  "autoMarksRelocate": "Tìm lại vị trí",
+  "autoMarksRelocated": "Đã tìm được vị trí cho {n} dấu.",
+  "@autoMarksRelocated": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "autoMarksNoRelocate": "Không tìm thêm được vị trí nào.",
+  "autoMarksUndo": "Hoàn tác lần tự dựng",
+  "silenceCutTitle": "Cắt khoảng lặng",
+  "silenceCutHint": "Tìm những quãng màn hình không đổi rồi cắt bớt, giữ 0,2 giây ở hai đầu để không mất chữ. Xem danh sách trước khi cắt.",
+  "silenceFind": "Tìm khoảng lặng",
+  "silenceFinding": "Đang tìm khoảng lặng…",
+  "silenceNone": "Không tìm thấy khoảng lặng nào đủ dài.",
+  "silenceThreshold": "Khoảng lặng tối thiểu",
+  "silencePadOpt": "Giữ 0,2 giây ở hai đầu",
+  "silenceKeepSpeed": "Tốc độ phần giữ lại",
+  "silenceListTitle": "Các khoảng sẽ cắt",
+  "silenceSelectAll": "Chọn tất cả",
+  "silenceApply": "Cắt các khoảng đã chọn",
+  "silenceNoPick": "Chưa chọn khoảng nào để cắt.",
+  "silenceHeavy": "Cắt như vậy sẽ bỏ {pct}% thời lượng, chỉ còn {left}. Vẫn cắt?",
+  "@silenceHeavy": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "silenceConfirm": "Vẫn cắt",
+  "silenceDone": "Đã cắt {n} khoảng lặng.",
+  "@silenceDone": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
   "autoPreviewPause": "Xem thử chỗ dừng đầu tiên",
   "typingLabel": "Đang nhập…",
   "typedLabel": "Đã nhập",

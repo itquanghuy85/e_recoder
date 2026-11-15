@@ -191,6 +191,10 @@ class AppL10nVi extends AppL10n {
   String get errSave => 'Không lưu được video vào bộ nhớ máy.';
 
   @override
+  String get savedIndexing =>
+      'Đã lưu video. Thư viện đang cập nhật, thử lại sau giây lát.';
+
+  @override
   String get pickVideoFromDevice => 'Chọn video từ máy';
 
   @override
@@ -869,6 +873,54 @@ class AppL10nVi extends AppL10n {
   String get redo => 'Làm lại';
 
   @override
+  String get historyTitle => 'Lịch sử chỉnh sửa';
+
+  @override
+  String get historyUndoSection => 'Có thể hoàn tác';
+
+  @override
+  String get historyRedoSection => 'Đã hoàn tác';
+
+  @override
+  String get historyEmpty => 'Chưa có thao tác nào.';
+
+  @override
+  String get historyCurrent => 'Hiện tại';
+
+  @override
+  String get actionEdit => 'Chỉnh sửa';
+
+  @override
+  String get actionAutoDirect => 'Tự dựng video';
+
+  @override
+  String get actionFindTouches => 'Duyệt dấu từ thao tác';
+
+  @override
+  String get actionSilenceCut => 'Cắt khoảng lặng';
+
+  @override
+  String get actionMarkers => 'Dấu trên màn hình';
+
+  @override
+  String get actionCaptions => 'Phụ đề';
+
+  @override
+  String get actionClip => 'Cắt ghép clip';
+
+  @override
+  String get actionText => 'Chữ và hình';
+
+  @override
+  String get actionLook => 'Màu và khung hình';
+
+  @override
+  String get actionAudio => 'Âm thanh';
+
+  @override
+  String get actionTemplate => 'Mẫu dựng sẵn';
+
+  @override
   String get exportAction => 'Xuất';
 
   @override
@@ -1405,6 +1457,55 @@ class AppL10nVi extends AppL10n {
   String get audioRecordVoice => 'Thu giọng nói';
 
   @override
+  String get ttsButton => 'Đọc chữ thành giọng';
+
+  @override
+  String get ttsTitle => 'Đọc chữ thành giọng nói';
+
+  @override
+  String get ttsHint =>
+      'Giọng đọc của máy được đặt tại vị trí đang phát, như một đoạn lồng tiếng: chỉnh được âm lượng, hiệu ứng giọng và nhạc tự hạ khi đọc.';
+
+  @override
+  String get ttsField => 'Nội dung cần đọc';
+
+  @override
+  String get ttsLanguage => 'Ngôn ngữ';
+
+  @override
+  String get ttsSpeed => 'Tốc độ đọc';
+
+  @override
+  String get ttsSlow => 'Chậm';
+
+  @override
+  String get ttsNormal => 'Vừa';
+
+  @override
+  String get ttsFast => 'Nhanh';
+
+  @override
+  String get ttsCreate => 'Tạo giọng đọc';
+
+  @override
+  String get ttsWorking => 'Đang tạo giọng đọc…';
+
+  @override
+  String get ttsDone => 'Đã thêm giọng đọc vào dòng thời gian.';
+
+  @override
+  String get ttsNoEngine =>
+      'Máy chưa có bộ đọc văn bản. Cài “Dịch vụ giọng nói của Google” rồi thử lại.';
+
+  @override
+  String get ttsNoLang =>
+      'Bộ đọc của máy chưa có giọng cho ngôn ngữ này. Tải dữ liệu giọng trong Cài đặt máy > Chuyển văn bản thành giọng nói.';
+
+  @override
+  String get ttsFailed =>
+      'Không tạo được giọng đọc. Thử lại với đoạn ngắn hơn.';
+
+  @override
   String get audioStopVoice => 'Dừng thu';
 
   @override
@@ -1443,6 +1544,47 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get exportPreset => 'Mẫu xuất';
+
+  @override
+  String get myPresets => 'Của tôi';
+
+  @override
+  String get myPresetHint =>
+      'Nhấn giữ một thiết lập để đặt mặc định, đổi tên, nhân bản hoặc xoá.';
+
+  @override
+  String get myPresetSave => 'Lưu thiết lập này';
+
+  @override
+  String get myPresetName => 'Tên thiết lập';
+
+  @override
+  String myPresetSaved(String name) {
+    return 'Đã lưu “$name”.';
+  }
+
+  @override
+  String get myPresetDefault => 'Mặc định';
+
+  @override
+  String get myPresetMakeDefault => 'Dùng làm mặc định khi xuất';
+
+  @override
+  String get myPresetClearDefault => 'Bỏ mặc định';
+
+  @override
+  String get myPresetRename => 'Đổi tên';
+
+  @override
+  String get myPresetDuplicate => 'Nhân bản';
+
+  @override
+  String get myPresetDelete => 'Xoá thiết lập';
+
+  @override
+  String myPresetCopyName(String name) {
+    return '$name (bản sao)';
+  }
 
   @override
   String get presetCustom => 'Tuỳ chọn';
@@ -1614,7 +1756,107 @@ class AppL10nVi extends AppL10n {
 
   @override
   String get autoTouchesNoPlace =>
-      'Chỉ tìm được thời điểm, không biết vị trí: có chú thích bước và dừng hình, không phóng to.';
+      'Chỉ tìm được thời điểm, không biết vị trí: đánh dấu ở chỗ gần nhất hoặc giữa khung hình.';
+
+  @override
+  String get autoNoTouchesHeard =>
+      'Lúc quay không nghe được lần chạm nào, nên video chưa có dấu.';
+
+  @override
+  String autoHeardNoMarks(int n) {
+    return 'Đã nghe $n lần chạm nhưng chưa đặt được dấu nào.';
+  }
+
+  @override
+  String get autoFindAgain => 'Tìm thao tác lại';
+
+  @override
+  String get editorWaitingMarks =>
+      'Đang đặt dấu tự động cho các lần chạm… Video dài có thể mất khoảng một phút.';
+
+  @override
+  String get autoMarksTitle => 'Dấu tự động';
+
+  @override
+  String autoMarksSummary(int heard, int marks, int estimated) {
+    return 'Nghe $heard lần chạm · $marks dấu · $estimated vị trí ước lượng';
+  }
+
+  @override
+  String get autoMarksEstimated => 'Vị trí ước lượng';
+
+  @override
+  String get autoMarksTurnOff => 'Tắt dấu này';
+
+  @override
+  String get autoMarksRestoreAll => 'Bật lại tất cả';
+
+  @override
+  String get autoMarksRemoveEstimated => 'Xoá dấu ước lượng';
+
+  @override
+  String get autoMarksRelocate => 'Tìm lại vị trí';
+
+  @override
+  String autoMarksRelocated(int n) {
+    return 'Đã tìm được vị trí cho $n dấu.';
+  }
+
+  @override
+  String get autoMarksNoRelocate => 'Không tìm thêm được vị trí nào.';
+
+  @override
+  String get autoMarksUndo => 'Hoàn tác lần tự dựng';
+
+  @override
+  String get silenceCutTitle => 'Cắt khoảng lặng';
+
+  @override
+  String get silenceCutHint =>
+      'Tìm những quãng màn hình không đổi rồi cắt bớt, giữ 0,2 giây ở hai đầu để không mất chữ. Xem danh sách trước khi cắt.';
+
+  @override
+  String get silenceFind => 'Tìm khoảng lặng';
+
+  @override
+  String get silenceFinding => 'Đang tìm khoảng lặng…';
+
+  @override
+  String get silenceNone => 'Không tìm thấy khoảng lặng nào đủ dài.';
+
+  @override
+  String get silenceThreshold => 'Khoảng lặng tối thiểu';
+
+  @override
+  String get silencePadOpt => 'Giữ 0,2 giây ở hai đầu';
+
+  @override
+  String get silenceKeepSpeed => 'Tốc độ phần giữ lại';
+
+  @override
+  String get silenceListTitle => 'Các khoảng sẽ cắt';
+
+  @override
+  String get silenceSelectAll => 'Chọn tất cả';
+
+  @override
+  String get silenceApply => 'Cắt các khoảng đã chọn';
+
+  @override
+  String get silenceNoPick => 'Chưa chọn khoảng nào để cắt.';
+
+  @override
+  String silenceHeavy(int pct, String left) {
+    return 'Cắt như vậy sẽ bỏ $pct% thời lượng, chỉ còn $left. Vẫn cắt?';
+  }
+
+  @override
+  String get silenceConfirm => 'Vẫn cắt';
+
+  @override
+  String silenceDone(int n) {
+    return 'Đã cắt $n khoảng lặng.';
+  }
 
   @override
   String get autoPreviewPause => 'Xem thử chỗ dừng đầu tiên';

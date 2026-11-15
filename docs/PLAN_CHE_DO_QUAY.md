@@ -189,3 +189,31 @@ Flutter test 428+, analyze sạch, Kotlin unit test đạt. Test mới: `swipe_z
 - Cắm lại S25, chạy 8 flow còn lại (`test-results/flows18_r5/results.csv`): g3_editor, g7_auto_direct, s1_icon_audit, store_en, store_pro, store_video_a, store_video_b **đạt**; `store_vi` lỗi lần đầu.
 - Nguyên nhân `store_vi`: lỗi của flow, không phải app. Màn Quay còn đang cuộn xuống từ bước trước nên thanh chọn chế độ ra ngoài màn hình, Maestro không thấy `purpose_tutorial`. Sửa `maestro/helpers/set_mark_mode.yaml` (cuộn lên cho tới khi thấy thanh chế độ). Chạy lại `store_vi`: **đạt** (`test-results/flows18_r6`).
 - Cài đặt app trên S25 chưa khôi phục từ `test-results/prefs_backup_r4.xml`.
+
+## Đợt 4 (13/11/2026): quay xong luôn thấy video, quay sạch luôn có dấu, duyệt dấu tự động
+
+Người dùng báo: (1) quay xong video không hiện trong thư viện app dù đã có trong thư viện ảnh; (2) chế độ quay sạch bật đánh dấu tự động nhưng quay xong không có dấu nào. Đợt này sửa cả hai và thêm bước duyệt dấu.
+
+### Lưu video (sửa lỗi A)
+- Sự kiện "đã lưu" được giữ ở phía Android (`RecorderBus.lastSaved`, 15 phút) và phát lại khi Flutter nghe lại; thêm `takeLastSaved` để Dart lấy đúng một lần. Nhờ vậy dừng quay lúc app ở nền (hoặc activity bị dựng lại) vẫn mở được màn kết quả và cập nhật thư viện, không mở lặp.
+- `MediaRepo.save` kiểm tra dòng MediaStore đã công bố (`IS_PENDING = 0`, có dữ liệu). Nếu chưa, **giữ file** và báo `indexed: false`; app hiện "đã lưu, thư viện đang cập nhật" kèm nút mở Thư viện thay vì im lặng.
+- Thư viện tự làm mới khi quay lại app (chống dội 2 s). Màn kết quả chờ MediaStore theo backoff khoảng 14 s (trước là 3,2 s).
+
+### Đánh dấu tự động (sửa lỗi B)
+- Thiếu quyền "Hiện trên ứng dụng khác" thì app **không bắt đầu quay** ở chế độ sạch + tự động; trả `needsOverlay` và mở đúng màn xin quyền, vì cửa sổ nghe chạm cần quyền này.
+- Quay xong luôn có dự án, kể cả 0 chạm (để người dùng biết lượt tự động đã chạy và có thể tự thêm dấu).
+- Mỗi lần chạm nghe được đều có dấu: chỗ không xác định được lấy vị trí gần nhất đã biết trong 4 s, nếu không có thì giữa khung. Không còn chuyện "có chạm mà 0 dấu".
+- Profile "Hướng dẫn" của bản cũ (có khoá `marker.touchSource`, chế độ sạch, nguồn tay/không rõ) được nâng lên tự động một lần. Ai cố ý chọn "Không đánh dấu" thì giữ nguyên.
+
+### Duyệt dấu tự động (tab Tự động)
+- Danh sách từng dấu: thời gian, kiểu dấu, nhãn **"Vị trí ước lượng"** cho dấu phải đoán chỗ.
+- Công tắc bật/tắt từng dấu (một bước hoàn tác); dấu tắt vẫn nằm trong danh sách để bật lại; có "Bật lại tất cả".
+- "Tìm lại vị trí": gọi lại `locateTouches` cho các dấu ước lượng, dấu nào tìm được chỗ thì hết nhãn ước lượng.
+- "Xoá dấu ước lượng" và "Hoàn tác lần tự dựng" đều là một bước hoàn tác.
+- Dự án cũ đọc bình thường: dấu không có thông tin mới được coi là dấu tay, vị trí chính xác.
+
+### Kiểm chứng
+- `flutter analyze` sạch; `flutter test` 447/447; `:app:testDebugUnitTest` BUILD SUCCESSFUL; `flutter build apk --debug` thành công.
+- Test mới `test/auto_marks_test.dart` (11): JSON cũ/mới, cờ ước lượng, bật/tắt + hoàn tác, xoá dấu ước lượng, tìm lại vị trí, panel widget.
+- **Chưa chạy Maestro trên S25** trong đợt này (không có máy kết nối), nên các mục A1–A4/B1–B5 mới dừng ở kiểm tra mã + test tự động.
+

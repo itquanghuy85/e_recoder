@@ -427,6 +427,12 @@ abstract class AppL10n {
   /// **'Không lưu được video vào bộ nhớ máy.'**
   String get errSave;
 
+  /// No description provided for @savedIndexing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu video. Thư viện đang cập nhật, thử lại sau giây lát.'**
+  String get savedIndexing;
+
   /// No description provided for @pickVideoFromDevice.
   ///
   /// In vi, this message translates to:
@@ -1669,6 +1675,102 @@ abstract class AppL10n {
   /// **'Làm lại'**
   String get redo;
 
+  /// No description provided for @historyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử chỉnh sửa'**
+  String get historyTitle;
+
+  /// No description provided for @historyUndoSection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Có thể hoàn tác'**
+  String get historyUndoSection;
+
+  /// No description provided for @historyRedoSection.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hoàn tác'**
+  String get historyRedoSection;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có thao tác nào.'**
+  String get historyEmpty;
+
+  /// No description provided for @historyCurrent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện tại'**
+  String get historyCurrent;
+
+  /// No description provided for @actionEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh sửa'**
+  String get actionEdit;
+
+  /// No description provided for @actionAutoDirect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tự dựng video'**
+  String get actionAutoDirect;
+
+  /// No description provided for @actionFindTouches.
+  ///
+  /// In vi, this message translates to:
+  /// **'Duyệt dấu từ thao tác'**
+  String get actionFindTouches;
+
+  /// No description provided for @actionSilenceCut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cắt khoảng lặng'**
+  String get actionSilenceCut;
+
+  /// No description provided for @actionMarkers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu trên màn hình'**
+  String get actionMarkers;
+
+  /// No description provided for @actionCaptions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phụ đề'**
+  String get actionCaptions;
+
+  /// No description provided for @actionClip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cắt ghép clip'**
+  String get actionClip;
+
+  /// No description provided for @actionText.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chữ và hình'**
+  String get actionText;
+
+  /// No description provided for @actionLook.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu và khung hình'**
+  String get actionLook;
+
+  /// No description provided for @actionAudio.
+  ///
+  /// In vi, this message translates to:
+  /// **'Âm thanh'**
+  String get actionAudio;
+
+  /// No description provided for @actionTemplate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mẫu dựng sẵn'**
+  String get actionTemplate;
+
   /// No description provided for @exportAction.
   ///
   /// In vi, this message translates to:
@@ -2689,6 +2791,96 @@ abstract class AppL10n {
   /// **'Thu giọng nói'**
   String get audioRecordVoice;
 
+  /// No description provided for @ttsButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đọc chữ thành giọng'**
+  String get ttsButton;
+
+  /// No description provided for @ttsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đọc chữ thành giọng nói'**
+  String get ttsTitle;
+
+  /// No description provided for @ttsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giọng đọc của máy được đặt tại vị trí đang phát, như một đoạn lồng tiếng: chỉnh được âm lượng, hiệu ứng giọng và nhạc tự hạ khi đọc.'**
+  String get ttsHint;
+
+  /// No description provided for @ttsField.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nội dung cần đọc'**
+  String get ttsField;
+
+  /// No description provided for @ttsLanguage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngôn ngữ'**
+  String get ttsLanguage;
+
+  /// No description provided for @ttsSpeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tốc độ đọc'**
+  String get ttsSpeed;
+
+  /// No description provided for @ttsSlow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chậm'**
+  String get ttsSlow;
+
+  /// No description provided for @ttsNormal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vừa'**
+  String get ttsNormal;
+
+  /// No description provided for @ttsFast.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhanh'**
+  String get ttsFast;
+
+  /// No description provided for @ttsCreate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo giọng đọc'**
+  String get ttsCreate;
+
+  /// No description provided for @ttsWorking.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tạo giọng đọc…'**
+  String get ttsWorking;
+
+  /// No description provided for @ttsDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thêm giọng đọc vào dòng thời gian.'**
+  String get ttsDone;
+
+  /// No description provided for @ttsNoEngine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Máy chưa có bộ đọc văn bản. Cài “Dịch vụ giọng nói của Google” rồi thử lại.'**
+  String get ttsNoEngine;
+
+  /// No description provided for @ttsNoLang.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bộ đọc của máy chưa có giọng cho ngôn ngữ này. Tải dữ liệu giọng trong Cài đặt máy > Chuyển văn bản thành giọng nói.'**
+  String get ttsNoLang;
+
+  /// No description provided for @ttsFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tạo được giọng đọc. Thử lại với đoạn ngắn hơn.'**
+  String get ttsFailed;
+
   /// No description provided for @audioStopVoice.
   ///
   /// In vi, this message translates to:
@@ -2766,6 +2958,78 @@ abstract class AppL10n {
   /// In vi, this message translates to:
   /// **'Mẫu xuất'**
   String get exportPreset;
+
+  /// No description provided for @myPresets.
+  ///
+  /// In vi, this message translates to:
+  /// **'Của tôi'**
+  String get myPresets;
+
+  /// No description provided for @myPresetHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhấn giữ một thiết lập để đặt mặc định, đổi tên, nhân bản hoặc xoá.'**
+  String get myPresetHint;
+
+  /// No description provided for @myPresetSave.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu thiết lập này'**
+  String get myPresetSave;
+
+  /// No description provided for @myPresetName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên thiết lập'**
+  String get myPresetName;
+
+  /// No description provided for @myPresetSaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu “{name}”.'**
+  String myPresetSaved(String name);
+
+  /// No description provided for @myPresetDefault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mặc định'**
+  String get myPresetDefault;
+
+  /// No description provided for @myPresetMakeDefault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng làm mặc định khi xuất'**
+  String get myPresetMakeDefault;
+
+  /// No description provided for @myPresetClearDefault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ mặc định'**
+  String get myPresetClearDefault;
+
+  /// No description provided for @myPresetRename.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đổi tên'**
+  String get myPresetRename;
+
+  /// No description provided for @myPresetDuplicate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhân bản'**
+  String get myPresetDuplicate;
+
+  /// No description provided for @myPresetDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá thiết lập'**
+  String get myPresetDelete;
+
+  /// No description provided for @myPresetCopyName.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} (bản sao)'**
+  String myPresetCopyName(String name);
 
   /// No description provided for @presetCustom.
   ///
@@ -3082,8 +3346,182 @@ abstract class AppL10n {
   /// No description provided for @autoTouchesNoPlace.
   ///
   /// In vi, this message translates to:
-  /// **'Chỉ tìm được thời điểm, không biết vị trí: có chú thích bước và dừng hình, không phóng to.'**
+  /// **'Chỉ tìm được thời điểm, không biết vị trí: đánh dấu ở chỗ gần nhất hoặc giữa khung hình.'**
   String get autoTouchesNoPlace;
+
+  /// No description provided for @autoNoTouchesHeard.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lúc quay không nghe được lần chạm nào, nên video chưa có dấu.'**
+  String get autoNoTouchesHeard;
+
+  /// No description provided for @autoHeardNoMarks.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã nghe {n} lần chạm nhưng chưa đặt được dấu nào.'**
+  String autoHeardNoMarks(int n);
+
+  /// No description provided for @autoFindAgain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm thao tác lại'**
+  String get autoFindAgain;
+
+  /// No description provided for @editorWaitingMarks.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang đặt dấu tự động cho các lần chạm… Video dài có thể mất khoảng một phút.'**
+  String get editorWaitingMarks;
+
+  /// No description provided for @autoMarksTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu tự động'**
+  String get autoMarksTitle;
+
+  /// No description provided for @autoMarksSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nghe {heard} lần chạm · {marks} dấu · {estimated} vị trí ước lượng'**
+  String autoMarksSummary(int heard, int marks, int estimated);
+
+  /// No description provided for @autoMarksEstimated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vị trí ước lượng'**
+  String get autoMarksEstimated;
+
+  /// No description provided for @autoMarksTurnOff.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tắt dấu này'**
+  String get autoMarksTurnOff;
+
+  /// No description provided for @autoMarksRestoreAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bật lại tất cả'**
+  String get autoMarksRestoreAll;
+
+  /// No description provided for @autoMarksRemoveEstimated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá dấu ước lượng'**
+  String get autoMarksRemoveEstimated;
+
+  /// No description provided for @autoMarksRelocate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm lại vị trí'**
+  String get autoMarksRelocate;
+
+  /// No description provided for @autoMarksRelocated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tìm được vị trí cho {n} dấu.'**
+  String autoMarksRelocated(int n);
+
+  /// No description provided for @autoMarksNoRelocate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thêm được vị trí nào.'**
+  String get autoMarksNoRelocate;
+
+  /// No description provided for @autoMarksUndo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tác lần tự dựng'**
+  String get autoMarksUndo;
+
+  /// No description provided for @silenceCutTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cắt khoảng lặng'**
+  String get silenceCutTitle;
+
+  /// No description provided for @silenceCutHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm những quãng màn hình không đổi rồi cắt bớt, giữ 0,2 giây ở hai đầu để không mất chữ. Xem danh sách trước khi cắt.'**
+  String get silenceCutHint;
+
+  /// No description provided for @silenceFind.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm khoảng lặng'**
+  String get silenceFind;
+
+  /// No description provided for @silenceFinding.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tìm khoảng lặng…'**
+  String get silenceFinding;
+
+  /// No description provided for @silenceNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy khoảng lặng nào đủ dài.'**
+  String get silenceNone;
+
+  /// No description provided for @silenceThreshold.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khoảng lặng tối thiểu'**
+  String get silenceThreshold;
+
+  /// No description provided for @silencePadOpt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giữ 0,2 giây ở hai đầu'**
+  String get silencePadOpt;
+
+  /// No description provided for @silenceKeepSpeed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tốc độ phần giữ lại'**
+  String get silenceKeepSpeed;
+
+  /// No description provided for @silenceListTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Các khoảng sẽ cắt'**
+  String get silenceListTitle;
+
+  /// No description provided for @silenceSelectAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tất cả'**
+  String get silenceSelectAll;
+
+  /// No description provided for @silenceApply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cắt các khoảng đã chọn'**
+  String get silenceApply;
+
+  /// No description provided for @silenceNoPick.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa chọn khoảng nào để cắt.'**
+  String get silenceNoPick;
+
+  /// No description provided for @silenceHeavy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cắt như vậy sẽ bỏ {pct}% thời lượng, chỉ còn {left}. Vẫn cắt?'**
+  String silenceHeavy(int pct, String left);
+
+  /// No description provided for @silenceConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vẫn cắt'**
+  String get silenceConfirm;
+
+  /// No description provided for @silenceDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cắt {n} khoảng lặng.'**
+  String silenceDone(int n);
 
   /// No description provided for @autoPreviewPause.
   ///

@@ -122,6 +122,41 @@ void main() {
         expect(fake.lastRequest!.toMap()['markMode'], 'clean');
       },
     );
+
+    test('clean + automatic needs the overlay permission before recording', () async {
+      final (c, fake, _) = await _make({
+        'marker.mode': MarkMode.clean.index,
+        'marker.touchSourceV2': TouchSource.auto.index,
+      });
+      fake.overlayGranted = false;
+      final r = await c.read(recorderProvider.notifier).start();
+      expect(r, StartResult.needsOverlay);
+      expect(fake.calls, contains('requestOverlay'));
+      expect(fake.calls, isNot(contains('start')));
+    });
+
+    test('a save replayed after a background stop still makes the edit', () async {
+      final (c, fake, store) = await _make({'marker.mode': 1});
+      fake.nextSaved = _saved(marks: [_mark(2000)]);
+      await c.read(recorderProvider.notifier).syncSaved();
+      await c.read(recorderProvider.notifier).draftReady;
+      expect(c.read(recorderProvider).notice, isA<SavedNotice>());
+      final p = await store.load('content://v/9');
+      expect(p, isNotNull);
+      expect(p!.markers.length, 1);
+    });
+
+    test('the same saved video announced twice does not open twice', () async {
+      final (c, fake, _) = await _make({'marker.mode': 1});
+      final e = _saved(marks: [_mark(2000)]);
+      fake.controller.add(e);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(c.read(recorderProvider).notice, isA<SavedNotice>());
+      c.read(recorderProvider.notifier).clearNotice();
+      fake.controller.add(e);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(c.read(recorderProvider).notice, isNull);
+    });
   });
 
   group('draft after a clean recording', () {
@@ -214,23 +249,24 @@ void main() {
       expect(c.read(markerSettingsProvider).touchSource, TouchSource.auto);
     });
 
-    test('touches alone make a finished edit: marks where the place was found, captions elsewhere', () async {
+    test('touches alone make a finished edit: marks where the place was found or estimated', () async {
       final (_, fake, store) = await _make({'marker.mode': 1});
       fake.touchPlaces[3000] = (x: 0.3, y: 0.6);
-      // 9000 has no place: a caption and a freeze only
+      // 9000 has no place: it still gets a mark, at the middle of the frame
       fake.controller.add(withTouches([3000, 9000]));
       await Future<void>.delayed(const Duration(milliseconds: 100));
       final p = (await store.load('content://v/9'))!;
       expect(fake.calls, contains('locateTouches:2'));
-      expect(p.markers.length, 1);
-      expect(p.markers.single.spec.x0, closeTo(0.3, 1e-9));
-      expect(p.markers.single.spec.y0, closeTo(0.6, 1e-9));
-      expect(p.texts.length, 1); // the step caption of the touch with no place
+      expect(p.markers.length, 2);
+      expect(p.markers.first.spec.x0, closeTo(0.3, 1e-9));
+      expect(p.markers.first.spec.y0, closeTo(0.6, 1e-9));
+      expect(p.markers.last.spec.x0, closeTo(0.5, 1e-9));
+      expect(p.texts, isEmpty);
       expect(
         p.segments.any((s) => s.isStill),
         isTrue,
       ); // the freeze at the touches
-      expect(p.zooms.length, 1); // it zooms into the touch whose place is known
+      expect(p.zooms.length, 2); // it zooms into both marks
     });
 
     test('the press on the stop button is not a step', () async {
@@ -254,12 +290,49 @@ void main() {
       expect(p?.markers ?? const [], isEmpty);
     });
 
-    test('no touches heard: no touch lookup, no project', () async {
+    test('no touches heard: an empty edit is still saved and announced', () async {
       final (_, fake, store) = await _make({'marker.mode': 1});
       fake.controller.add(_saved());
       await Future<void>.delayed(const Duration(milliseconds: 50));
       expect(fake.calls.where((e) => e.startsWith('locateTouches')), isEmpty);
-      expect(await store.load('content://v/9'), isNull);
+      // The project exists (so the person can add marks by hand and knows the pass ran), with none.
+      final p = await store.load('content://v/9');
+      expect(p, isNotNull);
+      expect(p!.markers, isEmpty);
+      // ...and it remembers that the pass heard nothing, so the editor can say so.
+      expect(p.autoHeard, 0);
+      final ed = EditorController(project: p, native: fake, store: store);
+      expect(ed.autoPassWithoutMarks, 0);
+    });
+
+    test('heard touches are remembered in the project, the stop press is not', () async {
+      final (_, fake, store) = await _make({'marker.mode': 1});
+      fake.touchPlaces[3000] = (x: 0.3, y: 0.6);
+      fake.controller.add(withTouches([3000, 9000, 19600]));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      final p = (await store.load('content://v/9'))!;
+      expect(p.autoHeard, 2);
+      // marks came out of it: nothing to warn about
+      expect(
+        EditorController(project: p, native: fake, store: store)
+            .autoPassWithoutMarks,
+        isNull,
+      );
+    });
+
+    test('dot mode and old projects carry no automatic pass', () async {
+      final (_, fake, store) = await _make({'marker.mode': 0});
+      fake.controller.add(_saved(marks: [_mark(2000)]));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      final p = (await store.load('content://v/9'))!;
+      expect(p.autoHeard, isNull);
+      expect(p.encode().contains('autoHeard'), isFalse);
+      // an old file without the key reads back as "no pass", a new one keeps its value
+      expect(EditProject.decode(p.encode()).autoHeard, isNull);
+      expect(
+        EditProject.decode(p.copyWith(autoHeard: 3).encode()).autoHeard,
+        3,
+      );
     });
 
     test('hand-placed marks and heard touches live together', () async {
@@ -402,7 +475,7 @@ void main() {
     });
 
     test(
-      'moments without places give captions and freezes, no marks',
+      'moments without places still get marks, plus freezes',
       () async {
         final fake = FakeRecorder();
         addTearDown(fake.controller.close);
@@ -413,9 +486,10 @@ void main() {
           stepPrefix: 'Step ',
         );
         expect(c.lastTouches!.placed, isFalse);
-        expect(c.project.markers, isEmpty);
+        expect(c.project.markers.length, 2);
+        expect(c.project.markers.every((m) => m.spec.x0 == 0.5), isTrue);
         expect(c.project.zooms, isEmpty);
-        expect(c.project.texts.length, 2);
+        expect(c.project.texts, isEmpty);
         expect(c.project.segments.where((s) => s.isStill).length, 2);
       },
     );

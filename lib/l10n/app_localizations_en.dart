@@ -191,6 +191,10 @@ class AppL10nEn extends AppL10n {
   String get errSave => 'Could not save the video to the device.';
 
   @override
+  String get savedIndexing =>
+      'Video saved. The library is still updating; try again in a moment.';
+
+  @override
   String get pickVideoFromDevice => 'Choose a video from the phone';
 
   @override
@@ -873,6 +877,54 @@ class AppL10nEn extends AppL10n {
   String get redo => 'Redo';
 
   @override
+  String get historyTitle => 'Edit history';
+
+  @override
+  String get historyUndoSection => 'Can be undone';
+
+  @override
+  String get historyRedoSection => 'Already undone';
+
+  @override
+  String get historyEmpty => 'No steps yet.';
+
+  @override
+  String get historyCurrent => 'Current';
+
+  @override
+  String get actionEdit => 'Edit';
+
+  @override
+  String get actionAutoDirect => 'Automatic first cut';
+
+  @override
+  String get actionFindTouches => 'Marks from your taps';
+
+  @override
+  String get actionSilenceCut => 'Cut the quiet parts';
+
+  @override
+  String get actionMarkers => 'On-screen marks';
+
+  @override
+  String get actionCaptions => 'Captions';
+
+  @override
+  String get actionClip => 'Clips and cuts';
+
+  @override
+  String get actionText => 'Text and pictures';
+
+  @override
+  String get actionLook => 'Colour and frame';
+
+  @override
+  String get actionAudio => 'Sound';
+
+  @override
+  String get actionTemplate => 'Saved style';
+
+  @override
   String get exportAction => 'Export';
 
   @override
@@ -1409,6 +1461,54 @@ class AppL10nEn extends AppL10n {
   String get audioRecordVoice => 'Record voice';
 
   @override
+  String get ttsButton => 'Text to speech';
+
+  @override
+  String get ttsTitle => 'Text to speech';
+
+  @override
+  String get ttsHint =>
+      'The phone\'s voice reads it and it goes on the timeline at the playhead, like a voice-over: volume, voice effects and music ducking all work.';
+
+  @override
+  String get ttsField => 'Text to read';
+
+  @override
+  String get ttsLanguage => 'Language';
+
+  @override
+  String get ttsSpeed => 'Reading speed';
+
+  @override
+  String get ttsSlow => 'Slow';
+
+  @override
+  String get ttsNormal => 'Normal';
+
+  @override
+  String get ttsFast => 'Fast';
+
+  @override
+  String get ttsCreate => 'Make the voice';
+
+  @override
+  String get ttsWorking => 'Making the voice…';
+
+  @override
+  String get ttsDone => 'Voice added to the timeline.';
+
+  @override
+  String get ttsNoEngine =>
+      'This phone has no text-to-speech engine. Install Speech Services by Google and try again.';
+
+  @override
+  String get ttsNoLang =>
+      'The phone\'s speech engine has no voice for this language. Download it in Settings > Text-to-speech.';
+
+  @override
+  String get ttsFailed => 'The voice could not be made. Try a shorter text.';
+
+  @override
   String get audioStopVoice => 'Stop recording';
 
   @override
@@ -1448,6 +1548,47 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get exportPreset => 'Export preset';
+
+  @override
+  String get myPresets => 'My presets';
+
+  @override
+  String get myPresetHint =>
+      'Long-press a preset to make it the default, rename, duplicate or delete it.';
+
+  @override
+  String get myPresetSave => 'Save these settings';
+
+  @override
+  String get myPresetName => 'Preset name';
+
+  @override
+  String myPresetSaved(String name) {
+    return 'Saved “$name”.';
+  }
+
+  @override
+  String get myPresetDefault => 'Default';
+
+  @override
+  String get myPresetMakeDefault => 'Use as the default for export';
+
+  @override
+  String get myPresetClearDefault => 'Stop using as default';
+
+  @override
+  String get myPresetRename => 'Rename';
+
+  @override
+  String get myPresetDuplicate => 'Duplicate';
+
+  @override
+  String get myPresetDelete => 'Delete preset';
+
+  @override
+  String myPresetCopyName(String name) {
+    return '$name (copy)';
+  }
 
   @override
   String get presetCustom => 'Custom';
@@ -1619,7 +1760,107 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get autoTouchesNoPlace =>
-      'Only the moments were found, not the places: step captions and freezes, no zoom.';
+      'Only the moments were found, not the places: marks at the nearest known spot or the middle of the frame.';
+
+  @override
+  String get autoNoTouchesHeard =>
+      'No touches were heard while recording, so the video has no marks yet.';
+
+  @override
+  String autoHeardNoMarks(int n) {
+    return 'Heard $n touches but no marks were placed yet.';
+  }
+
+  @override
+  String get autoFindAgain => 'Find touches again';
+
+  @override
+  String get editorWaitingMarks =>
+      'Placing the automatic marks for your touches… A long video can take about a minute.';
+
+  @override
+  String get autoMarksTitle => 'Automatic marks';
+
+  @override
+  String autoMarksSummary(int heard, int marks, int estimated) {
+    return 'Heard $heard taps · $marks marks · $estimated estimated places';
+  }
+
+  @override
+  String get autoMarksEstimated => 'Estimated place';
+
+  @override
+  String get autoMarksTurnOff => 'Turn this mark off';
+
+  @override
+  String get autoMarksRestoreAll => 'Turn all back on';
+
+  @override
+  String get autoMarksRemoveEstimated => 'Remove estimated marks';
+
+  @override
+  String get autoMarksRelocate => 'Find places again';
+
+  @override
+  String autoMarksRelocated(int n) {
+    return 'Found places for $n marks.';
+  }
+
+  @override
+  String get autoMarksNoRelocate => 'No further places could be found.';
+
+  @override
+  String get autoMarksUndo => 'Undo the automatic pass';
+
+  @override
+  String get silenceCutTitle => 'Cut the quiet parts';
+
+  @override
+  String get silenceCutHint =>
+      'Find the stretches where nothing changes and cut them out, leaving 0.2 s at each end so no word is lost. Review the list before cutting.';
+
+  @override
+  String get silenceFind => 'Find quiet parts';
+
+  @override
+  String get silenceFinding => 'Looking for quiet parts…';
+
+  @override
+  String get silenceNone => 'No quiet stretch long enough was found.';
+
+  @override
+  String get silenceThreshold => 'Shortest quiet stretch';
+
+  @override
+  String get silencePadOpt => 'Keep 0.2 s at each end';
+
+  @override
+  String get silenceKeepSpeed => 'Speed of the kept parts';
+
+  @override
+  String get silenceListTitle => 'Stretches to cut';
+
+  @override
+  String get silenceSelectAll => 'Select all';
+
+  @override
+  String get silenceApply => 'Cut the selected stretches';
+
+  @override
+  String get silenceNoPick => 'No stretch is selected.';
+
+  @override
+  String silenceHeavy(int pct, String left) {
+    return 'This would remove $pct% of the video, leaving $left. Cut anyway?';
+  }
+
+  @override
+  String get silenceConfirm => 'Cut anyway';
+
+  @override
+  String silenceDone(int n) {
+    return 'Cut $n quiet stretches.';
+  }
 
   @override
   String get autoPreviewPause => 'Preview first freeze';

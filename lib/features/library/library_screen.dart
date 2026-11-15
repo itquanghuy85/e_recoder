@@ -20,10 +20,38 @@ class LibraryScreen extends ConsumerStatefulWidget {
   ConsumerState<LibraryScreen> createState() => _LibraryScreenState();
 }
 
-class _LibraryScreenState extends ConsumerState<LibraryScreen> {
+class _LibraryScreenState extends ConsumerState<LibraryScreen>
+    with WidgetsBindingObserver {
   /// URIs picked for joining, in pick order. Empty = normal mode; non-empty = selection mode.
   final List<String> _picked = [];
   bool _selecting = false;
+  DateTime? _lastRefresh;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    // A recording saved while the app was away would otherwise leave this list stale until the
+    // person pulls to refresh. Debounce so a quick background/foreground does not hit MediaStore twice.
+    final now = DateTime.now();
+    if (_lastRefresh != null &&
+        now.difference(_lastRefresh!) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastRefresh = now;
+    ref.invalidate(mediaListProvider);
+  }
 
   void _toggle(MediaEntry e) {
     setState(() {

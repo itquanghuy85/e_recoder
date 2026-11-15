@@ -11,6 +11,7 @@ import '../marker/marker_inspector.dart';
 import 'edit_project.dart';
 import 'editor_controller.dart';
 import 'editor_tools.dart' show editorSecs, editorSlider, inspectorHeader;
+import 'speech_sheet.dart';
 
 // ---- picture: rotate, crop, output shape, colour ----------------------------------------------
 
@@ -1129,6 +1130,16 @@ class AudioTracksSection extends StatelessWidget {
                       icon: const Icon(Icons.mic_none),
                       label: Text(t.audioRecordVoice),
                     ),
+            ),
+            Semantics(
+              identifier: 'audio_tts',
+              child: FilledButton.tonalIcon(
+                onPressed: c.recordingVoice
+                    ? null
+                    : () => showSpeechSheet(context, c),
+                icon: const Icon(Icons.record_voice_over_outlined),
+                label: Text(t.ttsButton),
+              ),
             ),
           ],
         ),
