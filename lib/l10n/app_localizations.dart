@@ -4021,6 +4021,24 @@ abstract class AppL10n {
   /// **'Đang dựng tự động...'**
   String get resultBuilding;
 
+  /// No description provided for @resultBuildingLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dựng tự động... còn khoảng {s} giây'**
+  String resultBuildingLeft(int s);
+
+  /// No description provided for @resultBuildingAlmost.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang dựng tự động... sắp xong'**
+  String get resultBuildingAlmost;
+
+  /// No description provided for @markerSizeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cỡ dấu (xem trước bên dưới)'**
+  String get markerSizeTitle;
+
   /// No description provided for @resultExport.
   ///
   /// In vi, this message translates to:

@@ -2133,6 +2133,17 @@ class AppL10nEn extends AppL10n {
   String get resultBuilding => 'Building the edit...';
 
   @override
+  String resultBuildingLeft(int s) {
+    return 'Building the edit... about $s s left';
+  }
+
+  @override
+  String get resultBuildingAlmost => 'Building the edit... almost done';
+
+  @override
+  String get markerSizeTitle => 'Mark size (preview below)';
+
+  @override
   String get resultExport => 'Export now';
 
   @override

@@ -20,7 +20,7 @@ tags:
           commands:
             - tapOn: "Cho phép"
       - extendedWaitUntil:
-          visible: "Bắt đầu ngay|Chia sẻ màn hình"
+          visible: "Bắt đầu ngay|Chia sẻ màn hình|Bắt đầu"
           timeout: 8000
 # AOSP says "Bắt đầu ngay"; Samsung One UI (Android 14+) says "Chia sẻ màn hình" (default: whole screen).
-- tapOn: "Bắt đầu ngay|Chia sẻ màn hình"
+- tapOn: "Bắt đầu ngay|Chia sẻ màn hình|Bắt đầu"

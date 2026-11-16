@@ -43,7 +43,11 @@ class MarkerSettings {
     this.pauseZoom = 1,
     this.inputMode = InputMode.merge,
     this.autoMarker = MarkerType.number,
+    this.markerScale = 1,
   });
+
+  /// Size of the mark the automatic edit puts at each touch (1 = normal).
+  final double markerScale;
 
   /// The mark that automatic editing puts at every touch it finds.
   final MarkerType autoMarker;
@@ -105,8 +109,10 @@ class MarkerSettings {
     double? pauseZoom,
     InputMode? inputMode,
     MarkerType? autoMarker,
+    double? markerScale,
   }) => MarkerSettings(
     autoMarker: autoMarker ?? this.autoMarker,
+    markerScale: markerScale ?? this.markerScale,
     tool: tool ?? this.tool,
     colorIndex: colorIndex ?? this.colorIndex,
     thickness: thickness ?? this.thickness,
@@ -163,6 +169,7 @@ class MarkerSettingsNotifier extends Notifier<MarkerSettings> {
       autoMarker: MarkerType.values[s
           .getInt('marker.autoType', MarkerType.number.index)
           .clamp(0, MarkerType.values.length - 1)],
+      markerScale: (s.getInt('marker.autoScale', 100) / 100).clamp(0.5, 2.5),
     );
   }
 
@@ -188,6 +195,7 @@ class MarkerSettingsNotifier extends Notifier<MarkerSettings> {
     await s.setInt('marker.pauseZoom', (v.pauseZoom * 100).round());
     await s.setInt('marker.inputMode', v.inputMode.index);
     await s.setInt('marker.autoType', v.autoMarker.index);
+    await s.setInt('marker.autoScale', (v.markerScale * 100).round());
   }
 }
 

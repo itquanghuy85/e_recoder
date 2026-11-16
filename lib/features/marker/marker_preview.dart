@@ -54,6 +54,8 @@ class _MarkerPreviewState extends ConsumerState<MarkerPreview>
   void didUpdateWidget(MarkerPreview old) {
     super.didUpdateWidget(old);
     _c.duration = Duration(milliseconds: _totalMs);
+    // A preview that plays once shows the change again when the mark is adjusted.
+    if (!widget.loop && old.spec != widget.spec) _c.forward(from: 0);
   }
 
   @override

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_tokens.dart';
+import '../editor/auto_director.dart';
 import '../marker/marker_inspector.dart';
+import '../marker/marker_preview.dart';
 import '../marker/marker_settings.dart';
 import '../marker/marker_spec.dart';
 import '../marker/marker_timing.dart';
@@ -250,6 +252,37 @@ class MoreOptions extends ConsumerWidget {
               icon: markerTypeIcon(m),
             ),
         ]),
+      if (markWhenOf(mk) == MarkWhen.auto) ...[
+        w.slider(
+          'quick_mark_size',
+          t.markerSizeTitle,
+          '${(mk.markerScale * 100).round()}%',
+          mk.markerScale,
+          0.5,
+          2.5,
+          20,
+          (v) => mkN.update(mk.copyWith(markerScale: v)),
+        ),
+        SizedBox(
+          height: 220,
+          child: Center(
+            child: MarkerPreview(
+              spec: AutoDirector.tapSpec(
+                mk.autoMarker,
+                0.5,
+                0.55,
+                1,
+                frameW: kPreviewFrameW,
+                frameH: kPreviewFrameH,
+                color: Color(mk.color),
+                thickness: mk.thickness,
+              ).copyWith(scale: mk.markerScale),
+              holdMs: 1400,
+              loop: false,
+            ),
+          ),
+        ),
+      ],
       if (markWhenOf(mk) == MarkWhen.auto)
         w.slider(
           'more_pause',

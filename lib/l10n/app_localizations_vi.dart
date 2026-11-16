@@ -2129,6 +2129,17 @@ class AppL10nVi extends AppL10n {
   String get resultBuilding => 'Đang dựng tự động...';
 
   @override
+  String resultBuildingLeft(int s) {
+    return 'Đang dựng tự động... còn khoảng $s giây';
+  }
+
+  @override
+  String get resultBuildingAlmost => 'Đang dựng tự động... sắp xong';
+
+  @override
+  String get markerSizeTitle => 'Cỡ dấu (xem trước bên dưới)';
+
+  @override
   String get resultExport => 'Xuất ngay';
 
   @override

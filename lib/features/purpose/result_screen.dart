@@ -303,7 +303,28 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
                 const SizedBox(width: Space.sm),
-                Text(t.resultBuilding, style: tt.bodyMedium),
+                StreamBuilder<int>(
+                  stream: Stream.periodic(
+                    const Duration(milliseconds: 500),
+                    (i) => i,
+                  ),
+                  builder: (_, _) {
+                    final rec = ref.read(recorderProvider.notifier);
+                    final start = rec.buildStartedAt;
+                    if (start == null) {
+                      return Text(t.resultBuilding, style: tt.bodyMedium);
+                    }
+                    final left =
+                        (rec.buildEstimate - DateTime.now().difference(start))
+                            .inMilliseconds;
+                    return Text(
+                      left > 1000
+                          ? t.resultBuildingLeft((left / 1000).ceil())
+                          : t.resultBuildingAlmost,
+                      style: tt.bodyMedium,
+                    );
+                  },
+                ),
               ],
             ),
             _Phase.exporting => Row(

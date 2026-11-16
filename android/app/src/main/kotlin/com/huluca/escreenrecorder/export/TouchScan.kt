@@ -206,10 +206,26 @@ object TouchScan {
             )
             mapOf(
                 "tMs" to t, "x" to (spot?.get(0) ?: -1.0), "y" to (spot?.get(1) ?: -1.0),
-                "durMs" to 0L, "dist" to 0.0, "changeMs" to changeMs,
+                "durMs" to 0L, "dist" to if (spot == null && isScroll(frames, t)) SWIPE_DIST else 0.0,
+                "changeMs" to changeMs,
             )
         }
     }
+
+    /** A swipe is not a press: no small spot reacts, but the whole picture keeps moving right after the touch. */
+    internal fun isScroll(frames: List<LumaDecoder.Frame>, t: Long): Boolean {
+        val after = frames.filter { it.ms > t && it.ms <= t + SCROLL_WINDOW_MS }
+        var moving = 0
+        for (i in 1 until after.size) {
+            val a = after[i - 1]
+            val b = after[i]
+            if (a.w == b.w && a.h == b.h && changedBlocks(a.luma, b.luma, a.w, a.h) >= SCREEN_CHANGE) moving++
+        }
+        return moving >= 2
+    }
+
+    private const val SWIPE_DIST = 0.1
+    private const val SCROLL_WINDOW_MS = 400L
 
     /** Frames of a time window; [LumaDecoder] in the app, a list in tests. */
     fun interface WindowSource {

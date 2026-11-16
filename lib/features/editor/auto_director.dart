@@ -27,7 +27,11 @@ class DirectorOptions {
     this.markerColor = const Color(0xFFFF3B30),
     this.markerThickness = 5,
     this.markerHoldMs = 1500,
+    this.markerScale = 1,
   });
+
+  /// Size of each automatic mark (1 = normal).
+  final double markerScale;
 
   /// The mark drawn at each touch of a known place. Null keeps the old rule: a step number when
   /// [number] is on, a ripple when it is off.
@@ -89,7 +93,9 @@ class DirectorOptions {
     Color? markerColor,
     double? markerThickness,
     int? markerHoldMs,
+    double? markerScale,
   }) => DirectorOptions(
+    markerScale: markerScale ?? this.markerScale,
     markerType: markerType ?? this.markerType,
     markerColor: markerColor ?? this.markerColor,
     markerThickness: markerThickness ?? this.markerThickness,
@@ -338,7 +344,7 @@ abstract final class AutoDirector {
             frameH: base.frameH,
             color: o.markerColor,
             thickness: o.markerThickness,
-          ),
+          ).copyWith(scale: o.markerScale),
         ),
       );
     }

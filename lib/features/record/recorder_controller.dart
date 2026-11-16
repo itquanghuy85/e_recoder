@@ -135,6 +135,10 @@ class RecorderController extends Notifier<RecorderState> {
   /// it instead of opening an empty draft that the build would then overwrite.
   String? draftBuildingFor;
 
+  /// When the build of the automatic edit began and how long it is expected to take (for a countdown).
+  DateTime? buildStartedAt;
+  Duration buildEstimate = Duration.zero;
+
   Future<void> _track(String uri, Future<void> job) async {
     draftBuildingFor = uri;
     try {
@@ -205,6 +209,10 @@ class RecorderController extends Notifier<RecorderState> {
     int tries = 0,
   }) async {
     if (heard.isEmpty) return;
+    buildStartedAt = DateTime.now();
+    buildEstimate = Duration(
+      milliseconds: 3000 + heard.length * 1200 + draft.durationMs ~/ 8,
+    );
     final mk = ref.read(markerSettingsProvider);
     final store = ref.read(settingsStoreProvider);
     await store.setString(
@@ -235,6 +243,7 @@ class RecorderController extends Notifier<RecorderState> {
             markerColor: Color(mk.color),
             markerThickness: mk.thickness,
             markerHoldMs: mk.holdMs,
+            markerScale: mk.markerScale,
             typingLabel: vi ? 'Đang nhập…' : 'Typing…',
             typedLabel: vi ? 'Đã nhập' : 'Typed',
           );
