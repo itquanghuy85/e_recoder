@@ -63,6 +63,19 @@ class TouchLocateWindowTest {
         assertEquals(0.0, r["dist"] as Double, 0.0)
     }
 
+    @Test
+    fun `the first edge of a new page sliding in is not the place`() {
+        // No ripple: at 1220 a band at the top changes (the new page's bar), by 1300 the whole page has.
+        val frames = (0L..4000L step 33).map { ms ->
+            val l = IntArray(w * h) { 40 }
+            if (ms >= 1220) for (y in 20..40) for (x in 0 until w) l[y * w + x] = 220
+            if (ms >= 1300) for (i in l.indices) l[i] = 220
+            LumaDecoder.Frame(ms, l, w, h)
+        }
+        val r = TouchScan.locateWith(TouchScan.WindowSource { a, b -> frames.filter { it.ms in a..b } }, listOf(1000L)).single()
+        assertEquals(-1.0, r["x"] as Double, 0.0)
+    }
+
     @Test(expected = IllegalStateException::class)
     fun `a decoder that gives no frames falls back (the caller reads frame by frame)`() {
         TouchScan.locateWith(TouchScan.WindowSource { _, _ -> emptyList() }, listOf(1000L))

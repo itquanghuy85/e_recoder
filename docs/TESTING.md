@@ -151,3 +151,4 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - `maestro/clean_auto_swipe.yaml`: 3 vuốt + 2 chạm → diag.log `[locate] swipe=true` ×3, `swipe=false` ×2 (CPH2505: đạt).
 - `maestro/clean_auto_place.yaml`: 4 chạm máy tính ở chỗ biết trước + 2 chạm Cài đặt. CPH2505: 4 dấu đúng chỗ (lệch ≤ 0,03), 2 chạm không thấy phản ứng thì không có dấu (dự án trong `projects.db`).
 - Quy tắc: bỏ qua thanh trạng thái/điều hướng và vùng đang chuyển động từ trước lúc chạm; trang đổi trong 120 ms sau chạm = vuốt; sau quay sạch, chạm không thấy chỗ thì không đặt dấu (`DirectorOptions.guessUnknown: false`).
+- 17/11 bổ sung: app không có hiệu ứng bấm (vd. Quản Lý Shop) → mép trang mới trượt vào bị nhầm là chỗ bấm. Nay: vết thay đổi lan thành chuyển trang trong 150 ms thì bỏ; chỉ tìm phản ứng trong 400 ms đầu. Tái hiện bằng mô phỏng trên video thật (ESR_20261117_101737, t=8106). Kịch bản calculator vẫn 4/4 đúng chỗ.

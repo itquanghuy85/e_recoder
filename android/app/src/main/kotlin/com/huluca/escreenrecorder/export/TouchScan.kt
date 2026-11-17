@@ -181,7 +181,8 @@ object TouchScan {
         return timesMs.map { t ->
             val next = sorted.firstOrNull { it > t } ?: Long.MAX_VALUE
             val until = minOf(t + CHANGE_SCAN_MS, next)
-            val reactUntil = t + LOCATE_OFFSETS.last()
+            // A press lights up within a few frames; what shows later (a toast, a spinner) is the app, not the finger.
+            val reactUntil = t + REACT_WINDOW_MS
             val frames = dec.window((t - 90 - 400).coerceAtLeast(0), maxOf(until, reactUntil))
             if (frames.isEmpty()) throw IllegalStateException("no frames")
             val before = frames.lastOrNull { it.ms <= t - 90 } ?: frames.first()
@@ -195,15 +196,27 @@ object TouchScan {
             }
             var spot: DoubleArray? = null
             var changeMs = -1L
+            var transition = false
             for (f in frames) {
                 if (f.ms <= t || f.w != before.w || f.h != before.h) continue
-                if (spot == null && f.ms <= reactUntil) spot = reaction(before.luma, f.luma, f.w, f.h, busy)
+                if (spot == null && !transition && f.ms <= reactUntil) {
+                    spot = reaction(before.luma, f.luma, f.w, f.h, busy)
+                    // The first edge of a new page sliding in is not a press: it grows into a page change.
+                    if (spot != null && frames.any { g ->
+                            g.ms > f.ms && g.ms <= f.ms + GROW_MS && g.w == before.w && g.h == before.h &&
+                                changedShare(before.luma, g.luma) > REACT_MAX
+                        }
+                    ) {
+                        spot = null
+                        transition = true
+                    }
+                }
                 if (changeMs < 0 && f.ms < until &&
                     changedBlocks(before.luma, f.luma, f.w, f.h) >= SCREEN_CHANGE
                 ) {
                     changeMs = f.ms
                 }
-                if (spot != null && changeMs >= 0) break
+                if ((spot != null || transition) && changeMs >= 0) break
             }
             // A swipe moves the page at once (within a frame or two of the finger landing); a tap only
             // changes the page after the finger lifts. A swipe also leaves no small spot, just motion.
@@ -354,6 +367,14 @@ object TouchScan {
      * The middle of the biggest changed area between two frames, as fractions, when that area is a
      * part of the screen (not a page change: more than [REACT_MAX] of it) and not just noise.
      */
+    /** The share (0..1) of pixels that changed, as [reaction] counts them. */
+    internal fun changedShare(a: IntArray, b: IntArray): Double {
+        if (a.size != b.size || a.isEmpty()) return 0.0
+        var n = 0
+        for (i in a.indices) if (abs(a[i] - b[i]) > REACT_DIFF) n++
+        return n.toDouble() / a.size
+    }
+
     internal fun reaction(a: IntArray, b: IntArray, w: Int = W, h: Int = H, busy: BooleanArray? = null): DoubleArray? {
         if (a.size != b.size || a.size != w * h) return null
         val changed = BooleanArray(a.size)
@@ -405,6 +426,8 @@ object TouchScan {
     private const val REACT_DIFF = 4
     private const val REACT_MIN = 20
     private const val REACT_MAX = 0.35
+    private const val GROW_MS = 150L
+    private const val REACT_WINDOW_MS = 400L
     private const val BAR_TOP = 0.045
     private const val BAR_BOTTOM = 0.035
 
