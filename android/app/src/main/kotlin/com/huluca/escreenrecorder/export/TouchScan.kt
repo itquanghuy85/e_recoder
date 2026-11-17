@@ -168,7 +168,12 @@ object TouchScan {
     fun locate(ctx: Context, uri: Uri, timesMs: List<Long>): List<Map<String, Any?>> {
         if (timesMs.isEmpty()) return emptyList()
         return try {
-            LumaDecoder(ctx, uri).use { dec -> locateWith(dec, timesMs) }
+            val dots = try {
+                android.provider.Settings.System.getInt(ctx.contentResolver, "show_touches", 0) == 1
+            } catch (_: Exception) {
+                false
+            }
+            LumaDecoder(ctx, uri).use { dec -> locateWith(dec, timesMs, dots) }
         } catch (e: Exception) {
             android.util.Log.w("TouchScan", "fast locate failed, frame by frame", e)
             locateFrameByFrame(ctx, uri, timesMs)
@@ -176,7 +181,7 @@ object TouchScan {
     }
 
     /** The decoding-free part of [locate], on frames already decoded per window (unit tested). */
-    internal fun locateWith(dec: WindowSource, timesMs: List<Long>): List<Map<String, Any?>> {
+    internal fun locateWith(dec: WindowSource, timesMs: List<Long>, dots: Boolean = false): List<Map<String, Any?>> {
         val sorted = timesMs.sorted()
         return timesMs.map { t ->
             val next = sorted.firstOrNull { it > t } ?: Long.MAX_VALUE
@@ -197,6 +202,16 @@ object TouchScan {
             var spot: DoubleArray? = null
             var changeMs = -1L
             var transition = false
+            // "Show taps" on: Android draws a small round dot right where the finger lands, in a single
+            // frame step. That is exact, so it wins over any guess from how the app reacted.
+            var prev: LumaDecoder.Frame? = null
+            for (f in frames) {
+                val p = prev
+                prev = f
+                if (!dots || f.ms <= t - 60 || f.ms > t + DOT_WINDOW_MS || p == null || p.w != f.w || p.h != f.h) continue
+                val dot = patch(p.luma, f.luma, f.w, f.h)
+                if (dot != null && dot[1] > BAR_TOP && dot[1] < 1 - BAR_BOTTOM) { spot = dot; break }
+            }
             for (f in frames) {
                 if (f.ms <= t || f.w != before.w || f.h != before.h) continue
                 if (spot == null && !transition && f.ms <= reactUntil) {
@@ -427,6 +442,7 @@ object TouchScan {
     private const val REACT_MIN = 20
     private const val REACT_MAX = 0.35
     private const val GROW_MS = 150L
+    private const val DOT_WINDOW_MS = 300L
     private const val REACT_WINDOW_MS = 400L
     private const val BAR_TOP = 0.045
     private const val BAR_BOTTOM = 0.035

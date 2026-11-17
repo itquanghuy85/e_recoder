@@ -76,6 +76,22 @@ class TouchLocateWindowTest {
         assertEquals(-1.0, r["x"] as Double, 0.0)
     }
 
+    @Test
+    fun `with show taps on, the dot is the place even when the page changes at once`() {
+        // Dot at (54, 120) from 1040; the whole page changes at 1150.
+        val frames = (0L..4000L step 33).map { ms ->
+            val l = IntArray(w * h) { if (ms >= 1150) 200 else 40 }
+            if (ms >= 1040) for (y in 116..124) for (x in 50..58) l[y * w + x] = 255
+            LumaDecoder.Frame(ms, l, w, h)
+        }
+        val src = TouchScan.WindowSource { a, b -> frames.filter { it.ms in a..b } }
+        val r = TouchScan.locateWith(src, listOf(1000L), dots = true).single()
+        assertEquals(54.5 / w, r["x"] as Double, 0.02)
+        assertEquals(120.5 / h, r["y"] as Double, 0.02)
+        // Without show taps the same picture gives no place (it grows into a page change).
+        assertEquals(-1.0, TouchScan.locateWith(src, listOf(1000L)).single()["x"] as Double, 0.0)
+    }
+
     @Test(expected = IllegalStateException::class)
     fun `a decoder that gives no frames falls back (the caller reads frame by frame)`() {
         TouchScan.locateWith(TouchScan.WindowSource { _, _ -> emptyList() }, listOf(1000L))
