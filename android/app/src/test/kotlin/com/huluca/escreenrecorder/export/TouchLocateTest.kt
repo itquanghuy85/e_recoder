@@ -65,6 +65,30 @@ class TouchLocateTest {
     }
 
     @Test
+    fun `the status bar changing on its own is not the place`() {
+        val a = frame()
+        val b = frame().also {
+            it.fill(30, 0, 79, 9, 220) // clock / recording chip, bigger than the press
+            it.fill(40, 150, 49, 159, 200) // the pressed key
+        }
+        val p = TouchScan.reaction(a, b)!!
+        assertEquals(45.0 / w, p[0], 0.02)
+        assertEquals(155.0 / h, p[1], 0.02)
+    }
+
+    @Test
+    fun `what was already moving before the touch is not the place`() {
+        val a = frame()
+        val b = frame().also {
+            it.fill(0, 40, 99, 79, 220) // the last page still sliding in
+            it.fill(40, 150, 49, 159, 200) // the pressed key
+        }
+        val busy = BooleanArray(w * h).also { for (y in 40..79) for (x in 0..99) it[y * w + x] = true }
+        val p = TouchScan.reaction(a, b, busy = busy)!!
+        assertEquals(155.0 / h, p[1], 0.02)
+    }
+
+    @Test
     fun `frames of different sizes have no place`() {
         assertNull(TouchScan.reaction(IntArray(10), IntArray(12)))
     }

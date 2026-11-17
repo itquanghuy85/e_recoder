@@ -146,3 +146,8 @@ Chi tiết và kết quả: `docs/CAPTION_PLAN.md` (Phần 9-12).
 - Đợt 2 (01/11/2026): thanh thời gian dấu nay là `quick_hold` ở lựa chọn chính (không còn `more_hold`); mức phóng là `quick_zoom_scale`. Nút `record_start` ghim ở đáy màn Quay (phần trên cuộn). Nghiệm thu lại trên S25 khi kết nối: `bash scripts/qa/ux_mark_timing.sh` (kiểm cả ảnh dấu sau khi đổi màn), `bash scripts/qa/ux_modes_record.sh`, rồi `run_flows18.ps1`.
 - Đợt 3 (01/11/2026): `maestro/ux_swipe_guide.yaml` (vuốt xuống / lên ở màn sửa, rồi mở Cài đặt → Hướng dẫn thiết lập). Vuốt nằm trong vùng khung xem trước, thanh phát hoặc timeline (không phải thanh "Chọn nhiều"). Mục trong Cài đặt tìm theo id `settings_setup_guide` (chữ của dòng bị gộp với dòng phụ nên khớp chữ không được). Màn hướng dẫn: `setup_step_<overlay|mic|notif|taps|battery>`, nút `setup_*_on`. iPhone: đổi nền tảng trong test bằng `debugDefaultTargetPlatformOverride` và trả lại **trong thân test** (khung test kiểm trước tearDown).
 
+
+## Vị trí dấu tự động khi quay sạch (17/11/2026)
+- `maestro/clean_auto_swipe.yaml`: 3 vuốt + 2 chạm → diag.log `[locate] swipe=true` ×3, `swipe=false` ×2 (CPH2505: đạt).
+- `maestro/clean_auto_place.yaml`: 4 chạm máy tính ở chỗ biết trước + 2 chạm Cài đặt. CPH2505: 4 dấu đúng chỗ (lệch ≤ 0,03), 2 chạm không thấy phản ứng thì không có dấu (dự án trong `projects.db`).
+- Quy tắc: bỏ qua thanh trạng thái/điều hướng và vùng đang chuyển động từ trước lúc chạm; trang đổi trong 120 ms sau chạm = vuốt; sau quay sạch, chạm không thấy chỗ thì không đặt dấu (`DirectorOptions.guessUnknown: false`).

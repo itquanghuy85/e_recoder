@@ -28,7 +28,11 @@ class DirectorOptions {
     this.markerThickness = 5,
     this.markerHoldMs = 1500,
     this.markerScale = 1,
+    this.guessUnknown = true,
   });
+
+  /// Put a mark at a guessed spot for a touch whose place was not seen (false: leave it unmarked).
+  final bool guessUnknown;
 
   /// Size of each automatic mark (1 = normal).
   final double markerScale;
@@ -94,7 +98,9 @@ class DirectorOptions {
     double? markerThickness,
     int? markerHoldMs,
     double? markerScale,
+    bool? guessUnknown,
   }) => DirectorOptions(
+    guessUnknown: guessUnknown ?? this.guessUnknown,
     markerScale: markerScale ?? this.markerScale,
     markerType: markerType ?? this.markerType,
     markerColor: markerColor ?? this.markerColor,
@@ -309,10 +315,12 @@ abstract final class AutoDirector {
         o.inputMode == InputMode.perKey &&
         e.count <= 4;
 
+    // With [DirectorOptions.guessUnknown] off, a touch whose place could not be seen gets no mark: a
+    // mark at a guessed spot shows the viewer the wrong place, which is worse than none.
     final taps = [
       for (final e in sorted)
         if (e.kind == TouchKind.tap) e else if (keyAsTap(e)) _asTap(e),
-    ];
+    ].where((e) => o.guessUnknown || e.hasPosition).toList();
     final at = markTimes(taps);
     var step = 0;
     for (var i = 0; i < taps.length; i++) {

@@ -185,11 +185,19 @@ object TouchScan {
             val frames = dec.window((t - 90 - 400).coerceAtLeast(0), maxOf(until, reactUntil))
             if (frames.isEmpty()) throw IllegalStateException("no frames")
             val before = frames.lastOrNull { it.ms <= t - 90 } ?: frames.first()
+            // What was already moving before the touch (a previous page still sliding, a blinking cursor)
+            // is not the reaction to this touch.
+            val pre = frames.lastOrNull { it.ms <= before.ms - 100 }
+            val busy = if (pre != null && pre.w == before.w && pre.h == before.h) {
+                BooleanArray(before.luma.size) { abs(pre.luma[it] - before.luma[it]) > REACT_DIFF }
+            } else {
+                null
+            }
             var spot: DoubleArray? = null
             var changeMs = -1L
             for (f in frames) {
                 if (f.ms <= t || f.w != before.w || f.h != before.h) continue
-                if (spot == null && f.ms <= reactUntil) spot = reaction(before.luma, f.luma, f.w, f.h)
+                if (spot == null && f.ms <= reactUntil) spot = reaction(before.luma, f.luma, f.w, f.h, busy)
                 if (changeMs < 0 && f.ms < until &&
                     changedBlocks(before.luma, f.luma, f.w, f.h) >= SCREEN_CHANGE
                 ) {
@@ -346,11 +354,16 @@ object TouchScan {
      * The middle of the biggest changed area between two frames, as fractions, when that area is a
      * part of the screen (not a page change: more than [REACT_MAX] of it) and not just noise.
      */
-    internal fun reaction(a: IntArray, b: IntArray, w: Int = W, h: Int = H): DoubleArray? {
+    internal fun reaction(a: IntArray, b: IntArray, w: Int = W, h: Int = H, busy: BooleanArray? = null): DoubleArray? {
         if (a.size != b.size || a.size != w * h) return null
         val changed = BooleanArray(a.size)
         var n = 0
-        for (i in a.indices) if (abs(a[i] - b[i]) > REACT_DIFF) { changed[i] = true; n++ }
+        // The status bar (clock, icons, the recording chip) and the navigation bar change on their own.
+        val top = (h * BAR_TOP).toInt() * w
+        val bottom = (h * (1 - BAR_BOTTOM)).toInt() * w
+        for (i in top until minOf(bottom, a.size)) {
+            if (abs(a[i] - b[i]) > REACT_DIFF && (busy == null || !busy[i])) { changed[i] = true; n++ }
+        }
         val share = n.toDouble() / a.size
         if (n < REACT_MIN || share > REACT_MAX) return null
         // The biggest connected area wins; small flecks elsewhere (a clock, an animation) are ignored.
@@ -392,6 +405,8 @@ object TouchScan {
     private const val REACT_DIFF = 4
     private const val REACT_MIN = 20
     private const val REACT_MAX = 0.35
+    private const val BAR_TOP = 0.045
+    private const val BAR_BOTTOM = 0.035
 
     private fun lumaOf(b: Bitmap): IntArray {
         val w = b.width

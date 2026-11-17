@@ -1,0 +1,47 @@
+appId: com.huluca.escreenrecorder
+name: Clean + automatic marks - each mark lands where the finger was
+tags:
+  - module-marker
+---
+# Known places. Check diag.log "[locate]" spots against them:
+#   calculator 14%,65% / 62%,76% / 38%,87% / 86%,54% (0.6 s apart: the previous key may still animate)
+#   settings 50%,35% / 50%,55% (open a page, back with the key: no touch)
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_clean
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: ${OTHER_APP || 'com.coloros.calculator'}
+    stopApp: false
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: {point: "14%, 65%"}
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 600, optional: true}
+- tapOn: {point: "62%, 76%"}
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 600, optional: true}
+- tapOn: {point: "38%, 87%"}
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 600, optional: true}
+- tapOn: {point: "86%, 54%"}
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 2000, optional: true}
+- launchApp:
+    appId: com.android.settings
+    stopApp: false
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: {point: "50%, 35%"}
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 2500, optional: true}
+- pressKey: back
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 2000, optional: true}
+- tapOn: {point: "50%, 55%"}
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 2500, optional: true}
+- pressKey: back
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 1500, optional: true}
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn: "Dừng quay"
+- runFlow: helpers/after_stop.yaml

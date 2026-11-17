@@ -87,6 +87,19 @@ void main() {
   });
 
   group('the find-touches pass leaves a reviewable result', () {
+    test('without guessing, a touch whose place was not seen gets no mark', () {
+      final out = AutoDirector.fromTouches(
+        _base(),
+        TouchClassifier.classify(const [
+          RawTouch(tMs: 3000, x: 0.3, y: 0.6),
+          RawTouch(tMs: 9000),
+        ]),
+        const DirectorOptions(pauseMs: 0, guessUnknown: false),
+      );
+      expect(out.markers.map((m) => m.touchMs), [3000]);
+      expect(out.markers.single.estimated, isFalse);
+    });
+
     test('a guessed place is flagged, a seen place is not', () {
       final out = AutoDirector.fromTouches(
         _base(),

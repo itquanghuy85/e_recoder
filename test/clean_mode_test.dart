@@ -249,24 +249,21 @@ void main() {
       expect(c.read(markerSettingsProvider).touchSource, TouchSource.auto);
     });
 
-    test('touches alone make a finished edit: marks where the place was found or estimated', () async {
+    test('touches alone make a finished edit: a mark only where the place was found', () async {
       final (_, fake, store) = await _make({'marker.mode': 1});
       fake.touchPlaces[3000] = (x: 0.3, y: 0.6);
-      // 9000 has no place: it still gets a mark, at the middle of the frame
+      // 9000 has no place: no mark at a guessed spot (it would show the viewer the wrong place)
       fake.controller.add(withTouches([3000, 9000]));
       await Future<void>.delayed(const Duration(milliseconds: 100));
       final p = (await store.load('content://v/9'))!;
       expect(fake.calls, contains('locateTouches:2'));
-      expect(p.markers.length, 2);
-      expect(p.markers.first.spec.x0, closeTo(0.3, 1e-9));
-      expect(p.markers.first.spec.y0, closeTo(0.6, 1e-9));
-      expect(p.markers.last.spec.x0, closeTo(0.5, 1e-9));
+      expect(p.markers.length, 1);
+      expect(p.markers.single.spec.x0, closeTo(0.3, 1e-9));
+      expect(p.markers.single.spec.y0, closeTo(0.6, 1e-9));
+      expect(p.markers.single.estimated, isFalse);
       expect(p.texts, isEmpty);
-      expect(
-        p.segments.any((s) => s.isStill),
-        isTrue,
-      ); // the freeze at the touches
-      expect(p.zooms.length, 2); // it zooms into both marks
+      expect(p.segments.any((s) => s.isStill), isTrue); // the freeze at the touch
+      expect(p.zooms.length, 1);
     });
 
     test('the press on the stop button is not a step', () async {

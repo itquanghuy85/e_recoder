@@ -244,6 +244,9 @@ class RecorderController extends Notifier<RecorderState> {
             markerThickness: mk.thickness,
             markerHoldMs: mk.holdMs,
             markerScale: mk.markerScale,
+            // Right after a clean recording nobody reviews the guesses: a mark in the wrong place is
+            // worse than none.
+            guessUnknown: false,
             typingLabel: vi ? 'Đang nhập…' : 'Typing…',
             typedLabel: vi ? 'Đã nhập' : 'Typed',
           );
