@@ -197,16 +197,19 @@ object TouchScan {
                 }
                 if (spot != null && changeMs >= 0) break
             }
+            // A swipe moves the page at once (within a frame or two of the finger landing); a tap only
+            // changes the page after the finger lifts. A swipe also leaves no small spot, just motion.
+            val swipe = (changeMs in (t + 1)..(t + SWIPE_CHANGE_MS)) || (spot == null && isScroll(frames, t))
             com.huluca.escreenrecorder.DiagLog.log(
                 "locate",
-                "t=$t frames=${frames.size} ${frames.first().ms}..${frames.last().ms} " +
+                "t=$t swipe=$swipe frames=${frames.size} ${frames.first().ms}..${frames.last().ms} " +
                     "before=${before.ms} spot=${spot?.joinToString { "%.2f".format(it) }} change=$changeMs " +
                     "mean=${before.luma.average().toInt()} size=${before.w}x${before.h} " +
                     "maxDiff=${frames.maxOf { f -> if (f.luma.size != before.luma.size) 0 else f.luma.indices.count { abs(f.luma[it] - before.luma[it]) > REACT_DIFF } }}",
             )
             mapOf(
                 "tMs" to t, "x" to (spot?.get(0) ?: -1.0), "y" to (spot?.get(1) ?: -1.0),
-                "durMs" to 0L, "dist" to if (spot == null && isScroll(frames, t)) SWIPE_DIST else 0.0,
+                "durMs" to 0L, "dist" to if (swipe) SWIPE_DIST else 0.0,
                 "changeMs" to changeMs,
             )
         }
@@ -225,6 +228,7 @@ object TouchScan {
     }
 
     private const val SWIPE_DIST = 0.1
+    private const val SWIPE_CHANGE_MS = 120L
     private const val SCROLL_WINDOW_MS = 400L
 
     /** Frames of a time window; [LumaDecoder] in the app, a list in tests. */

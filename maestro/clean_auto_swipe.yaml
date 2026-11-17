@@ -1,0 +1,50 @@
+appId: com.huluca.escreenrecorder
+name: Clean + automatic marks - swipes are not marked as taps
+tags:
+  - module-marker
+---
+# Check afterwards: diag.log "[locate] ... swipe=true" for the 3 swipes, "swipe=false" for the 2 taps.
+- launchApp:
+    stopApp: false
+- runFlow: helpers/reset_rec_settings.yaml
+- runFlow:
+    file: helpers/set_mark_mode.yaml
+    env:
+      MODE: mode_clean
+- runFlow: helpers/start_recording.yaml
+- launchApp:
+    appId: com.android.settings
+    stopApp: false
+- waitForAnimationToEnd:
+    timeout: 3000
+- swipe:
+    start: 50%, 75%
+    end: 50%, 30%
+    duration: 400
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 2000, optional: true}
+- swipe:
+    start: 50%, 30%
+    end: 50%, 75%
+    duration: 400
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 2000, optional: true}
+- swipe:
+    start: 50%, 75%
+    end: 50%, 30%
+    duration: 400
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 2000, optional: true}
+- launchApp:
+    appId: ${OTHER_APP || 'com.coloros.calculator'}
+    stopApp: false
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    point: 14%, 65%
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 2000, optional: true}
+- tapOn:
+    point: 38%, 65%
+- extendedWaitUntil: {visible: "NEVER_ON_SCREEN", timeout: 2000, optional: true}
+- launchApp:
+    appId: com.huluca.escreenrecorder
+    stopApp: false
+- tapOn: "Dừng quay"
+- runFlow: helpers/after_stop.yaml

@@ -48,6 +48,21 @@ class TouchLocateWindowTest {
         assertEquals(-1L, r[0]["changeMs"])
     }
 
+    @Test
+    fun `a page that moves right as the finger lands is a swipe, a tap is not`() {
+        // Swipe at 1000: the page scrolls (stripes shift every frame) from 1030 on.
+        val scroll = (0L..3000L step 33).map { ms ->
+            val off = if (ms >= 1030) ((ms - 1030) / 33).toInt() * 7 else 0
+            LumaDecoder.Frame(ms, IntArray(w * h) { i -> if (((i / w) + off) % 20 < 10) 220 else 40 }, w, h)
+        }
+        val s = TouchScan.locateWith(TouchScan.WindowSource { a, b -> scroll.filter { it.ms in a..b } }, listOf(1000L)).single()
+        assertTrue("swipe dist ${s["dist"]}", (s["dist"] as Double) >= 0.05)
+        // Tap at 1000: key lights at 1250, page changes at 1900.
+        val tap = (0L..4000L step 33).map { ms -> frame(ms, key = ms in 1250..1400, page = ms >= 1900) }
+        val r = TouchScan.locateWith(TouchScan.WindowSource { a, b -> tap.filter { it.ms in a..b } }, listOf(1000L)).single()
+        assertEquals(0.0, r["dist"] as Double, 0.0)
+    }
+
     @Test(expected = IllegalStateException::class)
     fun `a decoder that gives no frames falls back (the caller reads frame by frame)`() {
         TouchScan.locateWith(TouchScan.WindowSource { _, _ -> emptyList() }, listOf(1000L))
