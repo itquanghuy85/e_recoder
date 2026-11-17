@@ -1691,14 +1691,14 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get touchGuideStep1 =>
-      '1. Turn on developer mode: open About phone and tap Build number 7 times.';
+      'Step 1 – Unlock developer mode (once): open Settings → About phone, find the version number and tap it 7 times until the phone says \"You are now a developer\" (enter your screen lock if asked).\n• Samsung: Software information → Build number\n• Oppo, Realme: About phone → Version → Build number\n• Xiaomi: About phone → HyperOS/MIUI version\n• Vivo: About phone → Software version';
 
   @override
   String get touchGuideAbout => 'Open About phone';
 
   @override
   String get touchGuideStep2 =>
-      '2. In Developer options, turn on Show taps (Pointer location is not needed).';
+      'Step 2 – Back in Settings, open Developer options (often under System or Additional settings), scroll to Input and turn on Show taps. Pointer location is not needed.';
 
   @override
   String get touchGuideDev => 'Open Developer options';
@@ -2138,6 +2138,13 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get resultTapsHint =>
+      'Marks off or missing? Turn on Show taps so every mark lands where you tapped.';
+
+  @override
+  String get resultTapsHow => 'How to turn it on';
+
+  @override
   String get resultBuildingAlmost => 'Building the edit... almost done';
 
   @override
@@ -2422,7 +2429,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get setupTapsGet =>
-      'Record as usual; when you stop, the app marks exactly where you tapped, even where the screen gives no feedback. Android draws a white dot at each touch in the video, and the app\'s mark is placed over it.';
+      'Recommended for tutorials. With it on, the phone draws a small white dot right under your finger at every touch; the app uses that dot to put each mark exactly where you tapped. Without it the app has to guess from the picture, so a mark can be off or missing. The white dot is in the video, under the app\'s mark. Turn it off in the same place when you no longer need it.';
 
   @override
   String get setupTapsName =>

@@ -166,7 +166,7 @@ class _AndroidGuide extends ConsumerWidget {
             icon: Icons.touch_app_outlined,
             title: t.setupTapsTitle,
             on: st.showTaps,
-            tag: t.setupOptional,
+            tag: t.setupRecommended,
             get: t.setupTapsGet,
             how:
                 '${t.touchGuideStep1}\n${t.touchGuideStep2}\n${t.setupTapsName}',

@@ -12,37 +12,75 @@ import 'shell_provider.dart';
 class AppShell extends ConsumerWidget {
   const AppShell({super.key});
 
+  /// Wider than this (a Fold opened, a tablet, a phone turned sideways) the tabs move to a rail on
+  /// the left and the pages keep a readable width instead of stretching across the screen.
+  static const wideFrom = 600.0;
+  static const maxContent = 760.0;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppL10n.of(context);
     final index = ref.watch(shellIndexProvider);
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: IndexedStack(
-          index: index,
-          children: const [RecordScreen(), LibraryScreen(), SettingsScreen()],
+    final go = ref.read(shellIndexProvider.notifier).go;
+    final size = MediaQuery.sizeOf(context);
+    final wide = size.width >= wideFrom || size.width > size.height;
+    final dest = [
+      (Icons.fiber_manual_record_outlined, Icons.fiber_manual_record, t.navRecord),
+      (Icons.video_library_outlined, Icons.video_library, t.navLibrary),
+      (Icons.tune_outlined, Icons.tune, t.navSettings),
+    ];
+    final pages = SafeArea(
+      bottom: wide,
+      left: !wide,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: maxContent),
+          child: IndexedStack(
+            index: index,
+            children: const [RecordScreen(), LibraryScreen(), SettingsScreen()],
+          ),
         ),
       ),
+    );
+    if (wide) {
+      return Scaffold(
+        body: Row(
+          children: [
+            SafeArea(
+              right: false,
+              child: NavigationRail(
+                selectedIndex: index,
+                onDestinationSelected: go,
+                labelType: NavigationRailLabelType.all,
+                groupAlignment: 0,
+                destinations: [
+                  for (final (i, si, l) in dest)
+                    NavigationRailDestination(
+                      icon: Icon(i),
+                      selectedIcon: Icon(si),
+                      label: Text(l),
+                    ),
+                ],
+              ),
+            ),
+            const VerticalDivider(width: 1),
+            Expanded(child: pages),
+          ],
+        ),
+      );
+    }
+    return Scaffold(
+      body: pages,
       bottomNavigationBar: NavigationBar(
         selectedIndex: index,
-        onDestinationSelected: ref.read(shellIndexProvider.notifier).go,
+        onDestinationSelected: go,
         destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.fiber_manual_record_outlined),
-            selectedIcon: const Icon(Icons.fiber_manual_record),
-            label: t.navRecord,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.video_library_outlined),
-            selectedIcon: const Icon(Icons.video_library),
-            label: t.navLibrary,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.tune_outlined),
-            selectedIcon: const Icon(Icons.tune),
-            label: t.navSettings,
-          ),
+          for (final (i, si, l) in dest)
+            NavigationDestination(
+              icon: Icon(i),
+              selectedIcon: Icon(si),
+              label: l,
+            ),
         ],
       ),
     );

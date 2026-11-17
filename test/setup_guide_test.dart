@@ -53,12 +53,12 @@ void main() {
         ),
         findsOneWidget,
       );
-      // what you get is written out, and the developer mode steps use the old words
+      // what you get is written out, and the developer mode steps say where to tap on each brand
       expect(find.textContaining('Bạn được gì'), findsWidgets);
       expect(find.textContaining('tự đặt dấu'), findsWidgets);
       await tester.ensureVisible(find.byKey(const ValueKey('setup_step_taps')));
       expect(
-        find.textContaining('bấm 7 lần vào Số hiệu bản dựng'),
+        find.textContaining('bấm liên tục 7 lần'),
         findsOneWidget,
       );
       expect(find.text('Chế độ nhà phát triển: đã bật'), findsOneWidget);

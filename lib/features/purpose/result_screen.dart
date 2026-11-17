@@ -14,7 +14,9 @@ import '../editor/editor_screen.dart';
 import '../editor/editor_stage.dart';
 import '../editor/project_store.dart';
 import '../library/media_repository.dart';
+import '../marker/marker_settings.dart';
 import '../record/recorder_controller.dart';
+import '../setup/setup_guide_screen.dart';
 
 /// What a person sees right after recording: the video and three big choices. Nothing is edited here;
 /// "Edit more" opens the full editor, "Export now" exports what the recording became (with the automatic
@@ -282,6 +284,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     );
   }
 
+  /// A clean recording with automatic marks, and "show taps" known to be off: the marks are guessed.
+  bool get _needsTaps {
+    final mk = ref.watch(markerSettingsProvider);
+    return mk.mode == MarkMode.clean &&
+        mk.touchSource == TouchSource.auto &&
+        ref.watch(setupStatusProvider).value?.showTaps == false;
+  }
+
   Widget _controls(
     AppL10n t,
     TextTheme tt,
@@ -348,6 +358,32 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             _Phase.idle => const SizedBox.shrink(),
           },
         ),
+        if (_needsTaps) ...[
+          const SizedBox(height: Space.sm),
+          Card(
+            key: const ValueKey('result_taps_hint'),
+            margin: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.all(Space.sm),
+              child: Row(
+                children: [
+                  Icon(Icons.touch_app_outlined, color: c.tertiary),
+                  const SizedBox(width: Space.sm),
+                  Expanded(child: Text(t.resultTapsHint, style: tt.bodyMedium)),
+                  TextButton(
+                    key: const ValueKey('result_taps_how'),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const SetupGuideScreen(),
+                      ),
+                    ),
+                    child: Text(t.resultTapsHow),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: Space.sm),
         Wrap(
           spacing: Space.sm,

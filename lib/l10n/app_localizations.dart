@@ -3220,7 +3220,7 @@ abstract class AppL10n {
   /// No description provided for @touchGuideStep1.
   ///
   /// In vi, this message translates to:
-  /// **'1. Bật chế độ nhà phát triển: vào Thông tin điện thoại, bấm 7 lần vào Số hiệu bản dựng.'**
+  /// **'Bước 1 – Mở chế độ nhà phát triển (chỉ làm một lần): vào Cài đặt → Thông tin điện thoại, tìm dòng số phiên bản rồi bấm liên tục 7 lần cho tới khi máy báo \"Bạn đã là nhà phát triển\" (nếu máy hỏi thì nhập mã khoá màn hình).\n• Samsung: Thông tin phần mềm → Số hiệu bản dựng\n• Oppo, Realme: Giới thiệu về điện thoại → Phiên bản → Số phiên bản\n• Xiaomi: Giới thiệu điện thoại → Phiên bản HyperOS/MIUI\n• Vivo: Thông tin điện thoại → Phiên bản phần mềm'**
   String get touchGuideStep1;
 
   /// No description provided for @touchGuideAbout.
@@ -3232,7 +3232,7 @@ abstract class AppL10n {
   /// No description provided for @touchGuideStep2.
   ///
   /// In vi, this message translates to:
-  /// **'2. Trong Tùy chọn nhà phát triển, bật Hiển thị lần chạm (không cần Vị trí con trỏ).'**
+  /// **'Bước 2 – Quay lại Cài đặt, mở Tùy chọn nhà phát triển (thường ở Cài đặt → Hệ thống hoặc Cài đặt bổ sung), kéo xuống mục Nhập liệu và bật Hiển thị lần chạm. Không cần bật Vị trí con trỏ.'**
   String get touchGuideStep2;
 
   /// No description provided for @touchGuideDev.
@@ -4027,6 +4027,18 @@ abstract class AppL10n {
   /// **'Đang dựng tự động... còn khoảng {s} giây'**
   String resultBuildingLeft(int s);
 
+  /// No description provided for @resultTapsHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dấu bị lệch hoặc thiếu? Bật Hiển thị lần chạm để dấu luôn đúng chỗ bạn bấm.'**
+  String get resultTapsHint;
+
+  /// No description provided for @resultTapsHow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem cách bật'**
+  String get resultTapsHow;
+
   /// No description provided for @resultBuildingAlmost.
   ///
   /// In vi, this message translates to:
@@ -4534,7 +4546,7 @@ abstract class AppL10n {
   /// No description provided for @setupTapsGet.
   ///
   /// In vi, this message translates to:
-  /// **'Quay như bình thường; quay xong app tự đánh dấu đúng chỗ bạn đã bấm, kể cả chỗ màn hình không có phản hồi. Android vẽ chấm trắng ở chỗ chạm trong video, dấu của app đặt đè lên chấm đó.'**
+  /// **'Nên bật nếu bạn quay hướng dẫn. Khi bật, mỗi lần bạn chạm, điện thoại vẽ một chấm trắng nhỏ đúng chỗ ngón tay; app dựa vào chấm này để đặt dấu đúng chỗ bạn bấm. Khi chưa bật, app phải đoán chỗ bấm qua hình ảnh nên có lúc lệch hoặc bỏ trống. Chấm trắng có trong video, dấu của app đặt đè lên nó. Không cần nữa thì tắt lại ở cùng chỗ.'**
   String get setupTapsGet;
 
   /// No description provided for @setupTapsName.
